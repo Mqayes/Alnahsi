@@ -81,8 +81,9 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={toggle}
-            aria-label="Toggle language"
+            type="button"
+            onClick={() => toggle()}
+            aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
             className={`rounded-sm border border-gold/40 px-3 py-1.5 font-serif-display text-xs uppercase tracking-[0.2em] transition-all ${
               headerScrolled
                 ? "text-navy hover:bg-gold hover:text-navy"
@@ -98,6 +99,7 @@ export function Header() {
             {t(translations.nav.portal, lang)}
           </Link>
           <button
+            type="button"
             onClick={() => setOpen((o) => !o)}
             aria-label="Menu"
             className="lg:hidden"

@@ -25,8 +25,7 @@ export function Businesses() {
 
         <div className="mt-20 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
           {c.cards.map((card, i) => (
-            <Reveal key={card.year + i} delay={(i % 3) * 120} direction={i % 2 === 0 ? "left" : "right"}>
-              <article className="heritage-card group flex h-full flex-col overflow-hidden">
+              <article key={card.year + i} className="heritage-card group flex h-full flex-col overflow-hidden">
                 <div className="relative aspect-[5/4] overflow-hidden">
                   <img
                     src={images[i]}
@@ -34,7 +33,7 @@ export function Businesses() {
                     loading="lazy"
                     width={1200}
                     height={900}
-                    className="aged-photo h-full w-full object-cover transition-transform duration-[1500ms] group-hover:scale-105"
+                    className="heritage-image h-full w-full object-cover transition-transform duration-[1500ms] group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-navy/50 to-transparent" />
                   <div className="absolute bottom-4 left-4 rtl:left-auto rtl:right-4 font-serif-display text-sm uppercase tracking-[0.22em] text-gold">
@@ -51,7 +50,6 @@ export function Businesses() {
                   </div>
                 </div>
               </article>
-            </Reveal>
           ))}
         </div>
       </div>

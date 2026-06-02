@@ -14,11 +14,11 @@ export function PortalCta() {
         src={door}
         alt=""
         loading="lazy"
-        className="absolute inset-0 -z-10 h-full w-full object-cover opacity-30"
+        className="absolute inset-0 z-0 h-full w-full object-cover opacity-30"
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-navy/85 via-navy/90 to-navy" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-navy/85 via-navy/90 to-navy" />
       <Reveal>
-        <div className="mx-auto max-w-3xl px-6 text-center">
+        <div className="relative z-10 mx-auto max-w-3xl px-6 text-center">
           <div className="eyebrow">{t(c.eyebrow, lang)}</div>
           <h2 className="mt-6 text-cream text-4xl md:text-6xl">{t(c.title, lang)}</h2>
           <Ornament className="mt-8" />

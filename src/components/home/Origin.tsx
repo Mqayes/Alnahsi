@@ -10,19 +10,17 @@ export function Origin() {
   return (
     <section className="relative py-28 md:py-40">
       <div className="mx-auto grid max-w-7xl gap-16 px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-        <Reveal direction="left">
-          <div className="relative">
-            <div className="absolute -inset-3 border border-gold/40" />
-            <img
-              src={album}
-              alt=""
-              loading="lazy"
-              width={1600}
-              height={1100}
-              className="aged-photo relative h-auto w-full object-cover"
-            />
-          </div>
-        </Reveal>
+        <div className="relative">
+          <div className="absolute -inset-3 border border-gold/40" />
+          <img
+            src={album}
+            alt=""
+            loading="lazy"
+            width={1600}
+            height={1100}
+            className="heritage-image relative h-auto w-full object-cover"
+          />
+        </div>
 
         <Reveal delay={150}>
           <div className="max-w-xl">

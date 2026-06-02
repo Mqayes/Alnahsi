@@ -7,9 +7,8 @@
 /*
  * Al Nahsi Family Heritage — Design System
  * Parchment, deep navy, warm gold. Editorial heritage feel.
+ * Fonts are loaded via <link> in __root.tsx (CSS @import here breaks Tailwind).
  */
-
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700&display=swap");
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -284,8 +283,11 @@
     color: var(--navy);
   }
 
-  .aged-photo {
-    filter: sepia(0.15) contrast(1.02);
+  /* Heritage photos — keep sharp; optional warmth without blur */
+  .heritage-image {
+    image-rendering: auto;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .vignette {
@@ -301,11 +303,11 @@
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(24px); }
+  to { transform: translateY(0); }
 }
 @keyframes fade-in {
-  from { opacity: 0; }
+  from { opacity: 0.6; }
   to { opacity: 1; }
 }
 @keyframes shimmer-gold {
@@ -320,21 +322,21 @@
 .delay-600 { animation-delay: 0.6s; }
 .delay-800 { animation-delay: 0.8s; }
 
-/* Reveal-on-scroll utility (used with IntersectionObserver) */
+/* Reveal-on-scroll — never hide with opacity:0 (breaks images on SSR/hydration) */
 .reveal {
-  opacity: 0;
-  transition: opacity 1.2s ease, transform 1.2s ease;
-}
-.reveal[data-direction="up"] {
-  transform: translateY(28px);
-}
-.reveal[data-direction="left"] {
-  transform: translateX(-28px);
-}
-.reveal[data-direction="right"] {
-  transform: translateX(28px);
-}
-.reveal.is-visible {
   opacity: 1;
-  transform: translateX(0) translateY(0);
+  transition: transform 0.7s ease;
+}
+.reveal[data-direction="up"]:not(.is-visible) {
+  transform: translateY(20px);
+}
+.reveal[data-direction="left"]:not(.is-visible) {
+  transform: translateX(-20px);
+}
+.reveal[data-direction="right"]:not(.is-visible) {
+  transform: translateX(20px);
+}
+.reveal.is-visible,
+.reveal.reveal-fade-only {
+  transform: none;
 }

@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Ornament } from "@/components/site/Ornament";
-import { Reveal } from "@/components/site/Reveal";
 import g1 from "@/assets/gallery-1.jpg";
 import g2 from "@/assets/gallery-2.jpg";
 import g3 from "@/assets/gallery-3.jpg";
@@ -47,16 +46,14 @@ function GalleryPage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="columns-1 gap-6 sm:columns-2 lg:columns-3 [&>*]:mb-6">
             {images.map((src, i) => (
-              <Reveal key={i} delay={(i % 3) * 80}>
-                <figure className="break-inside-avoid overflow-hidden">
-                  <img
-                    src={src}
-                    alt=""
-                    loading="lazy"
-                    className="aged-photo w-full transition-transform duration-[1200ms] hover:scale-[1.02]"
-                  />
-                </figure>
-              </Reveal>
+              <figure key={i} className="break-inside-avoid overflow-hidden">
+                <img
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  className="heritage-image w-full transition-transform duration-[1200ms] hover:scale-[1.02]"
+                />
+              </figure>
             ))}
           </div>
 

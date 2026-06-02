@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Ornament } from "@/components/site/Ornament";
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useState, type FormEvent } from "react";
+import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
 
 export const Route = createFileRoute("/portal")({
   head: () => ({
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/portal")({
 
 function PortalPage() {
   const { lang } = useLang();
+  const navigate = useNavigate();
   const c = translations.portal;
 
   // Login state
@@ -37,30 +38,84 @@ function PortalPage() {
   const [reqSuccess, setReqSuccess] = useState(false)
   const [reqError, setReqError] = useState('')
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoginLoading(true)
-    setLoginError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setLoginError('Wrong email or password')
-      setLoginLoading(false)
-    } else {
-      window.location.href = '/admin'
-    }
-  }
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
 
-  const handleRequest = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setReqLoading(true)
-    setReqError('')
-    const { error } = await supabase.from('join_requests').insert({
-      full_name_en: reqName,
+    if (!isSupabaseConfigured()) {
+      setLoginError(
+        lang === "en"
+          ? "Supabase is not configured. Check .env and restart the dev server."
+          : "لم يتم إعداد Supabase. تحقق من ملف .env وأعد تشغيل الخادم.",
+      );
+      setLoginLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await withTimeout(
+        getSupabase().auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        }),
+        15_000,
+        "Sign in",
+      );
+
+      if (error) {
+        setLoginError(
+          lang === "en"
+            ? `Sign in failed: ${error.message}`
+            : `فشل تسجيل الدخول: ${error.message}`,
+        );
+        return;
+      }
+
+      if (!data.session) {
+        setLoginError(
+          lang === "en"
+            ? "Sign in failed: no session returned."
+            : "فشل تسجيل الدخول: لم يتم إنشاء جلسة.",
+        );
+        return;
+      }
+
+      await navigate({ to: "/admin" });
+    } catch (err) {
+      setLoginError(
+        err instanceof Error
+          ? err.message
+          : lang === "en"
+            ? "Sign in failed. Please try again."
+            : "فشل تسجيل الدخول. حاول مرة أخرى.",
+      );
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  const handleRequest = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setReqLoading(true);
+    setReqError("");
+
+    if (!isSupabaseConfigured()) {
+      setReqError(
+        lang === "en"
+          ? "Supabase is not configured. Check .env and restart the dev server."
+          : "لم يتم إعداد Supabase. تحقق من ملف .env وأعد تشغيل الخادم.",
+      );
+      setReqLoading(false);
+      return;
+    }
+
+    const { error } = await getSupabase().from("join_requests").insert({
+      full_name: reqName,
       email: reqEmail,
-      relation: reqRelation,
-      message: reqMessage,
-      status: 'pending'
-    })
+      message: reqMessage ? `${reqRelation ? `Relation: ${reqRelation}\n\n` : ""}${reqMessage}` : reqRelation || null,
+      status: "pending",
+    });
     if (error) {
       setReqError('Something went wrong. Please try again.')
       console.error(error)
@@ -77,7 +132,8 @@ function PortalPage() {
 
       <div className="mx-auto w-full max-w-md px-6">
         <div className="text-center">
-          <span className="font-arabic text-6xl text-gold">آل عجلان</span>
+          <span className="font-arabic text-6xl text-gold">آل النحسي
+</span>
           <Ornament className="mt-6" />
           <h1 className="mt-6 text-cream text-3xl md:text-4xl">{t(c.title, lang)}</h1>
           <p className="mt-3 text-sm italic text-cream/70">{t(c.sub, lang)}</p>
@@ -95,6 +151,8 @@ function PortalPage() {
               </span>
               <input
                 type="email"
+                required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
@@ -106,6 +164,8 @@ function PortalPage() {
               </span>
               <input
                 type="password"
+                required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"

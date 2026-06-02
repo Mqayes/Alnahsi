@@ -24,46 +24,50 @@ export function GalleryPreview() {
         </Reveal>
 
         <div className="mt-16 grid grid-cols-12 gap-4 md:gap-6">
-          <Reveal direction="left" delay={80} className="col-span-12 md:col-span-7 row-span-2">
+          <div className="col-span-12 md:col-span-7 row-span-2">
             <img
               src={g1}
               alt=""
               loading="lazy"
               width={1200}
               height={800}
-              className="aged-photo h-full w-full object-cover"
+              sizes="(min-width: 768px) 60vw, 100vw"
+              className="heritage-image h-full w-full object-cover"
             />
-          </Reveal>
-          <Reveal direction="right" delay={120} className="col-span-6 md:col-span-5">
+          </div>
+          <div className="col-span-6 md:col-span-5">
             <img
               src={g2}
               alt=""
               loading="lazy"
               width={900}
               height={1200}
-              className="aged-photo h-72 w-full object-cover md:h-[18rem]"
+              sizes="(min-width: 768px) 40vw, 50vw"
+              className="heritage-image h-72 w-full object-cover md:h-[18rem]"
             />
-          </Reveal>
-          <Reveal direction="left" delay={160} className="col-span-6 md:col-span-5">
+          </div>
+          <div className="col-span-6 md:col-span-5">
             <img
               src={g4}
               alt=""
               loading="lazy"
               width={900}
               height={1100}
-              className="aged-photo h-72 w-full object-cover md:h-[18rem]"
+              sizes="(min-width: 768px) 40vw, 50vw"
+              className="heritage-image h-72 w-full object-cover md:h-[18rem]"
             />
-          </Reveal>
-          <Reveal direction="right" delay={200} className="col-span-12">
+          </div>
+          <div className="col-span-12">
             <img
               src={g3}
               alt=""
               loading="lazy"
               width={1200}
               height={900}
-              className="aged-photo h-72 w-full object-cover md:h-[26rem]"
+              sizes="100vw"
+              className="heritage-image h-72 w-full object-cover md:h-[26rem]"
             />
-          </Reveal>
+          </div>
         </div>
 
         <div className="mt-12 text-center">

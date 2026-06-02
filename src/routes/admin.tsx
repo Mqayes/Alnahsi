@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   getSupabase,
   isSupabaseConfigured,
+  withTimeout,
   type FamilyMember,
   type JoinRequest,
   type Profile,
@@ -41,48 +42,64 @@ function AdminPage() {
         return;
       }
 
-      const supabase = getSupabase();
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
+      try {
+        const supabase = getSupabase();
 
-      if (cancelled) return;
+        const {
+          data: { session },
+          error: sessionError,
+        } = await withTimeout(supabase.auth.getSession(), 10_000, "Session check");
 
-      if (sessionError || !session) {
+        if (cancelled) return;
+
+        if (sessionError || !session) {
+          setAuth({
+            status: "denied",
+            message: "You must sign in to access the admin dashboard.",
+          });
+          return;
+        }
+
+        const { data: profile, error: profileError } = await withTimeout(
+          supabase
+            .from("profiles")
+            .select("id, role, email, full_name")
+            .eq("id", session.user.id)
+            .maybeSingle(),
+          10_000,
+          "Profile check",
+        );
+
+        if (cancelled) return;
+
+        if (profileError) {
+          setAuth({
+            status: "denied",
+            message: `Could not verify your profile: ${profileError.message}`,
+          });
+          return;
+        }
+
+        if (!profile || profile.role !== "admin") {
+          setAuth({
+            status: "denied",
+            message:
+              "Your account does not have admin access. Make sure your user has role = 'admin' in the profiles table.",
+          });
+          return;
+        }
+
+        setAuth({ status: "authorized", profile: profile as Profile });
+      } catch (err) {
+        if (cancelled) return;
         setAuth({
           status: "denied",
-          message: "You must sign in to access the admin dashboard.",
+          message:
+            err instanceof Error
+              ? err.message
+              : "Could not verify admin access. Please try signing in again.",
         });
-        return;
       }
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, role, email, full_name")
-        .eq("id", session.user.id)
-        .maybeSingle();
-
-      if (cancelled) return;
-
-      if (profileError) {
-        setAuth({
-          status: "denied",
-          message: `Could not verify your profile: ${profileError.message}`,
-        });
-        return;
-      }
-
-      if (!profile || profile.role !== "admin") {
-        await supabase.auth.signOut();
-        setAuth({
-          status: "denied",
-          message: "Your account does not have admin access.",
-        });
-        return;
-      }
-
-      setAuth({ status: "authorized", profile: profile as Profile });
     }
 
     void verifyAdmin();

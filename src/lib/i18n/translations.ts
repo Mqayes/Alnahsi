@@ -11,7 +11,7 @@ export const translations = {
     portal: { en: "Family Portal", ar: "بوابة العائلة" },
   },
   hero: {
-    eyebrow: { en: "The House of Alnahsi", ar: "آل النحسي" },
+    eyebrow: { en: "The House of Alnahsi", ar: "بيت آل النحسي" },
     nameEn: { en: "Alnahsi", ar: "Alnahsi" },
     nameAr: { en: "آل النحسي", ar: "آل النحسي" },
     tagline: {

@@ -7,19 +7,21 @@ export function Hero() {
   const { lang } = useLang();
   return (
     <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 -z-10">
+      <div className="absolute inset-0 z-0">
         <img
           src={hero}
           alt=""
           width={1920}
           height={1280}
-          className="aged-photo h-full w-full object-cover"
+          className="heritage-image h-full w-full object-cover"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/30 to-parchment" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(10,25,47,0.6)_100%)]" />
       </div>
 
-      <div className="relative mx-auto max-w-4xl px-6 pt-32 pb-20 text-center">
+      <div className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center">
         <div className="animate-fade-in delay-200 eyebrow text-gold/90">
           {t(translations.hero.eyebrow, lang)}
         </div>
@@ -28,9 +30,15 @@ export function Hero() {
           <span className="block font-arabic text-7xl leading-none text-gold drop-shadow-[0_4px_20px_rgba(212,175,55,0.3)] md:text-9xl">
             {t(translations.hero.nameAr, lang)}
           </span>
-          <span className="mt-6 block font-serif-display text-3xl font-light italic tracking-wide text-cream md:text-5xl">
-            {t(translations.hero.eyebrow, lang)}
-          </span>
+          {lang === "en" ? (
+            <span className="mt-6 block font-serif-display text-3xl font-light italic tracking-wide text-cream md:text-5xl">
+              {t(translations.hero.nameEn, lang)}
+            </span>
+          ) : (
+            <span className="mt-6 block font-arabic text-3xl font-light text-cream md:text-5xl">
+              {t(translations.hero.eyebrow, lang)}
+            </span>
+          )}
         </h1>
 
         <div className="ornament mx-auto mt-10 max-w-xs animate-fade-in delay-600 text-gold/70">
@@ -51,7 +59,7 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-gold/60 animate-shimmer">
+      <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-gold/60 animate-shimmer">
         <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
           <path d="M10 2v24M4 22l6 6 6-6" stroke="currentColor" strokeWidth="1" />
         </svg>

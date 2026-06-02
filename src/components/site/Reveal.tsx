@@ -4,11 +4,13 @@ export function Reveal({
   children,
   delay = 0,
   direction = "up",
+  fadeOnly = false,
   className = "",
 }: {
   children: ReactNode;
   delay?: number;
   direction?: "up" | "left" | "right";
+  fadeOnly?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -17,26 +19,54 @@ export function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const show = () => {
+      timeoutId = setTimeout(() => setVisible(true), delay);
+    };
+
+    // Show immediately if already in viewport (fixes images stuck hidden)
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      show();
+      return () => clearTimeout(timeoutId);
+    }
+
+    if (typeof IntersectionObserver === "undefined") {
+      show();
+      return () => clearTimeout(timeoutId);
+    }
+
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            setTimeout(() => setVisible(true), delay);
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            show();
             io.disconnect();
+            break;
           }
-        });
+        }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -10% 0px" }
+      { threshold: 0, rootMargin: "0px 0px 10% 0px" },
     );
+
     io.observe(el);
-    return () => io.disconnect();
+
+    const fallbackId = setTimeout(() => setVisible(true), 300 + delay);
+
+    return () => {
+      io.disconnect();
+      clearTimeout(timeoutId);
+      clearTimeout(fallbackId);
+    };
   }, [delay]);
 
   return (
     <div
       ref={ref}
-      data-direction={direction}
-      className={`reveal ${visible ? "is-visible" : ""} ${className}`}
+      data-direction={fadeOnly ? "up" : direction}
+      className={`reveal ${fadeOnly ? "reveal-fade-only" : ""} ${visible ? "is-visible" : ""} ${className}`}
     >
       {children}
     </div>

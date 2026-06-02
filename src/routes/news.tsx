@@ -4,7 +4,7 @@ import { translations, t } from "@/lib/i18n/translations";
 import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
 import { useState, useEffect } from "react";
-import { getSupabase } from "@/lib/supabase";
+import { fetchNews, type NewsItem } from "@/lib/news";
 
 export const Route = createFileRoute("/news")({
   head: () => ({
@@ -12,7 +12,8 @@ export const Route = createFileRoute("/news")({
       { title: "News & Announcements — Alnahsi" },
       {
         name: "description",
-        content: "Family announcements, achievements, and important milestones from the Alnahsi family.",
+        content:
+          "Family announcements, achievements, and important milestones from the Alnahsi family.",
       },
       { property: "og:title", content: "News & Announcements — Alnahsi" },
       { property: "og:description", content: "Family news and announcements." },
@@ -21,39 +22,49 @@ export const Route = createFileRoute("/news")({
   component: NewsPage,
 });
 
-interface NewsItem {
-  id: string;
-  created_at: string;
-  title_en: string;
-  title_ar: string;
-  content_en: string;
-  content_ar: string;
-}
-
 function NewsPage() {
   const { lang } = useLang();
   const c = translations.news;
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
-    getSupabase()
-      .from("news_posts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) setNewsItems(data);
-        setLoading(false);
+    let cancelled = false;
+
+    const safetyTimeout = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 15_000);
+
+    fetchNews()
+      .then(({ items, source, error }) => {
+        if (cancelled) return;
+        setNewsItems(items);
+        setUsingFallback(source === "fallback");
+        setFetchError(error ?? null);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setFetchError(err instanceof Error ? err.message : "Could not load news");
+      })
+      .finally(() => {
+        clearTimeout(safetyTimeout);
+        if (!cancelled) setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(safetyTimeout);
+    };
   }, []);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     if (lang === "en") {
       return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-    } else {
-      return date.toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" });
     }
+    return date.toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" });
   };
 
   return (
@@ -62,13 +73,29 @@ function NewsPage() {
         <Reveal>
           <div className="text-center">
             <div className="eyebrow">{t(c.eyebrow, lang)}</div>
-            <h1 className="mt-6 text-5xl md:text-6xl text-navy">
-              {t(c.title, lang)}
-            </h1>
+            <h1 className="mt-6 text-5xl md:text-6xl text-navy">{t(c.title, lang)}</h1>
             <Ornament className="mt-6" />
             <p className="mt-6 italic text-navy/75">{t(c.intro, lang)}</p>
           </div>
         </Reveal>
+
+        {usingFallback && !loading && (
+          <p className="mt-8 text-center text-sm text-navy/55">
+            {lang === "en"
+              ? fetchError
+                ? `Could not reach live news (${fetchError}). Showing sample announcements.`
+                : "Showing sample announcements. Your live posts appear here once Supabase news_posts is readable."
+              : fetchError
+                ? `تعذّر تحميل الأخبار المباشرة (${fetchError}). يتم عرض إعلانات تجريبية.`
+                : "يتم عرض إعلانات تجريبية. ستظهر منشوراتك عند ربط جدول news_posts."}
+          </p>
+        )}
+
+        {fetchError && (
+          <p className="mt-4 text-center text-sm text-amber-800" role="status">
+            {fetchError}
+          </p>
+        )}
 
         <div className="mt-16 space-y-8">
           {loading ? (
@@ -102,9 +129,7 @@ function NewsPage() {
           ) : (
             <Reveal>
               <div className="py-12 text-center">
-                <p className="text-lg italic text-navy/60">
-                  {t(c.noNews, lang)}
-                </p>
+                <p className="text-lg italic text-navy/60">{t(c.noNews, lang)}</p>
               </div>
             </Reveal>
           )}

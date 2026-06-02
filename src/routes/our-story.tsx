@@ -39,22 +39,20 @@ function StoryPage() {
 
       <section className="py-24 md:py-32">
         <div className="mx-auto grid max-w-6xl gap-16 px-6 lg:grid-cols-[1fr_1.4fr]">
-          <Reveal direction="left">
-            <div className="relative lg:sticky lg:top-32">
-              <div className="absolute -inset-2 border border-gold/40" />
-              <img
-                src={patriarch}
-                alt=""
-                loading="lazy"
-                width={1000}
-                height={1300}
-                className="aged-photo relative h-auto w-full"
-              />
-              <div className="mt-4 text-center font-serif-display text-xs uppercase tracking-[0.22em] text-gold">
-                {lang === "en" ? "The Patriarch · c. 1925" : "الجدّ الأكبر · نحو ١٩٢٥"}
-              </div>
+          <div className="relative lg:sticky lg:top-32">
+            <div className="absolute -inset-2 border border-gold/40" />
+            <img
+              src={patriarch}
+              alt=""
+              loading="lazy"
+              width={1000}
+              height={1300}
+              className="heritage-image relative h-auto w-full"
+            />
+            <div className="mt-4 text-center font-serif-display text-xs uppercase tracking-[0.22em] text-gold">
+              {lang === "en" ? "The Patriarch · c. 1925" : "الجدّ الأكبر · نحو ١٩٢٥"}
             </div>
-          </Reveal>
+          </div>
 
           <div className="space-y-16">
             {c.sections.map((s, i) => (
