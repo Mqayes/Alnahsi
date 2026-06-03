@@ -33,6 +33,16 @@ export async function upsertSiteContent(key: string, value: string): Promise<str
   return null;
 }
 
+export async function deleteSiteContent(key: string): Promise<string | null> {
+  const { error } = await getSupabase()
+    .from("site_content")
+    .delete()
+    .eq("key", key);
+  if (error) return error.message;
+  invalidateSiteContent();
+  return null;
+}
+
 export function useSiteContent(): SiteContent {
   const [content, setContent] = useState<SiteContent>(cache ?? {});
 

@@ -15,7 +15,12 @@ import {
   type NewsPost,
   type Profile,
 } from "@/lib/supabase";
-import { upsertSiteContent, useSiteContent } from "@/lib/site-content";
+import { upsertSiteContent, deleteSiteContent, useSiteContent } from "@/lib/site-content";
+import heroDefault from "@/assets/hero-heritage.jpg";
+import originDefault from "@/assets/story-album.jpg";
+import b1Default from "@/assets/business-1.jpg";
+import b2Default from "@/assets/business-2.jpg";
+import b3Default from "@/assets/business-3.jpg";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -522,21 +527,53 @@ function HomeContentTab() {
     setSaving(null);
   };
 
-  const ImageField = ({ label, contentKey }: { label: string; contentKey: string }) => (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      {sc[contentKey] && (
-        <img src={sc[contentKey]} alt="" className="h-28 w-full rounded border border-gold/20 object-cover" />
-      )}
-      <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
-        <input type="file" accept="image/*" className="hidden" disabled={saving === contentKey}
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadImage(contentKey, f); }} />
-        {saving === contentKey ? "Uploading..." : sc[contentKey] ? "Replace image" : "Upload image"}
-      </label>
-      {errors[contentKey] && <p className="text-xs text-red-600">{errors[contentKey]}</p>}
-      {saved === contentKey && <p className="text-xs text-green-700">Saved!</p>}
-    </div>
-  );
+  const ImageField = ({ label, contentKey, defaultSrc }: { label: string; contentKey: string; defaultSrc?: string }) => {
+    const customSrc = sc[contentKey];
+    const previewSrc = customSrc || defaultSrc;
+    const isCustom = Boolean(customSrc);
+
+    const resetImage = async () => {
+      setSaving(contentKey);
+      const err = await deleteSiteContent(contentKey);
+      if (err) setErrors((p) => ({ ...p, [contentKey]: err }));
+      else { setSaved(contentKey); setTimeout(() => setSaved(null), 2000); }
+      setSaving(null);
+    };
+
+    return (
+      <div className="space-y-2">
+        <Label>{label}</Label>
+        {previewSrc && (
+          <div className="relative">
+            <img src={previewSrc} alt="" className="h-28 w-full rounded border border-gold/20 object-cover" />
+            {isCustom && (
+              <span className="absolute left-2 top-2 rounded bg-gold px-2 py-0.5 text-xs font-medium text-navy">Custom</span>
+            )}
+            {!isCustom && defaultSrc && (
+              <span className="absolute left-2 top-2 rounded bg-navy/60 px-2 py-0.5 text-xs text-cream">Default</span>
+            )}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <label className="flex flex-1 cursor-pointer items-center gap-2 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-2.5 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+            <input type="file" accept="image/*" className="hidden" disabled={saving === contentKey}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadImage(contentKey, f); }} />
+            {saving === contentKey ? "Uploading..." : isCustom ? "Replace" : "Upload"}
+          </label>
+          {isCustom && (
+            <Button type="button" size="sm" variant="ghost"
+              className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
+              disabled={saving === contentKey}
+              onClick={() => void resetImage()}>
+              Reset
+            </Button>
+          )}
+        </div>
+        {errors[contentKey] && <p className="text-xs text-red-600">{errors[contentKey]}</p>}
+        {saved === contentKey && <p className="text-xs text-green-700">{isCustom ? "Reset to default!" : "Saved!"}</p>}
+      </div>
+    );
+  };
 
   const TextField = ({ label, contentKey, rows = 1, dir }: { label: string; contentKey: string; rows?: number; dir?: string }) => (
     <div className="space-y-2">
@@ -565,7 +602,7 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Hero Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="md:col-span-2">
-            <ImageField label="Background Image" contentKey="hero_image_url" />
+            <ImageField label="Background Image" contentKey="hero_image_url" defaultSrc={heroDefault} />
           </div>
           <TextField label="Tagline (English)" contentKey="hero_tagline_en" />
           <TextField label="Tagline (Arabic)" contentKey="hero_tagline_ar" dir="rtl" />
@@ -577,7 +614,7 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Origin Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="md:col-span-2">
-            <ImageField label="Section Photo" contentKey="origin_image_url" />
+            <ImageField label="Section Photo" contentKey="origin_image_url" defaultSrc={originDefault} />
           </div>
           <TextField label="Paragraph 1 (English)" contentKey="origin_p1_en" rows={4} />
           <TextField label="Paragraph 1 (Arabic)" contentKey="origin_p1_ar" rows={4} dir="rtl" />
@@ -591,9 +628,10 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Business Card Images</h2>
         <p className="mt-1 text-sm text-navy/60">One image per card (6 cards total).</p>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <ImageField key={i} label={`Card ${i + 1}`} contentKey={`business_image_${i}`} />
-          ))}
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            const defaults = [b1Default, b2Default, b3Default, b1Default, b2Default, b3Default];
+            return <ImageField key={i} label={`Card ${i + 1}`} contentKey={`business_image_${i}`} defaultSrc={defaults[i]} />;
+          })}
         </div>
       </div>
     </div>
