@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Reveal } from "@/components/site/Reveal";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Ornament } from "@/components/site/Ornament";
@@ -46,14 +47,21 @@ function GalleryPage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="columns-1 gap-6 sm:columns-2 lg:columns-3 [&>*]:mb-6">
             {images.map((src, i) => (
-              <figure key={i} className="break-inside-avoid overflow-hidden">
-                <img
-                  src={src}
-                  alt=""
-                  loading="lazy"
-                  className="heritage-image w-full transition-transform duration-[1200ms] hover:scale-[1.02]"
-                />
-              </figure>
+              <Reveal
+                key={i}
+                delay={i * 80}
+                direction={i % 3 === 0 ? "left" : i % 3 === 1 ? "up" : "right"}
+                className="break-inside-avoid"
+              >
+                <figure className="overflow-hidden">
+                  <img
+                    src={src}
+                    alt=""
+                    loading="lazy"
+                    className="heritage-image w-full transition-transform duration-[1200ms] hover:scale-[1.03]"
+                  />
+                </figure>
+              </Reveal>
             ))}
           </div>
 

@@ -35,6 +35,12 @@ export function Footer() {
             <Link to="/gallery" className="block hover:text-gold">
               {t(translations.nav.gallery, lang)}
             </Link>
+            <Link to="/news" className="block hover:text-gold">
+              {t(translations.nav.news, lang)}
+            </Link>
+            <Link to="/contact" className="block hover:text-gold">
+              {t(translations.nav.contact, lang)}
+            </Link>
             <Link to="/portal" className="block text-gold hover:text-cream">
               {t(translations.nav.portal, lang)}
             </Link>

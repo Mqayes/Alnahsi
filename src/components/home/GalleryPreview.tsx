@@ -24,7 +24,7 @@ export function GalleryPreview() {
         </Reveal>
 
         <div className="mt-16 grid grid-cols-12 gap-4 md:gap-6">
-          <div className="col-span-12 md:col-span-7 row-span-2">
+          <Reveal direction="left" className="col-span-12 md:col-span-7 row-span-2">
             <img
               src={g1}
               alt=""
@@ -34,8 +34,8 @@ export function GalleryPreview() {
               sizes="(min-width: 768px) 60vw, 100vw"
               className="heritage-image h-full w-full object-cover"
             />
-          </div>
-          <div className="col-span-6 md:col-span-5">
+          </Reveal>
+          <Reveal direction="right" delay={150} className="col-span-6 md:col-span-5">
             <img
               src={g2}
               alt=""
@@ -45,8 +45,8 @@ export function GalleryPreview() {
               sizes="(min-width: 768px) 40vw, 50vw"
               className="heritage-image h-72 w-full object-cover md:h-[18rem]"
             />
-          </div>
-          <div className="col-span-6 md:col-span-5">
+          </Reveal>
+          <Reveal direction="right" delay={300} className="col-span-6 md:col-span-5">
             <img
               src={g4}
               alt=""
@@ -56,8 +56,8 @@ export function GalleryPreview() {
               sizes="(min-width: 768px) 40vw, 50vw"
               className="heritage-image h-72 w-full object-cover md:h-[18rem]"
             />
-          </div>
-          <div className="col-span-12">
+          </Reveal>
+          <Reveal direction="up" delay={200} className="col-span-12">
             <img
               src={g3}
               alt=""
@@ -67,7 +67,7 @@ export function GalleryPreview() {
               sizes="100vw"
               className="heritage-image h-72 w-full object-cover md:h-[26rem]"
             />
-          </div>
+          </Reveal>
         </div>
 
         <div className="mt-12 text-center">

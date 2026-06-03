@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from "react";
 
 export function Reveal({
   children,
@@ -26,7 +26,6 @@ export function Reveal({
       timeoutId = setTimeout(() => setVisible(true), delay);
     };
 
-    // Show immediately if already in viewport (fixes images stuck hidden)
     const rect = el.getBoundingClientRect();
     if (rect.top < window.innerHeight && rect.bottom > 0) {
       show();
@@ -48,26 +47,35 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0, rootMargin: "0px 0px 10% 0px" },
+      { threshold: 0.05, rootMargin: "0px 0px -5% 0px" },
     );
 
     io.observe(el);
 
-    const fallbackId = setTimeout(() => setVisible(true), 300 + delay);
-
     return () => {
       io.disconnect();
       clearTimeout(timeoutId);
-      clearTimeout(fallbackId);
     };
   }, [delay]);
 
+  const getTransform = (): string => {
+    if (visible || fadeOnly) return "none";
+    if (direction === "up") return "translateY(52px)";
+    if (direction === "left") return "translateX(-52px)";
+    if (direction === "right") return "translateX(52px)";
+    return "none";
+  };
+
+  const style: CSSProperties = {
+    opacity: visible ? 1 : 0,
+    transform: getTransform(),
+    transition: `opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1)`,
+    transitionDelay: "0ms",
+    willChange: visible ? "auto" : "opacity, transform",
+  };
+
   return (
-    <div
-      ref={ref}
-      data-direction={fadeOnly ? "up" : direction}
-      className={`reveal ${fadeOnly ? "reveal-fade-only" : ""} ${visible ? "is-visible" : ""} ${className}`}
-    >
+    <div ref={ref} style={style} className={className}>
       {children}
     </div>
   );

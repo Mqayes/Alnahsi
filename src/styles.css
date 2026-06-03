@@ -326,21 +326,25 @@
 .delay-600 { animation-delay: 0.6s; }
 .delay-800 { animation-delay: 0.8s; }
 
-/* Reveal-on-scroll — never hide with opacity:0 (breaks images on SSR/hydration) */
+/* Reveal-on-scroll */
 .reveal {
-  opacity: 1;
-  transition: transform 0.7s ease;
+  opacity: 0;
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .reveal[data-direction="up"]:not(.is-visible) {
-  transform: translateY(20px);
+  transform: translateY(48px);
 }
 .reveal[data-direction="left"]:not(.is-visible) {
-  transform: translateX(-20px);
+  transform: translateX(-48px);
 }
 .reveal[data-direction="right"]:not(.is-visible) {
-  transform: translateX(20px);
+  transform: translateX(48px);
 }
-.reveal.is-visible,
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
 .reveal.reveal-fade-only {
   transform: none;
 }
