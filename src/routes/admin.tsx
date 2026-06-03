@@ -15,6 +15,7 @@ import {
   type NewsPost,
   type Profile,
 } from "@/lib/supabase";
+import { upsertSiteContent, useSiteContent } from "@/lib/site-content";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -160,6 +161,7 @@ function AdminPage() {
           <TabsTrigger value="requests">Join Requests</TabsTrigger>
           <TabsTrigger value="news">News</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
+          <TabsTrigger value="home">Home Content</TabsTrigger>
           <TabsTrigger value="members">Add Member</TabsTrigger>
           <TabsTrigger value="view-members">Family Members</TabsTrigger>
         </TabsList>
@@ -172,6 +174,9 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="gallery" className="mt-6">
           <GalleryTab />
+        </TabsContent>
+        <TabsContent value="home" className="mt-6">
+          <HomeContentTab />
         </TabsContent>
         <TabsContent value="members" className="mt-6">
           <AddMemberTab />
@@ -462,6 +467,134 @@ function NewsTab() {
             </li>
           ))}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+function HomeContentTab() {
+  const sc = useSiteContent();
+  const [saving, setSaving] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [fields, setFields] = useState({
+    hero_tagline_en: "",
+    hero_tagline_ar: "",
+    origin_p1_en: "",
+    origin_p1_ar: "",
+    origin_p2_en: "",
+    origin_p2_ar: "",
+  });
+
+  // Populate fields from loaded site content
+  useEffect(() => {
+    setFields((prev) => ({
+      hero_tagline_en: sc["hero_tagline_en"] ?? prev.hero_tagline_en,
+      hero_tagline_ar: sc["hero_tagline_ar"] ?? prev.hero_tagline_ar,
+      origin_p1_en: sc["origin_p1_en"] ?? prev.origin_p1_en,
+      origin_p1_ar: sc["origin_p1_ar"] ?? prev.origin_p1_ar,
+      origin_p2_en: sc["origin_p2_en"] ?? prev.origin_p2_en,
+      origin_p2_ar: sc["origin_p2_ar"] ?? prev.origin_p2_ar,
+    }));
+  }, [sc]);
+
+  const save = async (key: string, value: string) => {
+    setSaving(key);
+    setErrors((p) => ({ ...p, [key]: "" }));
+    const err = await upsertSiteContent(key, value);
+    if (err) setErrors((p) => ({ ...p, [key]: err }));
+    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    setSaving(null);
+  };
+
+  const uploadImage = async (key: string, file: File) => {
+    setSaving(key);
+    setErrors((p) => ({ ...p, [key]: "" }));
+    const ext = file.name.split(".").pop();
+    const path = `site/${key}-${Date.now()}.${ext}`;
+    const { error: uploadErr } = await getSupabase().storage.from("site-images").upload(path, file, { upsert: true });
+    if (uploadErr) { setErrors((p) => ({ ...p, [key]: uploadErr.message })); setSaving(null); return; }
+    const { data } = getSupabase().storage.from("site-images").getPublicUrl(path);
+    const err = await upsertSiteContent(key, data.publicUrl);
+    if (err) setErrors((p) => ({ ...p, [key]: err }));
+    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    setSaving(null);
+  };
+
+  const ImageField = ({ label, contentKey }: { label: string; contentKey: string }) => (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {sc[contentKey] && (
+        <img src={sc[contentKey]} alt="" className="h-28 w-full rounded border border-gold/20 object-cover" />
+      )}
+      <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+        <input type="file" accept="image/*" className="hidden" disabled={saving === contentKey}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadImage(contentKey, f); }} />
+        {saving === contentKey ? "Uploading..." : sc[contentKey] ? "Replace image" : "Upload image"}
+      </label>
+      {errors[contentKey] && <p className="text-xs text-red-600">{errors[contentKey]}</p>}
+      {saved === contentKey && <p className="text-xs text-green-700">Saved!</p>}
+    </div>
+  );
+
+  const TextField = ({ label, contentKey, rows = 1, dir }: { label: string; contentKey: string; rows?: number; dir?: string }) => (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {rows > 1 ? (
+        <Textarea rows={rows} dir={dir} value={fields[contentKey as keyof typeof fields]}
+          onChange={(e) => setFields((p) => ({ ...p, [contentKey]: e.target.value }))}
+          className={dir === "rtl" ? "font-arabic" : ""} />
+      ) : (
+        <Input dir={dir} value={fields[contentKey as keyof typeof fields]}
+          onChange={(e) => setFields((p) => ({ ...p, [contentKey]: e.target.value }))}
+          className={dir === "rtl" ? "font-arabic" : ""} />
+      )}
+      <Button size="sm" disabled={saving === contentKey}
+        onClick={() => void save(contentKey, fields[contentKey as keyof typeof fields])}>
+        {saving === contentKey ? "Saving..." : saved === contentKey ? "Saved!" : "Save"}
+      </Button>
+      {errors[contentKey] && <p className="text-xs text-red-600">{errors[contentKey]}</p>}
+    </div>
+  );
+
+  return (
+    <div className="space-y-8">
+      {/* Hero */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Hero Section</h2>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <ImageField label="Background Image" contentKey="hero_image_url" />
+          </div>
+          <TextField label="Tagline (English)" contentKey="hero_tagline_en" />
+          <TextField label="Tagline (Arabic)" contentKey="hero_tagline_ar" dir="rtl" />
+        </div>
+      </div>
+
+      {/* Origin */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Origin Section</h2>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <ImageField label="Section Photo" contentKey="origin_image_url" />
+          </div>
+          <TextField label="Paragraph 1 (English)" contentKey="origin_p1_en" rows={4} />
+          <TextField label="Paragraph 1 (Arabic)" contentKey="origin_p1_ar" rows={4} dir="rtl" />
+          <TextField label="Paragraph 2 (English)" contentKey="origin_p2_en" rows={4} />
+          <TextField label="Paragraph 2 (Arabic)" contentKey="origin_p2_ar" rows={4} dir="rtl" />
+        </div>
+      </div>
+
+      {/* Business card images */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Business Card Images</h2>
+        <p className="mt-1 text-sm text-navy/60">One image per card (6 cards total).</p>
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <ImageField key={i} label={`Card ${i + 1}`} contentKey={`business_image_${i}`} />
+          ))}
+        </div>
       </div>
     </div>
   );

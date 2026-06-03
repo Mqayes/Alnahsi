@@ -1,15 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
+import { useSiteContent } from "@/lib/site-content";
 import hero from "@/assets/hero-heritage.jpg";
 
 export function Hero() {
   const { lang } = useLang();
+  const sc = useSiteContent();
+  const heroSrc = sc["hero_image_url"] || hero;
+  const tagline = lang === "en"
+    ? (sc["hero_tagline_en"] || t(translations.hero.tagline, "en"))
+    : (sc["hero_tagline_ar"] || t(translations.hero.tagline, "ar"));
   return (
     <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
-          src={hero}
+          src={heroSrc}
           alt=""
           width={1920}
           height={1280}
@@ -46,7 +52,7 @@ export function Hero() {
         </div>
 
         <p className="mx-auto mt-6 max-w-2xl animate-fade-up delay-600 font-serif-display text-xl italic text-cream/90 md:text-2xl">
-          {t(translations.hero.tagline, lang)}
+          {tagline}
         </p>
 
         <div className="mt-12 flex flex-wrap items-center justify-center gap-4 animate-fade-up delay-800">

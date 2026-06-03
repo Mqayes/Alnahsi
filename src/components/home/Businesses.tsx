@@ -2,14 +2,16 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
+import { useSiteContent } from "@/lib/site-content";
 import b1 from "@/assets/business-1.jpg";
 import b2 from "@/assets/business-2.jpg";
 import b3 from "@/assets/business-3.jpg";
 
-const images = [b1, b2, b3, b1, b2, b3];
+const staticImages = [b1, b2, b3, b1, b2, b3];
 
 export function Businesses() {
   const { lang } = useLang();
+  const sc = useSiteContent();
   const c = translations.businesses;
   return (
     <section className="py-28 md:py-36">
@@ -28,7 +30,7 @@ export function Businesses() {
               <article key={card.year + i} className="heritage-card group flex h-full flex-col overflow-hidden">
                 <div className="relative aspect-[5/4] overflow-hidden">
                   <img
-                    src={images[i]}
+                    src={sc[`business_image_${i}`] || staticImages[i]}
                     alt=""
                     loading="lazy"
                     width={1200}
