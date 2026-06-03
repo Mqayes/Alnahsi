@@ -86,6 +86,12 @@ export type NewsPost = {
   created_at: string;
 };
 
+export type GalleryImage = {
+  name: string;
+  url: string;
+  created_at: string;
+};
+
 export type FamilyMember = {
   id: string;
   full_name_en: string;

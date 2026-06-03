@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Reveal } from "@/components/site/Reveal";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Ornament } from "@/components/site/Ornament";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import g1 from "@/assets/gallery-1.jpg";
 import g2 from "@/assets/gallery-2.jpg";
 import g3 from "@/assets/gallery-3.jpg";
@@ -27,11 +29,37 @@ export const Route = createFileRoute("/gallery")({
   component: GalleryPage,
 });
 
-const images = [g1, g2, g3, g4, h, album, b3, g1, g3];
+const staticImages = [g1, g2, g3, g4, h, album, b3];
 
 function GalleryPage() {
   const { lang } = useLang();
   const c = translations.gallery;
+  const [dynamicUrls, setDynamicUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    getSupabase()
+      .storage.from("gallery-images")
+      .list("gallery", { sortBy: { column: "created_at", order: "desc" } })
+      .then(({ data }) => {
+        if (!data) return;
+        const urls = data
+          .filter((f) => f.name !== ".emptyFolderPlaceholder")
+          .map(
+            (f) =>
+              getSupabase()
+                .storage.from("gallery-images")
+                .getPublicUrl(`gallery/${f.name}`).data.publicUrl,
+          );
+        setDynamicUrls(urls);
+      });
+  }, []);
+
+  const allImages: Array<{ src: string; dynamic: boolean }> = [
+    ...dynamicUrls.map((src) => ({ src, dynamic: true })),
+    ...staticImages.map((src) => ({ src, dynamic: false })),
+  ];
+
   return (
     <>
       <section className="bg-navy pt-44 pb-20 text-cream md:pt-52 md:pb-28">
@@ -46,7 +74,7 @@ function GalleryPage() {
       <section className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-6">
           <div className="columns-1 gap-6 sm:columns-2 lg:columns-3 [&>*]:mb-6">
-            {images.map((src, i) => (
+            {allImages.map(({ src }, i) => (
               <Reveal
                 key={i}
                 delay={i * 80}

@@ -10,7 +10,9 @@ import {
   isSupabaseConfigured,
   withTimeout,
   type FamilyMember,
+  type GalleryImage,
   type JoinRequest,
+  type NewsPost,
   type Profile,
 } from "@/lib/supabase";
 
@@ -156,7 +158,8 @@ function AdminPage() {
       <Tabs defaultValue="requests" className="mt-10">
         <TabsList className="h-auto flex-wrap gap-1 bg-navy/5 p-1">
           <TabsTrigger value="requests">Join Requests</TabsTrigger>
-          <TabsTrigger value="news">Post News</TabsTrigger>
+          <TabsTrigger value="news">News</TabsTrigger>
+          <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="members">Add Member</TabsTrigger>
           <TabsTrigger value="view-members">Family Members</TabsTrigger>
         </TabsList>
@@ -165,7 +168,10 @@ function AdminPage() {
           <JoinRequestsTab />
         </TabsContent>
         <TabsContent value="news" className="mt-6">
-          <PostNewsTab />
+          <NewsTab />
+        </TabsContent>
+        <TabsContent value="gallery" className="mt-6">
+          <GalleryTab />
         </TabsContent>
         <TabsContent value="members" className="mt-6">
           <AddMemberTab />
@@ -304,7 +310,7 @@ function JoinRequestsTab() {
   );
 }
 
-function PostNewsTab() {
+function NewsTab() {
   const [titleEn, setTitleEn] = useState("");
   const [titleAr, setTitleAr] = useState("");
   const [contentEn, setContentEn] = useState("");
@@ -317,26 +323,37 @@ function PostNewsTab() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const [posts, setPosts] = useState<NewsPost[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const loadPosts = useCallback(async () => {
+    setPostsLoading(true);
+    const { data } = await getSupabase()
+      .from("news_posts")
+      .select("id, title_en, title_ar, content_en, content_ar, created_at")
+      .order("created_at", { ascending: false });
+    setPosts((data ?? []) as NewsPost[]);
+    setPostsLoading(false);
+  }, []);
+
+  useEffect(() => { void loadPosts(); }, [loadPosts]);
+
   const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setUploadError("");
     setUploadLoading(true);
-
     const ext = file.name.split(".").pop();
     const path = `news/${Date.now()}.${ext}`;
-
     const { error: uploadErr } = await getSupabase()
       .storage.from("news-images")
       .upload(path, file, { upsert: true });
-
     if (uploadErr) {
       setUploadError(`Upload failed: ${uploadErr.message}`);
       setUploadLoading(false);
       return;
     }
-
     const { data } = getSupabase().storage.from("news-images").getPublicUrl(path);
     setCoverImage(data.publicUrl);
     setImagePreview(data.publicUrl);
@@ -348,7 +365,6 @@ function PostNewsTab() {
     setLoading(true);
     setMessage("");
     setError("");
-
     const { error: insertError } = await getSupabase().from("news_posts").insert({
       title_en: titleEn.trim(),
       title_ar: titleAr.trim(),
@@ -356,110 +372,183 @@ function PostNewsTab() {
       content_ar: contentAr.trim(),
       cover_image: coverImage || null,
     });
-
     if (insertError) {
       setError(insertError.message);
     } else {
       setMessage("News post published.");
-      setTitleEn("");
-      setTitleAr("");
-      setContentEn("");
-      setContentAr("");
-      setCoverImage("");
-      setImagePreview("");
+      setTitleEn(""); setTitleAr(""); setContentEn(""); setContentAr("");
+      setCoverImage(""); setImagePreview("");
+      void loadPosts();
     }
-
     setLoading(false);
+  };
+
+  const deletePost = async (id: string) => {
+    setDeletingId(id);
+    const { error: deleteError } = await getSupabase()
+      .from("news_posts")
+      .delete()
+      .eq("id", id);
+    if (!deleteError) {
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+    }
+    setDeletingId(null);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Post news</h2>
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="title-en">Title (English)</Label>
+              <Input id="title-en" required value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title-ar">Title (Arabic)</Label>
+              <Input id="title-ar" required value={titleAr} onChange={(e) => setTitleAr(e.target.value)} className="font-arabic" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="content-en">Content (English)</Label>
+            <Textarea id="content-en" required rows={5} value={contentEn} onChange={(e) => setContentEn(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="content-ar">Content (Arabic)</Label>
+            <Textarea id="content-ar" required rows={5} value={contentAr} onChange={(e) => setContentAr(e.target.value)} className="font-arabic" />
+          </div>
+          <div className="space-y-2">
+            <Label>Cover Image (optional)</Label>
+            <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+              <input type="file" accept="image/*" className="hidden" onChange={handleImagePick} disabled={uploadLoading} />
+              {uploadLoading ? "Uploading..." : "Choose image from device"}
+            </label>
+            {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+            {imagePreview && (
+              <div className="relative mt-2 inline-block">
+                <img src={imagePreview} alt="Preview" className="max-h-40 rounded border border-gold/20 object-cover" />
+                <button type="button" onClick={() => { setCoverImage(""); setImagePreview(""); }} className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600">×</button>
+              </div>
+            )}
+          </div>
+          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
+          {message && <p className="text-sm text-green-700">{message}</p>}
+          <Button type="submit" disabled={loading}>{loading ? "Publishing..." : "Publish"}</Button>
+        </form>
+      </div>
+
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Published posts</h2>
+        {postsLoading && <p className="mt-4 text-navy/60">Loading...</p>}
+        {!postsLoading && posts.length === 0 && <p className="mt-4 text-navy/60">No news posts yet.</p>}
+        <ul className="mt-4 space-y-3">
+          {posts.map((post) => (
+            <li key={post.id} className="flex items-start justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3">
+              <div>
+                <p className="font-medium text-navy">{post.title_en}</p>
+                <p className="font-arabic text-sm text-navy/60">{post.title_ar}</p>
+                <p className="mt-1 text-xs text-navy/40">{new Date(post.created_at).toLocaleDateString()}</p>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
+                disabled={deletingId === post.id}
+                onClick={() => void deletePost(post.id)}
+              >
+                {deletingId === post.id ? "Deleting..." : "Delete"}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function GalleryTab() {
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [deletingName, setDeletingName] = useState<string | null>(null);
+
+  const loadImages = useCallback(async () => {
+    setLoading(true);
+    const { data } = await getSupabase().storage.from("gallery-images").list("gallery", {
+      sortBy: { column: "created_at", order: "desc" },
+    });
+    if (data) {
+      const imgs = data
+        .filter((f) => f.name !== ".emptyFolderPlaceholder")
+        .map((f) => ({
+          name: f.name,
+          url: getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data.publicUrl,
+          created_at: f.created_at ?? "",
+        }));
+      setImages(imgs);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void loadImages(); }, [loadImages]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setUploadError("");
+    setUploading(true);
+    for (const file of files) {
+      const ext = file.name.split(".").pop();
+      const path = `gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await getSupabase().storage.from("gallery-images").upload(path, file, { upsert: true });
+      if (error) { setUploadError(`Upload failed: ${error.message}`); break; }
+    }
+    setUploading(false);
+    e.target.value = "";
+    void loadImages();
+  };
+
+  const deleteImage = async (name: string) => {
+    setDeletingName(name);
+    await getSupabase().storage.from("gallery-images").remove([`gallery/${name}`]);
+    setImages((prev) => prev.filter((img) => img.name !== name));
+    setDeletingName(null);
   };
 
   return (
     <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
-      <h2 className="font-serif-display text-2xl text-navy">Post news</h2>
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="title-en">Title (English)</Label>
-            <Input
-              id="title-en"
-              required
-              value={titleEn}
-              onChange={(e) => setTitleEn(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="title-ar">Title (Arabic)</Label>
-            <Input
-              id="title-ar"
-              required
-              value={titleAr}
-              onChange={(e) => setTitleAr(e.target.value)}
-              className="font-arabic"
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="content-en">Content (English)</Label>
-          <Textarea
-            id="content-en"
-            required
-            rows={5}
-            value={contentEn}
-            onChange={(e) => setContentEn(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="content-ar">Content (Arabic)</Label>
-          <Textarea
-            id="content-ar"
-            required
-            rows={5}
-            value={contentAr}
-            onChange={(e) => setContentAr(e.target.value)}
-            className="font-arabic"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Cover Image (optional)</Label>
-          <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImagePick}
-              disabled={uploadLoading}
-            />
-            {uploadLoading ? "Uploading..." : "Choose image from device"}
-          </label>
-          {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
-          {imagePreview && (
-            <div className="relative mt-2 inline-block">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="max-h-40 rounded border border-gold/20 object-cover"
-              />
-              <button
-                type="button"
-                onClick={() => { setCoverImage(""); setImagePreview(""); }}
-                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
-              >
-                ×
-              </button>
-            </div>
-          )}
-        </div>
+      <h2 className="font-serif-display text-2xl text-navy">Archive Gallery</h2>
+      <p className="mt-1 text-sm text-navy/60">Images uploaded here appear on the public Archive page.</p>
 
-        {error && (
-          <p className="text-sm text-red-600" role="alert">
-            {error}
-          </p>
-        )}
-        {message && <p className="text-sm text-green-700">{message}</p>}
+      <div className="mt-6">
+        <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+          <input type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
+          {uploading ? "Uploading..." : "Choose photos to upload (multiple allowed)"}
+        </label>
+        {uploadError && <p className="mt-2 text-xs text-red-600">{uploadError}</p>}
+      </div>
 
-        <Button type="submit" disabled={loading}>
-          {loading ? "Publishing..." : "Publish"}
-        </Button>
-      </form>
+      {loading && <p className="mt-6 text-navy/60">Loading images...</p>}
+      {!loading && images.length === 0 && <p className="mt-6 text-navy/60">No images uploaded yet.</p>}
+
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {images.map((img) => (
+          <div key={img.name} className="group relative overflow-hidden rounded-lg border border-gold/20">
+            <img src={img.url} alt="" className="h-32 w-full object-cover" />
+            <button
+              onClick={() => void deleteImage(img.name)}
+              disabled={deletingName === img.name}
+              className="absolute inset-0 flex items-center justify-center bg-red-600/80 opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              <span className="rounded bg-white px-2 py-1 text-xs font-medium text-red-600">
+                {deletingName === img.name ? "Deleting..." : "Delete"}
+              </span>
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
