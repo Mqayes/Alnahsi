@@ -49,7 +49,7 @@ export function Header() {
             {t(translations.hero.nameAr, lang)}
           </span>
           <span className="hidden h-6 w-px bg-gold/40 md:block" />
-          <span className={`hidden font-serif-display text-sm uppercase tracking-[0.28em] ${textOnDark} md:block`}>
+          <span className={`hidden font-cinzel text-sm uppercase tracking-[0.28em] ${textOnDark} md:block`}>
             Alnahsi
           </span>
         </Link>
@@ -64,7 +64,7 @@ export function Header() {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`relative font-serif-display text-[13px] uppercase tracking-[0.22em] transition-colors ${
+                className={`relative font-cinzel text-[13px] uppercase tracking-[0.22em] transition-colors ${
                   isActive
                     ? "text-gold"
                     : `${textOnDark} hover:text-gold`
@@ -84,7 +84,7 @@ export function Header() {
             type="button"
             onClick={() => toggle()}
             aria-label={lang === "en" ? "Switch to Arabic" : "Switch to English"}
-            className={`rounded-sm border border-gold/40 px-3 py-1.5 font-serif-display text-xs uppercase tracking-[0.2em] transition-all ${
+            className={`rounded-sm border border-gold/40 px-3 py-1.5 font-cinzel text-xs uppercase tracking-[0.2em] transition-all ${
               headerScrolled
                 ? "text-navy hover:bg-gold hover:text-navy"
                 : "text-cream bg-navy/10 hover:bg-navy hover:text-cream"
@@ -94,7 +94,7 @@ export function Header() {
           </button>
           <Link
             to="/portal"
-            className="hidden rounded-sm border border-navy/80 bg-navy px-4 py-1.5 font-serif-display text-xs uppercase tracking-[0.2em] text-cream transition-all hover:bg-gold hover:text-navy md:inline-block"
+            className="hidden rounded-sm border border-navy/80 bg-navy px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.2em] text-cream transition-all hover:bg-gold hover:text-navy md:inline-block"
           >
             {t(translations.nav.portal, lang)}
           </Link>
@@ -120,14 +120,14 @@ export function Header() {
               <Link
                 key={item.to}
                 to={item.to}
-                className="border-b border-border/60 py-3 font-serif-display text-sm uppercase tracking-[0.22em] text-navy"
+                className="border-b border-border/60 py-3 font-cinzel text-sm uppercase tracking-[0.22em] text-navy"
               >
                 {t(translations.nav[item.key], lang)}
               </Link>
             ))}
             <Link
               to="/portal"
-              className="mt-4 inline-block rounded-sm bg-navy px-4 py-3 text-center font-serif-display text-xs uppercase tracking-[0.22em] text-cream"
+              className="mt-4 inline-block rounded-sm bg-navy px-4 py-3 text-center font-cinzel text-xs uppercase tracking-[0.22em] text-cream"
             >
               {t(translations.nav.portal, lang)}
             </Link>

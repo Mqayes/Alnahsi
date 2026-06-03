@@ -60,8 +60,9 @@
   --color-terracotta: var(--terracotta);
   --color-ink: var(--ink);
   --color-sage: var(--sage);
-  --font-serif: "Playfair Display", "EB Garamond", serif;
-  --font-body: "Cormorant Garamond", "EB Garamond", serif;
+  --font-serif: "Cormorant", "Cormorant Garamond", serif;
+  --font-body: "Lora", "Cormorant Garamond", serif;
+  --font-display-caps: "Cinzel", serif;
   --font-arabic-display: "Amiri", serif;
   --font-arabic-body: "Tajawal", sans-serif;
 }
@@ -204,6 +205,9 @@
   .font-serif-display {
     font-family: var(--font-serif);
   }
+  .font-cinzel {
+    font-family: var(--font-display-caps);
+  }
 
   /* Decorative gold ornament divider */
   .ornament {
@@ -223,10 +227,10 @@
   }
 
   .eyebrow {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 0.875rem;
-    letter-spacing: 0.18em;
+    font-family: var(--font-display-caps);
+    font-style: normal;
+    font-size: 0.75rem;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--gold);
   }
