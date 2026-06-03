@@ -16,7 +16,7 @@ import {
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
-    meta: [{ title: "Admin — Alnahsi Family Portal" }],
+    meta: [{ title: "Admin — Al Bukhuf Alnahsi Family Portal" }],
   }),
   component: AdminPage,
 });

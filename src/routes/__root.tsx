@@ -80,14 +80,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "The House of Alnahsi — A Family Heritage" },
+      { title: "The House of Al Bukhuf Alnahsi — A Family Heritage" },
       {
         name: "description",
         content:
-          "The living digital archive of the Alnahsi family. A century of generations, values, and the businesses we built — told with warmth and dignity.",
+          "The living digital archive of the Al Bukhuf Alnahsi family. A century of generations, values, and the businesses we built — told with warmth and dignity.",
       },
-      { name: "author", content: "The Alnahsi Family" },
-      { property: "og:title", content: "The House of Alnahsi" },
+      { name: "author", content: "The Al Bukhuf Alnahsi Family" },
+      { property: "og:title", content: "The House of Al Bukhuf Alnahsi" },
       {
         property: "og:description",
         content: "A name built over generations.",

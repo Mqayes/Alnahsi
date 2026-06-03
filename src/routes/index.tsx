@@ -10,13 +10,13 @@ import { PortalCta } from "@/components/home/PortalCta";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "The House of Alnahsi — A name built over generations" },
+      { title: "The House of Al Bukhuf Alnahsi — A name built over generations" },
       {
         name: "description",
         content:
-          "The living heritage of the Alnahsi family — origin, generations, values, and the businesses we built. A digital home for our story.",
+          "The living heritage of the Al Bukhuf Alnahsi family — origin, generations, values, and the businesses we built. A digital home for our story.",
       },
-      { property: "og:title", content: "The House of Alnahsi" },
+      { property: "og:title", content: "The House of Al Bukhuf Alnahsi" },
       {
         property: "og:description",
         content: "A name built over generations.",

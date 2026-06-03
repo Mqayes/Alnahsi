@@ -8,13 +8,13 @@ import { Ornament } from "@/components/site/Ornament";
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Reach the Family — Alnahsi" },
+      { title: "Reach the Family — Al Bukhuf Alnahsi" },
       {
         name: "description",
         content:
-          "Correspondence and partnerships with the Alnahsi family office.",
+          "Correspondence and partnerships with the Al Bukhuf Alnahsi family office.",
       },
-      { property: "og:title", content: "Reach the Family — Alnahsi" },
+      { property: "og:title", content: "Reach the Family — Al Bukhuf Alnahsi" },
       { property: "og:description", content: "For correspondence and partnerships." },
     ],
   }),

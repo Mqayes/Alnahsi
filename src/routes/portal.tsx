@@ -8,9 +8,9 @@ import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
 export const Route = createFileRoute("/portal")({
   head: () => ({
     meta: [
-      { title: "Family Portal — Alnahsi" },
-      { name: "description", content: "Private portal for members of the Alnahsi family." },
-      { property: "og:title", content: "Family Portal — Alnahsi" },
+      { title: "Family Portal — Al Bukhuf Alnahsi" },
+      { name: "description", content: "Private portal for members of the Al Bukhuf Alnahsi family." },
+      { property: "og:title", content: "Family Portal — Al Bukhuf Alnahsi" },
       { property: "og:description", content: "Private — for family members." },
     ],
   }),

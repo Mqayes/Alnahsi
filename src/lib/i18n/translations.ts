@@ -11,8 +11,8 @@ export const translations = {
     portal: { en: "Family Portal", ar: "بوابة العائلة" },
   },
   hero: {
-    eyebrow: { en: "The House of Alnahsi", ar: "بيت آل النحسي" },
-    nameEn: { en: "Alnahsi", ar: "Alnahsi" },
+    eyebrow: { en: "The House of Al Bukhuf Alnahsi", ar: "بيت آل النحسي" },
+    nameEn: { en: "Al Bukhuf Alnahsi", ar: "Al Bukhuf Alnahsi" },
     nameAr: { en: "آل النحسي", ar: "آل النحسي" },
     tagline: {
       en: "A name built over generations.",
@@ -28,7 +28,7 @@ export const translations = {
       ar: "من قلب نجد، عائلةٌ متجذرةٌ في الكرامة.",
     },
     p1: {
-      en: "Our story begins in the high plateaus of central Arabia, where the name Alnahsi was first spoken under date palms and lamplight. For more than a century, our family has carried a quiet promise — that what is built with patience endures.",
+      en: "Our story begins in the high plateaus of central Arabia, where the name Al Bukhuf Alnahsi was first spoken under date palms and lamplight. For more than a century, our family has carried a quiet promise — that what is built with patience endures.",
       ar: "تبدأ قصتنا في هضاب نجد، حيث نُطق اسم آل النحسي لأول مرة تحت ظلال النخيل وضوء القناديل. لأكثر من قرن، حملت عائلتنا وعداً هادئاً — أن ما يُبنى بالصبر يبقى.",
     },
     p2: {
@@ -68,7 +68,7 @@ export const translations = {
         year: "1985",
         gen: { en: "Third Generation", ar: "الجيل الثالث" },
         text: {
-          en: "A new era. The family builds its first holding company and lays the foundations of the modern Alnahsi group.",
+          en: "A new era. The family builds its first holding company and lays the foundations of the modern Al Bukhuf Alnahsi group.",
           ar: "حقبةٌ جديدة. تؤسس العائلة شركتها القابضة الأولى وتضع أسس مجموعة آل النحسي الحديثة.",
         },
       },
@@ -95,7 +95,7 @@ export const translations = {
     cards: [
       {
         year: "1948",
-        name: { en: "Alnahsi Trading House", ar: "بيت آل النحسي للتجارة" },
+        name: { en: "Al Bukhuf Alnahsi Trading House", ar: "بيت آل النحسي للتجارة" },
         story: {
           en: "It began with a single shopfront on the old market street. Today it remains the heart of everything we do.",
           ar: "بدأ بمتجرٍ واحدٍ في السوق القديم. واليوم لا يزال قلب كل ما نقوم به.",
@@ -119,7 +119,7 @@ export const translations = {
       },
       {
         year: "1996",
-        name: { en: "Alnahsi Properties", ar: "آل النحسي العقارية" },
+        name: { en: "Al Bukhuf Alnahsi Properties", ar: "آل النحسي العقارية" },
         story: {
           en: "Building the kind of homes our grandmother would have called dignified — generous, quiet, lasting.",
           ar: "نبني بيوتاً كانت جدّتنا ستصفها بالكريمة — رحيبة، هادئة، باقية.",
@@ -135,7 +135,7 @@ export const translations = {
       },
       {
         year: "2018",
-        name: { en: "Alnahsi Ventures", ar: "آل النحسي للاستثمار" },
+        name: { en: "Al Bukhuf Alnahsi Ventures", ar: "آل النحسي للاستثمار" },
         story: {
           en: "Our youngest house. Where the fourth generation places the family’s confidence in tomorrow.",
           ar: "أحدث بيوتنا. حيث يضع الجيل الرابع ثقة العائلة في الغد.",
@@ -204,7 +204,7 @@ export const translations = {
   portalCta: {
     eyebrow: { en: "For the Family", ar: "للعائلة" },
     title: {
-      en: "Are you part of Alnahsi? This is your home.",
+      en: "Are you part of Al Bukhuf Alnahsi? This is your home.",
       ar: "هل أنت من آل النحسي؟ هذا بيتك.",
     },
     body: {
@@ -215,7 +215,7 @@ export const translations = {
     request: { en: "Request Access", ar: "اطلب الانضمام" },
   },
   footer: {
-    line1: { en: "The House of Alnahsi", ar: "بيت آل النحسي" },
+    line1: { en: "The House of Al Bukhuf Alnahsi", ar: "بيت آل النحسي" },
     line2: { en: "A family record, est. 1902.", ar: "سجلٌّ عائلي، منذ ١٩٠٢." },
     rights: { en: "All stories kept by the family.", ar: "جميع القصص محفوظة لدى العائلة." },
   },
@@ -229,7 +229,7 @@ export const translations = {
       {
         h: { en: "Before the Name", ar: "قبل الاسم" },
         p: {
-          en: "Long before our family became known by the name Alnahsi, our ancestors lived as keepers of the land — tending date palms, hosting travelers, and learning the small mercies of the desert. The Arabian peninsula of the late 1800s was a place of trade and tribe, of slow journeys and patient promises. Our story begins in that quiet.",
+          en: "Long before our family became known by the name Al Bukhuf Alnahsi, our ancestors lived as keepers of the land — tending date palms, hosting travelers, and learning the small mercies of the desert. The Arabian peninsula of the late 1800s was a place of trade and tribe, of slow journeys and patient promises. Our story begins in that quiet.",
           ar: "قبل أن يُعرف بيتنا باسم آل النحسي بزمنٍ طويل، عاش أجدادنا حُرّاساً للأرض — يرعون النخيل ويُكرمون الضيف ويتعلّمون رحمات الصحراء الصغيرة. كانت الجزيرة العربية في أواخر القرن التاسع عشر مكاناً للتجارة والقبيلة، للرحلات البطيئة والوعود الصبور. تبدأ قصتنا في ذلك الهدوء.",
         },
       },
@@ -272,7 +272,7 @@ export const translations = {
   portal: {
     title: { en: "Family Portal", ar: "بوابة العائلة" },
     sub: {
-      en: "Private — for members of the Alnahsi family.",
+      en: "Private — for members of the Al Bukhuf Alnahsi family.",
       ar: "خاصٌّ — لأفراد عائلة آل النحسي.",
     },
     email: { en: "Email", ar: "البريد الإلكتروني" },

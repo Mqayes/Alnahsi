@@ -9,13 +9,13 @@ import patriarch from "@/assets/patriarch.jpg";
 export const Route = createFileRoute("/our-story")({
   head: () => ({
     meta: [
-      { title: "Our Story — The House of Alnahsi" },
+      { title: "Our Story — The House of Al Bukhuf Alnahsi" },
       {
         name: "description",
         content:
-          "The long-form story of the Alnahsi family — from a single household in old Riyadh to four generations across continents.",
+          "The long-form story of the Al Bukhuf Alnahsi family — from a single household in old Riyadh to four generations across continents.",
       },
-      { property: "og:title", content: "Our Story — The House of Alnahsi" },
+      { property: "og:title", content: "Our Story — The House of Al Bukhuf Alnahsi" },
       { property: "og:description", content: "How a single household became a name." },
     ],
   }),

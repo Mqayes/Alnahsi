@@ -9,13 +9,13 @@ import { fetchNews, type NewsItem } from "@/lib/news";
 export const Route = createFileRoute("/news")({
   head: () => ({
     meta: [
-      { title: "News & Announcements — Alnahsi" },
+      { title: "News & Announcements — Al Bukhuf Alnahsi" },
       {
         name: "description",
         content:
-          "Family announcements, achievements, and important milestones from the Alnahsi family.",
+          "Family announcements, achievements, and important milestones from the Al Bukhuf Alnahsi family.",
       },
-      { property: "og:title", content: "News & Announcements — Alnahsi" },
+      { property: "og:title", content: "News & Announcements — Al Bukhuf Alnahsi" },
       { property: "og:description", content: "Family news and announcements." },
     ],
   }),

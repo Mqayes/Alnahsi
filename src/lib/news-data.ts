@@ -16,7 +16,7 @@ export const fallbackNews: NewsItem[] = [
     title_en: "Scholarship Program Launches",
     title_ar: "إطلاق برنامج المنح الدراسية",
     content_en:
-      "The Alnahsi Family Foundation is proud to announce a scholarship program for outstanding students in engineering, medicine, and business.",
+      "The Al Bukhuf Alnahsi Family Foundation is proud to announce a scholarship program for outstanding students in engineering, medicine, and business.",
     content_ar:
       "يسعد وقف عائلة آل النحسي أن يعلن عن برنامج منح دراسية للطلاب المتميزين في الهندسة والطب وإدارة الأعمال.",
   },

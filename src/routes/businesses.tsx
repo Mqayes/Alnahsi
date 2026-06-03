@@ -6,13 +6,13 @@ import { Ornament } from "@/components/site/Ornament";
 export const Route = createFileRoute("/businesses")({
   head: () => ({
     meta: [
-      { title: "The Legacy We Built — Alnahsi" },
+      { title: "The Legacy We Built — Al Bukhuf Alnahsi" },
       {
         name: "description",
         content:
           "The houses our family built across a century — trade, hospitality, logistics, property, and the family foundation.",
       },
-      { property: "og:title", content: "The Legacy We Built — Alnahsi" },
+      { property: "og:title", content: "The Legacy We Built — Al Bukhuf Alnahsi" },
       { property: "og:description", content: "Six houses, one name." },
     ],
   }),

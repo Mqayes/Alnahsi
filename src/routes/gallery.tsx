@@ -14,13 +14,13 @@ import b3 from "@/assets/business-3.jpg";
 export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
-      { title: "The Archive — Alnahsi Family Heritage" },
+      { title: "The Archive — Al Bukhuf Alnahsi Family Heritage" },
       {
         name: "description",
         content:
-          "A curated public selection from the Alnahsi family archive. The full albums are reserved for family members.",
+          "A curated public selection from the Al Bukhuf Alnahsi family archive. The full albums are reserved for family members.",
       },
-      { property: "og:title", content: "The Archive — Alnahsi" },
+      { property: "og:title", content: "The Archive — Al Bukhuf Alnahsi" },
       { property: "og:description", content: "Fragments of a long memory." },
     ],
   }),

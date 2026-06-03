@@ -50,7 +50,7 @@ export function Header() {
           </span>
           <span className="hidden h-6 w-px bg-gold/40 md:block" />
           <span className={`hidden font-cinzel text-sm uppercase tracking-[0.28em] ${textOnDark} md:block`}>
-            Alnahsi
+            Al Bukhuf Alnahsi
           </span>
         </Link>
 
