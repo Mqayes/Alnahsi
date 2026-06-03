@@ -1,8 +1,7 @@
 import { execSync } from 'child_process'
-import { mkdirSync, writeFileSync, rmSync, readdirSync } from 'fs'
+import { mkdirSync, writeFileSync, rmSync, cpSync } from 'fs'
 import { build } from 'esbuild'
 import { resolve } from 'path'
-import { cpSync } from 'fs'
 
 // 1. Build the app (produces dist/client/ and dist/server/)
 console.log('Building app...')
@@ -16,32 +15,27 @@ mkdirSync('.vercel/output/static', { recursive: true })
 // 3. Static assets served directly by Vercel CDN
 cpSync('dist/client', '.vercel/output/static', { recursive: true })
 
-// 4. Bundle server + all node_modules dependencies into a single self-contained file.
-//    The Vite SSR build externalises npm packages so we re-bundle here from the
-//    project root (where node_modules lives) so esbuild can resolve everything.
+// 4. Bundle server + all node_modules into a single self-contained CJS file.
+//    CJS format avoids the "Dynamic require" error that ESM bundles produce
+//    when packages internally use require().
 console.log('Bundling server for Vercel...')
 await build({
   entryPoints: [resolve('dist/server/server.js')],
   bundle: true,
   platform: 'node',
-  format: 'esm',
-  outfile: '.vercel/output/functions/index.func/server.bundle.js',
-  // Only keep true Node.js built-ins external — everything else gets inlined
+  format: 'cjs',
+  outfile: '.vercel/output/functions/index.func/server.bundle.cjs',
   external: ['node:*', 'fsevents'],
-  // Silence warnings about optional peer deps
   logLevel: 'error',
-  // Allow resolving node_modules from project root
   absWorkingDir: process.cwd(),
 })
 
-// 5. ESM package marker
-writeFileSync('.vercel/output/functions/index.func/package.json', JSON.stringify({ type: 'module' }))
-
-// 6. Vercel function entry — adapts Web Standard fetch handler to Node.js req/res
+// 5. Vercel function entry (CJS) — adapts Web Standard fetch handler to Node.js req/res
 writeFileSync('.vercel/output/functions/index.func/index.js', `
-import server from './server.bundle.js'
+const bundle = require('./server.bundle.cjs')
+const server = bundle.default || bundle
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const proto = req.headers['x-forwarded-proto'] || 'https'
   const host = req.headers['host'] || 'localhost'
   const url = new URL(req.url, proto + '://' + host)
@@ -66,14 +60,14 @@ export default async function handler(req, res) {
 }
 `.trim())
 
-// 7. Vercel function metadata
+// 6. Vercel function metadata
 writeFileSync('.vercel/output/functions/index.func/.vc-config.json', JSON.stringify({
   runtime: 'nodejs22.x',
   handler: 'index.js',
   launcherType: 'Nodejs'
 }, null, 2))
 
-// 8. Routing: static files first, then SSR function for everything else
+// 7. Routing: static files first, then SSR function for everything else
 writeFileSync('.vercel/output/config.json', JSON.stringify({
   version: 3,
   routes: [
