@@ -70,7 +70,7 @@ export type Profile = {
 
 export type JoinRequest = {
   id: string;
-  full_name: string;
+  full_name_en: string;
   email: string;
   message?: string | null;
   status: "pending" | "approved" | "rejected";
@@ -88,8 +88,13 @@ export type NewsPost = {
 
 export type FamilyMember = {
   id: string;
-  full_name: string;
-  email?: string | null;
-  relationship?: string | null;
+  full_name_en: string;
+  full_name_ar?: string | null;
+  birth_year?: number | null;
+  death_year?: number | null;
+  relation?: string | null;
+  bio_en?: string | null;
+  bio_ar?: string | null;
+  photo_url?: string | null;
   created_at: string;
 };

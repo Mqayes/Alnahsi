@@ -111,13 +111,17 @@ function PortalPage() {
     }
 
     const { error } = await getSupabase().from("join_requests").insert({
-      full_name: reqName,
+      full_name_en: reqName,
       email: reqEmail,
       message: reqMessage ? `${reqRelation ? `Relation: ${reqRelation}\n\n` : ""}${reqMessage}` : reqRelation || null,
       status: "pending",
     });
     if (error) {
-      setReqError('Something went wrong. Please try again.')
+      if (error.code === '23505') {
+        setReqError(lang === 'en' ? 'A request with this email has already been submitted.' : 'تم إرسال طلب بهذا البريد الإلكتروني من قبل.')
+      } else {
+        setReqError(lang === 'en' ? 'Something went wrong. Please try again.' : 'حدث خطأ. حاول مرة أخرى.')
+      }
       console.error(error)
     } else {
       setReqSuccess(true)

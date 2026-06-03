@@ -158,6 +158,7 @@ function AdminPage() {
           <TabsTrigger value="requests">Join Requests</TabsTrigger>
           <TabsTrigger value="news">Post News</TabsTrigger>
           <TabsTrigger value="members">Add Member</TabsTrigger>
+          <TabsTrigger value="view-members">Family Members</TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests" className="mt-6">
@@ -168,6 +169,9 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="members" className="mt-6">
           <AddMemberTab />
+        </TabsContent>
+        <TabsContent value="view-members" className="mt-6">
+          <FamilyMembersTab />
         </TabsContent>
       </Tabs>
     </section>
@@ -186,7 +190,7 @@ function JoinRequestsTab() {
 
     const { data, error: fetchError } = await getSupabase()
       .from("join_requests")
-      .select("id, full_name, email, message, status, created_at")
+      .select("id, full_name_en, email, message, status, created_at")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 
@@ -207,6 +211,27 @@ function JoinRequestsTab() {
   const updateStatus = async (id: string, status: "approved" | "rejected") => {
     setActionId(id);
     setError("");
+
+    const request = requests.find((r) => r.id === id);
+
+    if (status === "approved" && request) {
+      // Parse relation out of message (stored as "Relation: ...\n\nOptional message")
+      let relationship: string | null = null;
+      if (request.message?.startsWith("Relation: ")) {
+        relationship = request.message.split("\n")[0].replace("Relation: ", "").trim() || null;
+      }
+
+      const { error: memberError } = await getSupabase().from("family_members").insert({
+        full_name_en: request.full_name_en,
+        relation: relationship,
+      });
+
+      if (memberError) {
+        setError(`Could not add to family members: ${memberError.message}`);
+        setActionId(null);
+        return;
+      }
+    }
 
     const { error: updateError } = await getSupabase()
       .from("join_requests")
@@ -245,7 +270,7 @@ function JoinRequestsTab() {
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="font-medium text-navy">{request.full_name}</p>
+                <p className="font-medium text-navy">{request.full_name_en}</p>
                 <p className="text-sm text-navy/70">{request.email}</p>
                 {request.message && (
                   <p className="mt-2 text-sm italic text-navy/60">{request.message}</p>
@@ -284,9 +309,39 @@ function PostNewsTab() {
   const [titleAr, setTitleAr] = useState("");
   const [contentEn, setContentEn] = useState("");
   const [contentAr, setContentAr] = useState("");
+  const [coverImage, setCoverImage] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError("");
+    setUploadLoading(true);
+
+    const ext = file.name.split(".").pop();
+    const path = `news/${Date.now()}.${ext}`;
+
+    const { error: uploadErr } = await getSupabase()
+      .storage.from("news-images")
+      .upload(path, file, { upsert: true });
+
+    if (uploadErr) {
+      setUploadError(`Upload failed: ${uploadErr.message}`);
+      setUploadLoading(false);
+      return;
+    }
+
+    const { data } = getSupabase().storage.from("news-images").getPublicUrl(path);
+    setCoverImage(data.publicUrl);
+    setImagePreview(data.publicUrl);
+    setUploadLoading(false);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -299,6 +354,7 @@ function PostNewsTab() {
       title_ar: titleAr.trim(),
       content_en: contentEn.trim(),
       content_ar: contentAr.trim(),
+      cover_image: coverImage || null,
     });
 
     if (insertError) {
@@ -309,6 +365,8 @@ function PostNewsTab() {
       setTitleAr("");
       setContentEn("");
       setContentAr("");
+      setCoverImage("");
+      setImagePreview("");
     }
 
     setLoading(false);
@@ -360,6 +418,36 @@ function PostNewsTab() {
             className="font-arabic"
           />
         </div>
+        <div className="space-y-2">
+          <Label>Cover Image (optional)</Label>
+          <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImagePick}
+              disabled={uploadLoading}
+            />
+            {uploadLoading ? "Uploading..." : "Choose image from device"}
+          </label>
+          {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
+          {imagePreview && (
+            <div className="relative mt-2 inline-block">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="max-h-40 rounded border border-gold/20 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => { setCoverImage(""); setImagePreview(""); }}
+                className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
+              >
+                ×
+              </button>
+            </div>
+          )}
+        </div>
 
         {error && (
           <p className="text-sm text-red-600" role="alert">
@@ -378,7 +466,6 @@ function PostNewsTab() {
 
 function AddMemberTab() {
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
   const [relationship, setRelationship] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -391,9 +478,8 @@ function AddMemberTab() {
     setError("");
 
     const { error: insertError } = await getSupabase().from("family_members").insert({
-      full_name: fullName.trim(),
-      email: email.trim() || null,
-      relationship: relationship.trim() || null,
+      full_name_en: fullName.trim(),
+      relation: relationship.trim() || null,
     });
 
     if (insertError) {
@@ -401,7 +487,6 @@ function AddMemberTab() {
     } else {
       setMessage("Family member added.");
       setFullName("");
-      setEmail("");
       setRelationship("");
     }
 
@@ -419,15 +504,6 @@ function AddMemberTab() {
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="member-email">Email</Label>
-          <Input
-            id="member-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -451,6 +527,90 @@ function AddMemberTab() {
           {loading ? "Saving..." : "Add member"}
         </Button>
       </form>
+    </div>
+  );
+}
+
+function FamilyMembersTab() {
+  const [members, setMembers] = useState<FamilyMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadMembers = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    const { data, error: fetchError } = await getSupabase()
+      .from("family_members")
+      .select("id, full_name_en, full_name_ar, relation, birth_year, death_year, photo_url, created_at")
+      .order("created_at", { ascending: false });
+
+    if (fetchError) {
+      setError(fetchError.message);
+    } else {
+      setMembers((data ?? []) as FamilyMember[]);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { void loadMembers(); }, [loadMembers]);
+
+  const removeMember = async (id: string) => {
+    const { error: deleteError } = await getSupabase()
+      .from("family_members")
+      .delete()
+      .eq("id", id);
+    if (deleteError) {
+      setError(deleteError.message);
+    } else {
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+      <h2 className="font-serif-display text-2xl text-navy">
+        Family Members ({members.length})
+      </h2>
+
+      {loading && <p className="mt-4 text-navy/60">Loading...</p>}
+      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {!loading && !error && members.length === 0 && (
+        <p className="mt-4 text-navy/60">No family members registered yet.</p>
+      )}
+
+      <ul className="mt-6 space-y-3">
+        {members.map((member) => (
+          <li
+            key={member.id}
+            className="flex items-center justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3"
+          >
+            <div className="flex items-center gap-3">
+              {member.photo_url && (
+                <img src={member.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+              )}
+              <div>
+                <p className="font-medium text-navy">
+                  {member.full_name_en}
+                  {member.full_name_ar && <span className="ml-2 font-arabic text-navy/60">{member.full_name_ar}</span>}
+                </p>
+                <p className="text-sm text-navy/60">
+                  {member.relation && <span className="mr-2">{member.relation}</span>}
+                  {member.birth_year && <span className="mr-1">{member.birth_year}</span>}
+                  {member.death_year && <span>– {member.death_year}</span>}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-500 hover:bg-red-50 hover:text-red-700"
+              onClick={() => removeMember(member.id)}
+            >
+              Remove
+            </Button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -111,8 +111,15 @@ function NewsPage() {
                 delay={index * 100}
                 direction={index % 2 === 0 ? "left" : "right"}
               >
-                <article className="border border-gold/30 bg-cream p-8 md:p-10 hover:shadow-lg transition-shadow">
-                  <div className="flex-1">
+                <article className="border border-gold/30 bg-cream hover:shadow-lg transition-shadow">
+                  {item.cover_image && (
+                    <img
+                      src={item.cover_image}
+                      alt={lang === "en" ? item.title_en : item.title_ar}
+                      className="w-full max-h-72 object-cover"
+                    />
+                  )}
+                  <div className="p-8 md:p-10">
                     <time className="text-sm text-navy/60 font-body">
                       {formatDate(item.created_at)}
                     </time>

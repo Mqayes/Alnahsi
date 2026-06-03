@@ -49,6 +49,11 @@ function normalizeRow(row: RawNewsRow): NewsItem | null {
 
   if (!title_en && !title_ar && !content_en && !content_ar) return null;
 
+  const cover_image =
+    typeof row.cover_image === "string" && row.cover_image.trim()
+      ? row.cover_image.trim()
+      : null;
+
   return {
     id,
     created_at,
@@ -56,6 +61,7 @@ function normalizeRow(row: RawNewsRow): NewsItem | null {
     title_ar: title_ar || title_en || "إعلان",
     content_en: content_en || content_ar || "",
     content_ar: content_ar || content_en || "",
+    cover_image,
   };
 }
 
