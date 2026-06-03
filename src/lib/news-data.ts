@@ -18,7 +18,7 @@ export const fallbackNews: NewsItem[] = [
     content_en:
       "The Al Bukhuf Alnahsi Family Foundation is proud to announce a scholarship program for outstanding students in engineering, medicine, and business.",
     content_ar:
-      "يسعد وقف عائلة آل النحسي أن يعلن عن برنامج منح دراسية للطلاب المتميزين في الهندسة والطب وإدارة الأعمال.",
+      "يسعد وقف عائلة آل الناهسي أن يعلن عن برنامج منح دراسية للطلاب المتميزين في الهندسة والطب وإدارة الأعمال.",
   },
   {
     id: "fallback-2",
