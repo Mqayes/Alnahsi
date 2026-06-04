@@ -21,6 +21,7 @@ import originDefault from "@/assets/story-album.jpg";
 import b1Default from "@/assets/business-1.jpg";
 import b2Default from "@/assets/business-2.jpg";
 import b3Default from "@/assets/business-3.jpg";
+import patriarchDefault from "@/assets/patriarch.jpg";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -167,6 +168,7 @@ function AdminPage() {
           <TabsTrigger value="news">News</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="home">Home Content</TabsTrigger>
+          <TabsTrigger value="our-story">Our Story</TabsTrigger>
           <TabsTrigger value="members">Add Member</TabsTrigger>
           <TabsTrigger value="view-members">Family Members</TabsTrigger>
         </TabsList>
@@ -182,6 +184,9 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="home" className="mt-6">
           <HomeContentTab />
+        </TabsContent>
+        <TabsContent value="our-story" className="mt-6">
+          <OurStoryTab />
         </TabsContent>
         <TabsContent value="members" className="mt-6">
           <AddMemberTab />
@@ -473,6 +478,154 @@ function NewsTab() {
           ))}
         </ul>
       </div>
+    </div>
+  );
+}
+
+const STORY_SECTIONS = [
+  { label: "Before the Name", key: "story_s0" },
+  { label: "The First House",  key: "story_s1" },
+  { label: "Across Generations", key: "story_s2" },
+  { label: "What Remains",    key: "story_s3" },
+];
+
+function OurStoryTab() {
+  const sc = useSiteContent();
+  const [saving, setSaving] = useState<string | null>(null);
+  const [saved, setSaved]   = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  type FieldKey = string;
+  const allKeys: FieldKey[] = [
+    ...STORY_SECTIONS.flatMap((s) => [
+      `${s.key}_h_en`, `${s.key}_h_ar`,
+      `${s.key}_p_en`, `${s.key}_p_ar`,
+    ]),
+  ];
+
+  const [fields, setFields] = useState<Record<string, string>>(
+    Object.fromEntries(allKeys.map((k) => [k, ""]))
+  );
+
+  useEffect(() => {
+    setFields((prev) => {
+      const next = { ...prev };
+      for (const k of allKeys) {
+        if (sc[k] !== undefined) next[k] = sc[k];
+      }
+      return next;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sc]);
+
+  const save = async (key: string) => {
+    setSaving(key);
+    setErrors((p) => ({ ...p, [key]: "" }));
+    const err = await upsertSiteContent(key, fields[key]);
+    if (err) setErrors((p) => ({ ...p, [key]: err }));
+    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    setSaving(null);
+  };
+
+  const uploadPatriarch = async (file: File) => {
+    const key = "story_patriarch_image";
+    setSaving(key);
+    setErrors((p) => ({ ...p, [key]: "" }));
+    const ext = file.name.split(".").pop();
+    const path = `site/${key}-${Date.now()}.${ext}`;
+    const { error: upErr } = await getSupabase().storage.from("site-images").upload(path, file, { upsert: true });
+    if (upErr) { setErrors((p) => ({ ...p, [key]: upErr.message })); setSaving(null); return; }
+    const { data } = getSupabase().storage.from("site-images").getPublicUrl(path);
+    const err = await upsertSiteContent(key, data.publicUrl);
+    if (err) setErrors((p) => ({ ...p, [key]: err }));
+    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    setSaving(null);
+  };
+
+  const resetPatriarch = async () => {
+    const key = "story_patriarch_image";
+    setSaving(key);
+    const err = await deleteSiteContent(key);
+    if (err) setErrors((p) => ({ ...p, [key]: err }));
+    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    setSaving(null);
+  };
+
+  const patriarchKey = "story_patriarch_image";
+  const patriarchSrc = sc[patriarchKey] || patriarchDefault;
+  const isCustomPatriarch = Boolean(sc[patriarchKey]);
+
+  return (
+    <div className="space-y-8">
+      {/* Patriarch photo */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Patriarch Photo</h2>
+        <p className="mt-1 text-sm text-navy/60">The portrait shown beside the story text.</p>
+        <div className="mt-4 max-w-xs space-y-2">
+          <div className="relative">
+            <img src={patriarchSrc} alt="" className="h-48 w-full rounded border border-gold/20 object-cover object-top" />
+            <span className={`absolute left-2 top-2 rounded px-2 py-0.5 text-xs font-medium ${isCustomPatriarch ? "bg-gold text-navy" : "bg-navy/60 text-cream"}`}>
+              {isCustomPatriarch ? "Custom" : "Default"}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <label className="flex flex-1 cursor-pointer items-center gap-2 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-2.5 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+              <input type="file" accept="image/*" className="hidden" disabled={saving === patriarchKey}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadPatriarch(f); }} />
+              {saving === patriarchKey ? "Uploading..." : isCustomPatriarch ? "Replace" : "Upload"}
+            </label>
+            {isCustomPatriarch && (
+              <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-50 hover:text-red-700"
+                disabled={saving === patriarchKey} onClick={() => void resetPatriarch()}>
+                Reset
+              </Button>
+            )}
+          </div>
+          {errors[patriarchKey] && <p className="text-xs text-red-600">{errors[patriarchKey]}</p>}
+          {saved === patriarchKey && <p className="text-xs text-green-700">Saved!</p>}
+        </div>
+      </div>
+
+      {/* Story sections */}
+      {STORY_SECTIONS.map((section) => (
+        <div key={section.key} className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+          <h2 className="font-serif-display text-2xl text-navy">{section.label}</h2>
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            {/* Headings */}
+            {[
+              { label: "Heading (English)", fk: `${section.key}_h_en`, dir: "ltr" },
+              { label: "Heading (Arabic)",  fk: `${section.key}_h_ar`, dir: "rtl" },
+            ].map(({ label, fk, dir }) => (
+              <div key={fk} className="space-y-2">
+                <Label>{label}</Label>
+                <Input dir={dir} value={fields[fk] ?? ""} className={dir === "rtl" ? "font-arabic" : ""}
+                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))} />
+                <Button size="sm" disabled={saving === fk}
+                  onClick={() => void save(fk)}>
+                  {saving === fk ? "Saving..." : saved === fk ? "Saved!" : "Save"}
+                </Button>
+                {errors[fk] && <p className="text-xs text-red-600">{errors[fk]}</p>}
+              </div>
+            ))}
+            {/* Paragraphs */}
+            {[
+              { label: "Paragraph (English)", fk: `${section.key}_p_en`, dir: "ltr" },
+              { label: "Paragraph (Arabic)",  fk: `${section.key}_p_ar`, dir: "rtl" },
+            ].map(({ label, fk, dir }) => (
+              <div key={fk} className="space-y-2">
+                <Label>{label}</Label>
+                <Textarea rows={5} dir={dir} value={fields[fk] ?? ""} className={dir === "rtl" ? "font-arabic" : ""}
+                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))} />
+                <Button size="sm" disabled={saving === fk}
+                  onClick={() => void save(fk)}>
+                  {saving === fk ? "Saving..." : saved === fk ? "Saved!" : "Save"}
+                </Button>
+                {errors[fk] && <p className="text-xs text-red-600">{errors[fk]}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

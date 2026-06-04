@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
+import { useSiteContent } from "@/lib/site-content";
 import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
 import { Timeline } from "@/components/home/Timeline";
@@ -22,9 +23,15 @@ export const Route = createFileRoute("/our-story")({
   component: StoryPage,
 });
 
+const SECTION_KEYS = ["story_s0", "story_s1", "story_s2", "story_s3"];
+
 function StoryPage() {
   const { lang } = useLang();
+  const sc = useSiteContent();
   const c = translations.story;
+
+  const patriarchSrc = sc["story_patriarch_image"] || patriarch;
+
   return (
     <>
       <section className="relative bg-navy pt-44 pb-24 text-cream md:pt-52 md:pb-32">
@@ -42,7 +49,7 @@ function StoryPage() {
           <div className="relative lg:sticky lg:top-32">
             <div className="absolute -inset-2 border border-gold/40" />
             <img
-              src={patriarch}
+              src={patriarchSrc}
               alt=""
               loading="lazy"
               width={1000}
@@ -55,15 +62,24 @@ function StoryPage() {
           </div>
 
           <div className="space-y-16">
-            {c.sections.map((s, i) => (
-              <Reveal key={i} delay={i * 80}>
-                <article>
-                  <h2 className="text-3xl md:text-4xl">{t(s.h, lang)}</h2>
-                  <Ornament className="my-6 justify-start rtl:justify-end" />
-                  <p className="text-lg leading-relaxed text-foreground/85">{t(s.p, lang)}</p>
-                </article>
-              </Reveal>
-            ))}
+            {c.sections.map((s, i) => {
+              const sk = SECTION_KEYS[i];
+              const heading = lang === "en"
+                ? (sc[`${sk}_h_en`] || t(s.h, "en"))
+                : (sc[`${sk}_h_ar`] || t(s.h, "ar"));
+              const paragraph = lang === "en"
+                ? (sc[`${sk}_p_en`] || t(s.p, "en"))
+                : (sc[`${sk}_p_ar`] || t(s.p, "ar"));
+              return (
+                <Reveal key={i} delay={i * 80}>
+                  <article>
+                    <h2 className="text-3xl md:text-4xl">{heading}</h2>
+                    <Ornament className="my-6 justify-start rtl:justify-end" />
+                    <p className="text-lg leading-relaxed text-foreground/85">{paragraph}</p>
+                  </article>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>
