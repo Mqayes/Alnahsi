@@ -36,8 +36,7 @@ export async function upsertSiteContent(key: string, value: string): Promise<str
 export async function deleteSiteContent(key: string): Promise<string | null> {
   const { error } = await getSupabase()
     .from("site_content")
-    .delete()
-    .eq("key", key);
+    .upsert({ key, value: "" }, { onConflict: "key" });
   if (error) return error.message;
   invalidateSiteContent();
   return null;
