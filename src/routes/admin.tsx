@@ -332,6 +332,7 @@ function NewsTab() {
   const [contentAr, setContentAr] = useState("");
   const [coverImage, setCoverImage] = useState("");
   const [imagePreview, setImagePreview] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -346,7 +347,7 @@ function NewsTab() {
     setPostsLoading(true);
     const { data } = await getSupabase()
       .from("news_posts")
-      .select("id, title_en, title_ar, content_en, content_ar, created_at")
+      .select("id, title_en, title_ar, content_en, content_ar, created_at, is_private")
       .order("created_at", { ascending: false });
     setPosts((data ?? []) as NewsPost[]);
     setPostsLoading(false);
@@ -386,13 +387,14 @@ function NewsTab() {
       content_en: contentEn.trim(),
       content_ar: contentAr.trim(),
       cover_image: coverImage || null,
+      is_private: isPrivate,
     });
     if (insertError) {
       setError(insertError.message);
     } else {
       setMessage("News post published.");
       setTitleEn(""); setTitleAr(""); setContentEn(""); setContentAr("");
-      setCoverImage(""); setImagePreview("");
+      setCoverImage(""); setImagePreview(""); setIsPrivate(false);
       void loadPosts();
     }
     setLoading(false);
@@ -447,6 +449,12 @@ function NewsTab() {
               </div>
             )}
           </div>
+          <label className="flex cursor-pointer items-center gap-3">
+            <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="h-4 w-4 accent-gold" />
+            <span className="text-sm text-navy/70">
+              <span className="font-medium text-navy">Family only</span> — hidden from the public News page, visible only in the Family Portal
+            </span>
+          </label>
           {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
           {message && <p className="text-sm text-green-700">{message}</p>}
           <Button type="submit" disabled={loading}>{loading ? "Publishing..." : "Publish"}</Button>
@@ -461,7 +469,12 @@ function NewsTab() {
           {posts.map((post) => (
             <li key={post.id} className="flex items-start justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3">
               <div>
-                <p className="font-medium text-navy">{post.title_en}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-navy">{post.title_en}</p>
+                  {(post as NewsPost & { is_private?: boolean }).is_private && (
+                    <span className="rounded bg-gold/20 px-1.5 py-0.5 text-xs text-gold">Family Only</span>
+                  )}
+                </div>
                 <p className="font-arabic text-sm text-navy/60">{post.title_ar}</p>
                 <p className="mt-1 text-xs text-navy/40">{new Date(post.created_at).toLocaleDateString()}</p>
               </div>

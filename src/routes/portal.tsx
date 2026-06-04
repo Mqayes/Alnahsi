@@ -100,7 +100,13 @@ function PortalPage() {
         return;
       }
 
-      await navigate({ to: "/admin" });
+      const { data: profile } = await getSupabase()
+        .from("profiles")
+        .select("role")
+        .eq("id", data.session.user.id)
+        .maybeSingle();
+
+      await navigate({ to: profile?.role === "admin" ? "/admin" : "/family" });
     } catch (err) {
       setLoginError(
         err instanceof Error
