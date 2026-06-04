@@ -788,6 +788,31 @@ function HomeContentTab() {
         </div>
       </div>
 
+      {/* Legacy text */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Legacy Section Text</h2>
+        <p className="mt-1 text-sm text-navy/60">Section title, intro, and each card's name, story and year. Images are in the Business Card Images section above.</p>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <TextField label="Title (English)" contentKey="legacy_title_en" />
+          <TextField label="Title (Arabic)" contentKey="legacy_title_ar" dir="rtl" />
+          <TextField label="Intro (English)" contentKey="legacy_intro_en" rows={3} />
+          <TextField label="Intro (Arabic)" contentKey="legacy_intro_ar" rows={3} dir="rtl" />
+        </div>
+        {[0,1,2,3,4,5].map((i) => (
+          <div key={i} className="mt-6 border-t border-gold/15 pt-6">
+            <p className="mb-4 font-medium text-navy">Card {i + 1}</p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextField label="Year" contentKey={`legacy_card_${i}_year`} />
+              <div />
+              <TextField label="Name (English)" contentKey={`legacy_card_${i}_name_en`} />
+              <TextField label="Name (Arabic)" contentKey={`legacy_card_${i}_name_ar`} dir="rtl" />
+              <TextField label="Story (English)" contentKey={`legacy_card_${i}_story_en`} rows={3} />
+              <TextField label="Story (Arabic)" contentKey={`legacy_card_${i}_story_ar`} rows={3} dir="rtl" />
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Timeline */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Generations Timeline</h2>
