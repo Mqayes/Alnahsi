@@ -787,6 +787,34 @@ function HomeContentTab() {
           })}
         </div>
       </div>
+
+      {/* Timeline */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Generations Timeline</h2>
+        <p className="mt-1 text-sm text-navy/60">Section title and all four generation cards.</p>
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <TextField label="Section Title (English)" contentKey="timeline_title_en" />
+          <TextField label="Section Title (Arabic)" contentKey="timeline_title_ar" dir="rtl" />
+        </div>
+        {[
+          { label: "1st Generation", key: "timeline_0" },
+          { label: "2nd Generation", key: "timeline_1" },
+          { label: "3rd Generation", key: "timeline_2" },
+          { label: "4th Generation", key: "timeline_3" },
+        ].map(({ label, key }) => (
+          <div key={key} className="mt-6 border-t border-gold/15 pt-6">
+            <p className="mb-4 font-medium text-navy">{label}</p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <TextField label="Year / Era" contentKey={`${key}_year`} />
+              <div />
+              <TextField label="Generation Name (English)" contentKey={`${key}_gen_en`} />
+              <TextField label="Generation Name (Arabic)" contentKey={`${key}_gen_ar`} dir="rtl" />
+              <TextField label="Description (English)" contentKey={`${key}_text_en`} rows={3} />
+              <TextField label="Description (Arabic)" contentKey={`${key}_text_ar`} rows={3} dir="rtl" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
