@@ -28,6 +28,25 @@ function PortalPage() {
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
 
+  // Forgot password state
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
+  const [forgotError, setForgotError] = useState('')
+
+  const handleForgot = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setForgotLoading(true)
+    setForgotError('')
+    const { error } = await getSupabase().auth.resetPasswordForEmail(forgotEmail.trim(), {
+      redirectTo: `${window.location.origin}/portal`,
+    })
+    if (error) setForgotError(error.message)
+    else setForgotSent(true)
+    setForgotLoading(false)
+  }
+
   // Request access state
   const [showRequest, setShowRequest] = useState(false)
   const [reqName, setReqName] = useState('')
@@ -143,8 +162,38 @@ function PortalPage() {
           <p className="mt-3 text-sm italic text-cream/70">{t(c.sub, lang)}</p>
         </div>
 
+        {/* FORGOT PASSWORD FORM */}
+        {showForgot && (
+          <form onSubmit={handleForgot} className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm">
+            <h2 className="text-center text-lg uppercase tracking-[0.18em] text-gold mb-6">
+              {lang === 'en' ? 'Reset Password' : 'إعادة تعيين كلمة السر'}
+            </h2>
+            {forgotSent ? (
+              <p className="text-center text-sm text-cream/80">
+                {lang === 'en' ? 'Check your email for a reset link.' : 'تحقق من بريدك الإلكتروني للحصول على رابط إعادة التعيين.'}
+              </p>
+            ) : (
+              <>
+                <label className="block">
+                  <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">{lang === 'en' ? 'Email' : 'البريد الإلكتروني'}</span>
+                  <input type="email" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)}
+                    className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold" />
+                </label>
+                {forgotError && <p className="mt-3 text-sm text-red-400">{forgotError}</p>}
+                <button type="submit" disabled={forgotLoading} className="btn-gold mt-6 w-full justify-center disabled:opacity-50">
+                  {forgotLoading ? '...' : lang === 'en' ? 'Send Reset Link' : 'إرسال رابط الإعادة'}
+                </button>
+              </>
+            )}
+            <button type="button" onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail(''); }}
+              className="mt-4 w-full text-center text-xs text-cream/50 hover:text-cream">
+              {lang === 'en' ? '← Back to sign in' : '← العودة لتسجيل الدخول'}
+            </button>
+          </form>
+        )}
+
         {/* LOGIN FORM */}
-        {!showRequest && (
+        {!showRequest && !showForgot && (
           <form
             onSubmit={handleLogin}
             className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm"
@@ -186,9 +235,9 @@ function PortalPage() {
               {loginLoading ? '...' : t(c.signIn, lang)}
             </button>
             <div className="mt-6 flex items-center justify-between text-xs font-serif-display uppercase tracking-[0.18em]">
-              <a href="#" className="text-cream/60 hover:text-gold">
+              <button type="button" onClick={() => setShowForgot(true)} className="text-cream/60 hover:text-gold">
                 {t(c.forgot, lang)}
-              </a>
+              </button>
               <button
                 type="button"
                 onClick={() => setShowRequest(true)}
@@ -201,7 +250,7 @@ function PortalPage() {
         )}
 
         {/* REQUEST ACCESS FORM */}
-        {showRequest && !reqSuccess && (
+        {showRequest && !reqSuccess && !showForgot && (
           <form
             onSubmit={handleRequest}
             className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm"
