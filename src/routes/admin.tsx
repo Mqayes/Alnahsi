@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { inviteFamilyMember } from "@/lib/api/invite-member";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -236,7 +237,6 @@ function JoinRequestsTab() {
     const request = requests.find((r) => r.id === id);
 
     if (status === "approved" && request) {
-      // Parse relation out of message (stored as "Relation: ...\n\nOptional message")
       let relationship: string | null = null;
       if (request.message?.startsWith("Relation: ")) {
         relationship = request.message.split("\n")[0].replace("Relation: ", "").trim() || null;
@@ -249,6 +249,16 @@ function JoinRequestsTab() {
 
       if (memberError) {
         setError(`Could not add to family members: ${memberError.message}`);
+        setActionId(null);
+        return;
+      }
+
+      // Send invite email so they can actually log in
+      const invite = await inviteFamilyMember({
+        data: { email: request.email, fullName: request.full_name_en },
+      });
+      if (!invite.success) {
+        setError(`Member added but invite failed: ${invite.error ?? "unknown error"}. You can resend from the Family Members tab.`);
         setActionId(null);
         return;
       }
@@ -934,6 +944,7 @@ function GalleryTab() {
 
 function AddMemberTab() {
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [relationship, setRelationship] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -952,9 +963,21 @@ function AddMemberTab() {
 
     if (insertError) {
       setError(insertError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Send invite so they can log in
+    const invite = await inviteFamilyMember({
+      data: { email: email.trim(), fullName: fullName.trim() },
+    });
+
+    if (!invite.success) {
+      setError(`Member added but invite failed: ${invite.error ?? "unknown error"}`);
     } else {
-      setMessage("Family member added.");
+      setMessage(`Family member added. Invite email sent to ${email.trim()}.`);
       setFullName("");
+      setEmail("");
       setRelationship("");
     }
 
@@ -964,35 +987,26 @@ function AddMemberTab() {
   return (
     <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
       <h2 className="font-serif-display text-2xl text-navy">Add family member</h2>
+      <p className="mt-1 text-sm text-navy/60">An invite email will be sent so they can set their password and log in.</p>
       <form onSubmit={handleSubmit} className="mt-6 max-w-lg space-y-4">
         <div className="space-y-2">
           <Label htmlFor="member-name">Full name</Label>
-          <Input
-            id="member-name"
-            required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
+          <Input id="member-name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="member-email">Email address</Label>
+          <Input id="member-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="family@example.com" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="member-relationship">Relationship</Label>
-          <Input
-            id="member-relationship"
-            placeholder="e.g. cousin, aunt, son"
-            value={relationship}
-            onChange={(e) => setRelationship(e.target.value)}
-          />
+          <Input id="member-relationship" placeholder="e.g. cousin, aunt, son" value={relationship} onChange={(e) => setRelationship(e.target.value)} />
         </div>
 
-        {error && (
-          <p className="text-sm text-red-600" role="alert">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
         {message && <p className="text-sm text-green-700">{message}</p>}
 
         <Button type="submit" disabled={loading}>
-          {loading ? "Saving..." : "Add member"}
+          {loading ? "Sending invite..." : "Add member & send invite"}
         </Button>
       </form>
     </div>
