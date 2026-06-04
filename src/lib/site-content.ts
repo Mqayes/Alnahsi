@@ -47,15 +47,16 @@ export function useSiteContent(): SiteContent {
   const [content, setContent] = useState<SiteContent>(cache ?? {});
 
   useEffect(() => {
+    listeners.add(setContent);
     if (cache) {
       setContent(cache);
-      return;
+    } else {
+      loadContent().then((c) => {
+        cache = c;
+        setContent(c);
+        listeners.forEach((fn) => fn(c));
+      });
     }
-    loadContent().then((c) => {
-      cache = c;
-      setContent(c);
-    });
-    listeners.add(setContent);
     return () => { listeners.delete(setContent); };
   }, []);
 
