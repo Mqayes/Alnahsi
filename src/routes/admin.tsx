@@ -630,43 +630,85 @@ function OurStoryTab() {
   );
 }
 
+// Module-level so React never sees a new component type on re-render — fixes focus loss on keystroke
+function HCTextField({
+  label, contentKey, rows = 1, dir, initialValue, saving, saved, error, onSave,
+}: {
+  label: string; contentKey: string; rows?: number; dir?: string;
+  initialValue: string; saving: string | null; saved: string | null;
+  error?: string; onSave: (key: string, value: string) => void;
+}) {
+  const [value, setValue] = useState(initialValue);
+  useEffect(() => { if (initialValue) setValue(initialValue); }, [initialValue]);
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {rows > 1
+        ? <Textarea rows={rows} dir={dir} value={value} onChange={(e) => setValue(e.target.value)} className={dir === "rtl" ? "font-arabic" : ""} />
+        : <Input dir={dir} value={value} onChange={(e) => setValue(e.target.value)} className={dir === "rtl" ? "font-arabic" : ""} />
+      }
+      <Button size="sm" disabled={saving === contentKey} onClick={() => onSave(contentKey, value)}>
+        {saving === contentKey ? "Saving..." : saved === contentKey ? "Saved!" : "Save"}
+      </Button>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function HCImageField({
+  label, contentKey, defaultSrc, customSrc, saving, saved, error, onUpload, onReset,
+}: {
+  label: string; contentKey: string; defaultSrc?: string; customSrc?: string;
+  saving: string | null; saved: string | null; error?: string;
+  onUpload: (key: string, file: File) => void; onReset: (key: string) => void;
+}) {
+  const previewSrc = customSrc || defaultSrc;
+  const isCustom = Boolean(customSrc);
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {previewSrc && (
+        <div className="relative">
+          <img src={previewSrc} alt="" className="h-28 w-full rounded border border-gold/20 object-cover" />
+          {isCustom && <span className="absolute left-2 top-2 rounded bg-gold px-2 py-0.5 text-xs font-medium text-navy">Custom</span>}
+          {!isCustom && defaultSrc && <span className="absolute left-2 top-2 rounded bg-navy/60 px-2 py-0.5 text-xs text-cream">Default</span>}
+        </div>
+      )}
+      <div className="flex gap-2">
+        <label className="flex flex-1 cursor-pointer items-center gap-2 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-2.5 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+          <input type="file" accept="image/*" className="hidden" disabled={saving === contentKey}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(contentKey, f); }} />
+          {saving === contentKey ? "Uploading..." : isCustom ? "Replace" : "Upload"}
+        </label>
+        {isCustom && (
+          <Button type="button" size="sm" variant="ghost" className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
+            disabled={saving === contentKey} onClick={() => onReset(contentKey)}>
+            Reset
+          </Button>
+        )}
+      </div>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+      {saved === contentKey && <p className="text-xs text-green-700">{isCustom ? "Reset to default!" : "Saved!"}</p>}
+    </div>
+  );
+}
+
 function HomeContentTab() {
   const sc = useSiteContent();
   const [saving, setSaving] = useState<string | null>(null);
-  const [saved, setSaved] = useState<string | null>(null);
+  const [saved,  setSaved]  = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [fields, setFields] = useState({
-    hero_tagline_en: "",
-    hero_tagline_ar: "",
-    origin_p1_en: "",
-    origin_p1_ar: "",
-    origin_p2_en: "",
-    origin_p2_ar: "",
-  });
-
-  // Populate fields from loaded site content
-  useEffect(() => {
-    setFields((prev) => ({
-      hero_tagline_en: sc["hero_tagline_en"] ?? prev.hero_tagline_en,
-      hero_tagline_ar: sc["hero_tagline_ar"] ?? prev.hero_tagline_ar,
-      origin_p1_en: sc["origin_p1_en"] ?? prev.origin_p1_en,
-      origin_p1_ar: sc["origin_p1_ar"] ?? prev.origin_p1_ar,
-      origin_p2_en: sc["origin_p2_en"] ?? prev.origin_p2_en,
-      origin_p2_ar: sc["origin_p2_ar"] ?? prev.origin_p2_ar,
-    }));
-  }, [sc]);
-
-  const save = async (key: string, value: string) => {
+  const save = useCallback(async (key: string, value: string) => {
     setSaving(key);
     setErrors((p) => ({ ...p, [key]: "" }));
     const err = await upsertSiteContent(key, value);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
     else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
     setSaving(null);
-  };
+  }, []);
 
-  const uploadImage = async (key: string, file: File) => {
+  const uploadImage = useCallback(async (key: string, file: File) => {
     setSaving(key);
     setErrors((p) => ({ ...p, [key]: "" }));
     const ext = file.name.split(".").pop();
@@ -678,75 +720,29 @@ function HomeContentTab() {
     if (err) setErrors((p) => ({ ...p, [key]: err }));
     else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
     setSaving(null);
-  };
+  }, []);
 
-  const ImageField = ({ label, contentKey, defaultSrc }: { label: string; contentKey: string; defaultSrc?: string }) => {
-    const customSrc = sc[contentKey];
-    const previewSrc = customSrc || defaultSrc;
-    const isCustom = Boolean(customSrc);
+  const resetImage = useCallback(async (key: string) => {
+    setSaving(key);
+    const err = await deleteSiteContent(key);
+    if (err) setErrors((p) => ({ ...p, [key]: err }));
+    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    setSaving(null);
+  }, []);
 
-    const resetImage = async () => {
-      setSaving(contentKey);
-      const err = await deleteSiteContent(contentKey);
-      if (err) setErrors((p) => ({ ...p, [contentKey]: err }));
-      else { setSaved(contentKey); setTimeout(() => setSaved(null), 2000); }
-      setSaving(null);
-    };
-
-    return (
-      <div className="space-y-2">
-        <Label>{label}</Label>
-        {previewSrc && (
-          <div className="relative">
-            <img src={previewSrc} alt="" className="h-28 w-full rounded border border-gold/20 object-cover" />
-            {isCustom && (
-              <span className="absolute left-2 top-2 rounded bg-gold px-2 py-0.5 text-xs font-medium text-navy">Custom</span>
-            )}
-            {!isCustom && defaultSrc && (
-              <span className="absolute left-2 top-2 rounded bg-navy/60 px-2 py-0.5 text-xs text-cream">Default</span>
-            )}
-          </div>
-        )}
-        <div className="flex gap-2">
-          <label className="flex flex-1 cursor-pointer items-center gap-2 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-2.5 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
-            <input type="file" accept="image/*" className="hidden" disabled={saving === contentKey}
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadImage(contentKey, f); }} />
-            {saving === contentKey ? "Uploading..." : isCustom ? "Replace" : "Upload"}
-          </label>
-          {isCustom && (
-            <Button type="button" size="sm" variant="ghost"
-              className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
-              disabled={saving === contentKey}
-              onClick={() => void resetImage()}>
-              Reset
-            </Button>
-          )}
-        </div>
-        {errors[contentKey] && <p className="text-xs text-red-600">{errors[contentKey]}</p>}
-        {saved === contentKey && <p className="text-xs text-green-700">{isCustom ? "Reset to default!" : "Saved!"}</p>}
-      </div>
-    );
-  };
-
-  const TextField = ({ label, contentKey, rows = 1, dir }: { label: string; contentKey: string; rows?: number; dir?: string }) => (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      {rows > 1 ? (
-        <Textarea rows={rows} dir={dir} value={fields[contentKey as keyof typeof fields]}
-          onChange={(e) => setFields((p) => ({ ...p, [contentKey]: e.target.value }))}
-          className={dir === "rtl" ? "font-arabic" : ""} />
-      ) : (
-        <Input dir={dir} value={fields[contentKey as keyof typeof fields]}
-          onChange={(e) => setFields((p) => ({ ...p, [contentKey]: e.target.value }))}
-          className={dir === "rtl" ? "font-arabic" : ""} />
-      )}
-      <Button size="sm" disabled={saving === contentKey}
-        onClick={() => void save(contentKey, fields[contentKey as keyof typeof fields])}>
-        {saving === contentKey ? "Saving..." : saved === contentKey ? "Saved!" : "Save"}
-      </Button>
-      {errors[contentKey] && <p className="text-xs text-red-600">{errors[contentKey]}</p>}
-    </div>
+  const tf = (label: string, contentKey: string, rows = 1, dir?: string) => (
+    <HCTextField key={contentKey} label={label} contentKey={contentKey} rows={rows} dir={dir}
+      initialValue={sc[contentKey] ?? ""} saving={saving} saved={saved}
+      error={errors[contentKey]} onSave={save} />
   );
+
+  const imgf = (label: string, contentKey: string, defaultSrc?: string) => (
+    <HCImageField key={contentKey} label={label} contentKey={contentKey} defaultSrc={defaultSrc}
+      customSrc={sc[contentKey]} saving={saving} saved={saved}
+      error={errors[contentKey]} onUpload={uploadImage} onReset={resetImage} />
+  );
+
+  const businessDefaults = [b1Default, b2Default, b3Default, b1Default, b2Default, b3Default];
 
   return (
     <div className="space-y-8">
@@ -754,11 +750,9 @@ function HomeContentTab() {
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Hero Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <ImageField label="Background Image" contentKey="hero_image_url" defaultSrc={heroDefault} />
-          </div>
-          <TextField label="Tagline (English)" contentKey="hero_tagline_en" />
-          <TextField label="Tagline (Arabic)" contentKey="hero_tagline_ar" dir="rtl" />
+          <div className="md:col-span-2">{imgf("Background Image", "hero_image_url", heroDefault)}</div>
+          {tf("Tagline (English)", "hero_tagline_en")}
+          {tf("Tagline (Arabic)", "hero_tagline_ar", 1, "rtl")}
         </div>
       </div>
 
@@ -766,13 +760,11 @@ function HomeContentTab() {
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Origin Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="md:col-span-2">
-            <ImageField label="Section Photo" contentKey="origin_image_url" defaultSrc={originDefault} />
-          </div>
-          <TextField label="Paragraph 1 (English)" contentKey="origin_p1_en" rows={4} />
-          <TextField label="Paragraph 1 (Arabic)" contentKey="origin_p1_ar" rows={4} dir="rtl" />
-          <TextField label="Paragraph 2 (English)" contentKey="origin_p2_en" rows={4} />
-          <TextField label="Paragraph 2 (Arabic)" contentKey="origin_p2_ar" rows={4} dir="rtl" />
+          <div className="md:col-span-2">{imgf("Section Photo", "origin_image_url", originDefault)}</div>
+          {tf("Paragraph 1 (English)", "origin_p1_en", 4)}
+          {tf("Paragraph 1 (Arabic)", "origin_p1_ar", 4, "rtl")}
+          {tf("Paragraph 2 (English)", "origin_p2_en", 4)}
+          {tf("Paragraph 2 (Arabic)", "origin_p2_ar", 4, "rtl")}
         </div>
       </div>
 
@@ -781,33 +773,30 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Business Card Images</h2>
         <p className="mt-1 text-sm text-navy/60">One image per card (6 cards total).</p>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map((i) => {
-            const defaults = [b1Default, b2Default, b3Default, b1Default, b2Default, b3Default];
-            return <ImageField key={i} label={`Card ${i + 1}`} contentKey={`business_image_${i}`} defaultSrc={defaults[i]} />;
-          })}
+          {[0,1,2,3,4,5].map((i) => imgf(`Card ${i+1}`, `business_image_${i}`, businessDefaults[i]))}
         </div>
       </div>
 
       {/* Legacy text */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Legacy Section Text</h2>
-        <p className="mt-1 text-sm text-navy/60">Section title, intro, and each card's name, story and year. Images are in the Business Card Images section above.</p>
+        <p className="mt-1 text-sm text-navy/60">Section title, intro, and each card's name, story and year. Images are above.</p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <TextField label="Title (English)" contentKey="legacy_title_en" />
-          <TextField label="Title (Arabic)" contentKey="legacy_title_ar" dir="rtl" />
-          <TextField label="Intro (English)" contentKey="legacy_intro_en" rows={3} />
-          <TextField label="Intro (Arabic)" contentKey="legacy_intro_ar" rows={3} dir="rtl" />
+          {tf("Title (English)", "legacy_title_en")}
+          {tf("Title (Arabic)", "legacy_title_ar", 1, "rtl")}
+          {tf("Intro (English)", "legacy_intro_en", 3)}
+          {tf("Intro (Arabic)", "legacy_intro_ar", 3, "rtl")}
         </div>
         {[0,1,2,3,4,5].map((i) => (
           <div key={i} className="mt-6 border-t border-gold/15 pt-6">
-            <p className="mb-4 font-medium text-navy">Card {i + 1}</p>
+            <p className="mb-4 font-medium text-navy">Card {i+1}</p>
             <div className="grid gap-4 md:grid-cols-2">
-              <TextField label="Year" contentKey={`legacy_card_${i}_year`} />
+              {tf("Year", `legacy_card_${i}_year`)}
               <div />
-              <TextField label="Name (English)" contentKey={`legacy_card_${i}_name_en`} />
-              <TextField label="Name (Arabic)" contentKey={`legacy_card_${i}_name_ar`} dir="rtl" />
-              <TextField label="Story (English)" contentKey={`legacy_card_${i}_story_en`} rows={3} />
-              <TextField label="Story (Arabic)" contentKey={`legacy_card_${i}_story_ar`} rows={3} dir="rtl" />
+              {tf("Name (English)", `legacy_card_${i}_name_en`)}
+              {tf("Name (Arabic)", `legacy_card_${i}_name_ar`, 1, "rtl")}
+              {tf("Story (English)", `legacy_card_${i}_story_en`, 3)}
+              {tf("Story (Arabic)", `legacy_card_${i}_story_ar`, 3, "rtl")}
             </div>
           </div>
         ))}
@@ -818,8 +807,8 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Generations Timeline</h2>
         <p className="mt-1 text-sm text-navy/60">Section title and all four generation cards.</p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <TextField label="Section Title (English)" contentKey="timeline_title_en" />
-          <TextField label="Section Title (Arabic)" contentKey="timeline_title_ar" dir="rtl" />
+          {tf("Section Title (English)", "timeline_title_en")}
+          {tf("Section Title (Arabic)", "timeline_title_ar", 1, "rtl")}
         </div>
         {[
           { label: "1st Generation", key: "timeline_0" },
@@ -830,12 +819,12 @@ function HomeContentTab() {
           <div key={key} className="mt-6 border-t border-gold/15 pt-6">
             <p className="mb-4 font-medium text-navy">{label}</p>
             <div className="grid gap-4 md:grid-cols-2">
-              <TextField label="Year / Era" contentKey={`${key}_year`} />
+              {tf("Year / Era", `${key}_year`)}
               <div />
-              <TextField label="Generation Name (English)" contentKey={`${key}_gen_en`} />
-              <TextField label="Generation Name (Arabic)" contentKey={`${key}_gen_ar`} dir="rtl" />
-              <TextField label="Description (English)" contentKey={`${key}_text_en`} rows={3} />
-              <TextField label="Description (Arabic)" contentKey={`${key}_text_ar`} rows={3} dir="rtl" />
+              {tf("Generation Name (English)", `${key}_gen_en`)}
+              {tf("Generation Name (Arabic)", `${key}_gen_ar`, 1, "rtl")}
+              {tf("Description (English)", `${key}_text_en`, 3)}
+              {tf("Description (Arabic)", `${key}_text_ar`, 3, "rtl")}
             </div>
           </div>
         ))}
