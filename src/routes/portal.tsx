@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Ornament } from "@/components/site/Ornament";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
 
 export const Route = createFileRoute("/portal")({
@@ -27,6 +27,52 @@ function PortalPage() {
   const [password, setPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
+
+  // Set password state (invite / password reset flow)
+  const [showSetPassword, setShowSetPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [setPasswordLoading, setSetPasswordLoading] = useState(false)
+  const [setPasswordError, setSetPasswordError] = useState('')
+
+  // Detect invite / password-recovery token in the URL and wait for session
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const hash = window.location.hash;
+    const isInvite = hash.includes('type=invite');
+    const isRecovery = hash.includes('type=recovery');
+    if (!isInvite && !isRecovery) return;
+
+    // Listen for Supabase to finish exchanging the token
+    const { data: { subscription } } = getSupabase().auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
+        setShowSetPassword(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSetPassword = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setSetPasswordError(lang === 'en' ? 'Passwords do not match.' : 'كلمتا المرور غير متطابقتين.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setSetPasswordError(lang === 'en' ? 'Password must be at least 6 characters.' : 'يجب أن تكون كلمة المرور 6 أحرف على الأقل.');
+      return;
+    }
+    setSetPasswordLoading(true);
+    setSetPasswordError('');
+    const { error } = await getSupabase().auth.updateUser({ password: newPassword });
+    if (error) {
+      setSetPasswordError(error.message);
+      setSetPasswordLoading(false);
+      return;
+    }
+    // Navigate to family portal after setting password
+    void navigate({ to: '/family' });
+  };
 
   // Forgot password state
   const [showForgot, setShowForgot] = useState(false)
@@ -168,6 +214,54 @@ function PortalPage() {
           <p className="mt-3 text-sm italic text-cream/70">{t(c.sub, lang)}</p>
         </div>
 
+        {/* SET PASSWORD FORM — shown after clicking invite or reset link */}
+        {showSetPassword && (
+          <form onSubmit={handleSetPassword} className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm">
+            <h2 className="text-center text-lg uppercase tracking-[0.18em] text-gold mb-2">
+              {lang === 'en' ? 'Set Your Password' : 'تعيين كلمة المرور'}
+            </h2>
+            <p className="text-center text-xs text-cream/50 mb-6">
+              {lang === 'en' ? 'Choose a password to access the family portal.' : 'اختر كلمة مرور للوصول إلى بوابة العائلة.'}
+            </p>
+            <label className="block">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+                {lang === 'en' ? 'New Password' : 'كلمة المرور الجديدة'}
+              </span>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+              />
+            </label>
+            <label className="mt-5 block">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+                {lang === 'en' ? 'Confirm Password' : 'تأكيد كلمة المرور'}
+              </span>
+              <input
+                type="password"
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+              />
+            </label>
+            {setPasswordError && <p className="mt-3 text-sm text-red-400">{setPasswordError}</p>}
+            <button
+              type="submit"
+              disabled={setPasswordLoading}
+              className="btn-gold mt-8 w-full justify-center disabled:opacity-50"
+            >
+              {setPasswordLoading
+                ? (lang === 'en' ? 'Saving...' : 'جاري الحفظ...')
+                : (lang === 'en' ? 'Set Password & Enter' : 'تعيين كلمة المرور والدخول')}
+            </button>
+          </form>
+        )}
+
         {/* FORGOT PASSWORD FORM */}
         {showForgot && (
           <form onSubmit={handleForgot} className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm">
@@ -199,7 +293,7 @@ function PortalPage() {
         )}
 
         {/* LOGIN FORM */}
-        {!showRequest && !showForgot && (
+        {!showRequest && !showForgot && !showSetPassword && (
           <form
             onSubmit={handleLogin}
             className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm"

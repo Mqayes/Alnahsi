@@ -23,14 +23,28 @@ function FamilyPortal() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) { void navigate({ to: "/portal" }); return; }
-    getSupabase().auth.getSession().then(({ data: { session } }) => {
+
+    async function init(session: import("@supabase/supabase-js").Session | null) {
       if (!session) { void navigate({ to: "/portal" }); return; }
-      getSupabase().from("profiles").select("full_name, email, role").eq("id", session.user.id).maybeSingle()
-        .then(({ data: profile }) => {
-          if (profile?.role === "admin") { void navigate({ to: "/admin" }); return; }
-          setUserName(profile?.full_name || session.user.email || "");
-          setLoading(false);
-        });
+      const { data: profile } = await getSupabase()
+        .from("profiles").select("full_name, email, role")
+        .eq("id", session.user.id).maybeSingle();
+      if (profile?.role === "admin") { void navigate({ to: "/admin" }); return; }
+      setUserName(profile?.full_name || session.user.email || "");
+      setLoading(false);
+    }
+
+    // First check existing session
+    getSupabase().auth.getSession().then(({ data: { session } }) => {
+      if (session) { void init(session); return; }
+      // No session yet — wait for token from URL (invite/magic link)
+      const { data: { subscription } } = getSupabase().auth.onAuthStateChange((_event, session) => {
+        subscription.unsubscribe();
+        void init(session);
+      });
+      // Timeout: if no auth event in 3s, redirect to portal
+      const t = setTimeout(() => { subscription.unsubscribe(); void navigate({ to: "/portal" }); }, 3000);
+      return () => { clearTimeout(t); subscription.unsubscribe(); };
     });
   }, [navigate]);
 
