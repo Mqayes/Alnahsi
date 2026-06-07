@@ -102,5 +102,6 @@ export type FamilyMember = {
   bio_en?: string | null;
   bio_ar?: string | null;
   photo_url?: string | null;
+  email?: string | null;
   created_at: string;
 };

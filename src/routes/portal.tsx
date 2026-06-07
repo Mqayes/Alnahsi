@@ -207,7 +207,7 @@ function PortalPage() {
 
       <div className="mx-auto w-full max-w-md px-6">
         <div className="text-center">
-          <span className="font-arabic text-6xl text-gold">ال النحسي
+          <span className="font-arabic text-6xl text-gold">الناهسي
 </span>
           <Ornament className="mt-6" />
           <h1 className="mt-6 text-cream text-3xl md:text-4xl">{t(c.title, lang)}</h1>

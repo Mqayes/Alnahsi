@@ -13,6 +13,7 @@ import { Route as PortalRouteImport } from './routes/portal'
 import { Route as OurStoryRouteImport } from './routes/our-story'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as FamilyRouteImport } from './routes/family'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -36,6 +37,11 @@ const NewsRoute = NewsRouteImport.update({
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FamilyRoute = FamilyRouteImport.update({
+  id: '/family',
+  path: '/family',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/businesses': typeof BusinessesRoute
   '/contact': typeof ContactRoute
+  '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/businesses': typeof BusinessesRoute
   '/contact': typeof ContactRoute
+  '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/businesses': typeof BusinessesRoute
   '/contact': typeof ContactRoute
+  '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/businesses'
     | '/contact'
+    | '/family'
     | '/gallery'
     | '/news'
     | '/our-story'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/businesses'
     | '/contact'
+    | '/family'
     | '/gallery'
     | '/news'
     | '/our-story'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/businesses'
     | '/contact'
+    | '/family'
     | '/gallery'
     | '/news'
     | '/our-story'
@@ -128,6 +140,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   BusinessesRoute: typeof BusinessesRoute
   ContactRoute: typeof ContactRoute
+  FamilyRoute: typeof FamilyRoute
   GalleryRoute: typeof GalleryRoute
   NewsRoute: typeof NewsRoute
   OurStoryRoute: typeof OurStoryRoute
@@ -162,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/family': {
+      id: '/family'
+      path: '/family'
+      fullPath: '/family'
+      preLoaderRoute: typeof FamilyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -200,6 +220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   BusinessesRoute: BusinessesRoute,
   ContactRoute: ContactRoute,
+  FamilyRoute: FamilyRoute,
   GalleryRoute: GalleryRoute,
   NewsRoute: NewsRoute,
   OurStoryRoute: OurStoryRoute,

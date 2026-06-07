@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteFamilyMember } from "@/lib/api/invite-member";
+import { removeFamilyMember } from "@/lib/api/remove-member";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -245,6 +246,7 @@ function JoinRequestsTab() {
       const { error: memberError } = await getSupabase().from("family_members").insert({
         full_name_en: request.full_name_en,
         relation: relationship,
+        email: request.email,
       });
 
       if (memberError) {
@@ -959,6 +961,7 @@ function AddMemberTab() {
     const { error: insertError } = await getSupabase().from("family_members").insert({
       full_name_en: fullName.trim(),
       relation: relationship.trim() || null,
+      email: email.trim(),
     });
 
     if (insertError) {
@@ -1023,7 +1026,7 @@ function FamilyMembersTab() {
     setError("");
     const { data, error: fetchError } = await getSupabase()
       .from("family_members")
-      .select("id, full_name_en, full_name_ar, relation, birth_year, death_year, photo_url, created_at")
+      .select("id, full_name_en, full_name_ar, relation, birth_year, death_year, photo_url, email, created_at")
       .order("created_at", { ascending: false });
 
     if (fetchError) {
@@ -1036,13 +1039,10 @@ function FamilyMembersTab() {
 
   useEffect(() => { void loadMembers(); }, [loadMembers]);
 
-  const removeMember = async (id: string) => {
-    const { error: deleteError } = await getSupabase()
-      .from("family_members")
-      .delete()
-      .eq("id", id);
-    if (deleteError) {
-      setError(deleteError.message);
+  const removeMember = async (id: string, email?: string | null) => {
+    const result = await removeFamilyMember({ data: { memberId: id, email } });
+    if (!result.success) {
+      setError(result.error ?? "Failed to remove member.");
     } else {
       setMembers((prev) => prev.filter((m) => m.id !== id));
     }
@@ -1086,7 +1086,7 @@ function FamilyMembersTab() {
               variant="ghost"
               size="sm"
               className="text-red-500 hover:bg-red-50 hover:text-red-700"
-              onClick={() => removeMember(member.id)}
+              onClick={() => removeMember(member.id, member.email)}
             >
               Remove
             </Button>
