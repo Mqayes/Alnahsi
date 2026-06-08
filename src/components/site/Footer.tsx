@@ -1,27 +1,32 @@
 import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
+import { useSiteContent } from "@/lib/site-content";
 
 export function Footer() {
   const { lang } = useLang();
+  const sc = useSiteContent();
+  const nameAr = sc["site_name_ar"] || t(translations.hero.nameAr, lang);
+  const line1 = lang === "en" ? (sc["footer_line1_en"] || t(translations.footer.line1, "en")) : (sc["footer_line1_ar"] || t(translations.footer.line1, "ar"));
+  const line2 = lang === "en" ? (sc["footer_line2_en"] || t(translations.footer.line2, "en")) : (sc["footer_line2_ar"] || t(translations.footer.line2, "ar"));
+  const quote = lang === "en" ? (sc["footer_quote_en"] || "“A family is the first country a child knows.”") : (sc["footer_quote_ar"] || "«العائلة هي أول وطنٍ يعرفه الطفل.»");
+  const rights = lang === "en" ? (sc["footer_rights_en"] || t(translations.footer.rights, "en")) : (sc["footer_rights_ar"] || t(translations.footer.rights, "ar"));
   return (
     <footer className="border-t border-gold/20 bg-navy text-cream">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-3">
         <div>
-          <div className="font-arabic text-3xl text-gold">{t(translations.hero.nameAr, lang)}</div>
+          <div className="font-arabic text-3xl text-gold">{nameAr}</div>
           <div className="mt-2 font-serif-display text-sm uppercase tracking-[0.28em] text-cream/80">
-            {t(translations.footer.line1, lang)}
+            {line1}
           </div>
           <p className="mt-4 italic text-cream/60">
-            {t(translations.footer.line2, lang)}
+            {line2}
           </p>
         </div>
         <div className="md:text-center">
           <div className="ornament mb-4" />
           <p className="font-serif-display italic text-cream/70">
-            {lang === "en"
-              ? "“A family is the first country a child knows.”"
-              : "«العائلة هي أول وطنٍ يعرفه الطفل.»"}
+            {quote}
           </p>
         </div>
         <div className="md:text-right rtl:md:text-left">
@@ -48,7 +53,7 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-cream/10 px-6 py-6 text-center font-serif-display text-xs uppercase tracking-[0.28em] text-cream/50">
-        © {new Date().getFullYear()} · {t(translations.footer.rights, lang)}
+        © {new Date().getFullYear()} · {rights}
       </div>
     </footer>
   );

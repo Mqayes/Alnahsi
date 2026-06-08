@@ -872,6 +872,22 @@ function HomeContentTab() {
           </div>
         ))}
       </div>
+
+      {/* Footer */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Footer</h2>
+        <p className="mt-1 text-sm text-navy/60">Text shown in the footer (links are not editable here).</p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {tf("Subtitle (English)", "footer_line1_en")}
+          {tf("Subtitle (Arabic)", "footer_line1_ar", 1, "rtl")}
+          {tf("Tagline (English)", "footer_line2_en")}
+          {tf("Tagline (Arabic)", "footer_line2_ar", 1, "rtl")}
+          {tf("Middle Quote (English)", "footer_quote_en")}
+          {tf("Middle Quote (Arabic)", "footer_quote_ar", 1, "rtl")}
+          {tf("Copyright Text (English)", "footer_rights_en")}
+          {tf("Copyright Text (Arabic)", "footer_rights_ar", 1, "rtl")}
+        </div>
+      </div>
     </div>
   );
 }
