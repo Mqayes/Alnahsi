@@ -10,6 +10,7 @@ export function Origin() {
   const sc = useSiteContent();
   const c = translations.origin;
   const imgSrc = sc["origin_image_url"] || album;
+  const title = lang === "en" ? (sc["origin_title_en"] || t(c.title, "en")) : (sc["origin_title_ar"] || t(c.title, "ar"));
   const p1 = lang === "en" ? (sc["origin_p1_en"] || t(c.p1, "en")) : (sc["origin_p1_ar"] || t(c.p1, "ar"));
   const p2 = lang === "en" ? (sc["origin_p2_en"] || t(c.p2, "en")) : (sc["origin_p2_ar"] || t(c.p2, "ar"));
   return (
@@ -31,7 +32,7 @@ export function Origin() {
           <div className="max-w-xl">
             <div className="eyebrow">{t(c.eyebrow, lang)}</div>
             <h2 className="mt-4 text-4xl leading-tight md:text-5xl">
-              {t(c.title, lang)}
+              {title}
             </h2>
             <Ornament className="my-8 justify-start rtl:justify-end" />
             <p className="text-lg leading-relaxed text-foreground/85">{p1}</p>

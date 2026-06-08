@@ -786,6 +786,8 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Origin Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="md:col-span-2">{imgf("Section Photo", "origin_image_url", originDefault)}</div>
+          {tf("Title (English)", "origin_title_en")}
+          {tf("Title (Arabic)", "origin_title_ar", 1, "rtl")}
           {tf("Paragraph 1 (English)", "origin_p1_en", 4)}
           {tf("Paragraph 1 (Arabic)", "origin_p1_ar", 4, "rtl")}
           {tf("Paragraph 2 (English)", "origin_p2_en", 4)}
