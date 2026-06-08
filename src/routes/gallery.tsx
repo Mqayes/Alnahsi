@@ -55,10 +55,10 @@ function GalleryPage() {
       });
   }, []);
 
-  const allImages: Array<{ src: string; dynamic: boolean }> = [
-    ...dynamicUrls.map((src) => ({ src, dynamic: true })),
-    ...staticImages.map((src) => ({ src, dynamic: false })),
-  ];
+  const allImages: Array<{ src: string; dynamic: boolean }> =
+    dynamicUrls.length > 0
+      ? dynamicUrls.map((src) => ({ src, dynamic: true }))
+      : staticImages.map((src) => ({ src, dynamic: false }));
 
   return (
     <>
