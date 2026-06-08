@@ -10,6 +10,7 @@ export function Hero() {
   const heroSrc = sc["hero_image_url"] || hero;
   const nameAr = sc["site_name_ar"] || t(translations.hero.nameAr, lang);
   const nameEn = sc["site_name_en"] || t(translations.hero.nameEn, "en");
+  const eyebrow = lang === "en" ? (sc["hero_eyebrow_en"] || t(translations.hero.eyebrow, "en")) : (sc["hero_eyebrow_ar"] || t(translations.hero.eyebrow, "ar"));
   const tagline = lang === "en"
     ? (sc["hero_tagline_en"] || t(translations.hero.tagline, "en"))
     : (sc["hero_tagline_ar"] || t(translations.hero.tagline, "ar"));
@@ -31,7 +32,7 @@ export function Hero() {
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center">
         <div className="animate-fade-in delay-200 eyebrow text-gold/90">
-          {t(translations.hero.eyebrow, lang)}
+          {eyebrow}
         </div>
 
         <h1 className="mt-8 animate-fade-up delay-400">
@@ -44,7 +45,7 @@ export function Hero() {
             </span>
           ) : (
             <span className="mt-6 block font-arabic text-3xl font-light text-cream md:text-5xl">
-              {t(translations.hero.eyebrow, lang)}
+              {eyebrow}
             </span>
           )}
         </h1>

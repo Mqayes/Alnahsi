@@ -786,6 +786,8 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Hero Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="md:col-span-2">{imgf("Background Image", "hero_image_url", heroDefault)}</div>
+          {tf("Eyebrow (English)", "hero_eyebrow_en")}
+          {tf("Eyebrow (Arabic)", "hero_eyebrow_ar", 1, "rtl")}
           {tf("Tagline (English)", "hero_tagline_en")}
           {tf("Tagline (Arabic)", "hero_tagline_ar", 1, "rtl")}
         </div>
