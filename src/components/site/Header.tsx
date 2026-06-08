@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
+import { useSiteContent } from "@/lib/site-content";
 
 const navItems = [
   { to: "/", key: "home" as const },
@@ -15,6 +16,9 @@ const navItems = [
 export function Header() {
   const { lang, toggle } = useLang();
   const location = useLocation();
+  const sc = useSiteContent();
+  const nameAr = sc["site_name_ar"] || t(translations.hero.nameAr, lang);
+  const nameEn = sc["site_name_en"] || t(translations.hero.nameEn, "en");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -46,11 +50,11 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:py-5">
         <Link to="/" className="group flex items-center gap-3">
           <span className="font-arabic text-2xl text-gold transition-colors group-hover:text-navy">
-            {t(translations.hero.nameAr, lang)}
+            {nameAr}
           </span>
           <span className="hidden h-6 w-px bg-gold/40 md:block" />
           <span className={`hidden font-cinzel text-sm uppercase tracking-[0.28em] ${textOnDark} md:block`}>
-            Al Bukhuf Alnahsi
+            {nameEn}
           </span>
         </Link>
 

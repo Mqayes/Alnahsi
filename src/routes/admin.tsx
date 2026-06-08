@@ -771,6 +771,16 @@ function HomeContentTab() {
 
   return (
     <div className="space-y-8">
+      {/* Site Name */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Family Name</h2>
+        <p className="mt-1 text-sm text-navy/60">Shown in the navbar and hero. Leave blank to use the default.</p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {tf("Name (English)", "site_name_en")}
+          {tf("Name (Arabic)", "site_name_ar", 1, "rtl")}
+        </div>
+      </div>
+
       {/* Hero */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Hero Section</h2>

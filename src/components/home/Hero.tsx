@@ -8,6 +8,8 @@ export function Hero() {
   const { lang } = useLang();
   const sc = useSiteContent();
   const heroSrc = sc["hero_image_url"] || hero;
+  const nameAr = sc["site_name_ar"] || t(translations.hero.nameAr, lang);
+  const nameEn = sc["site_name_en"] || t(translations.hero.nameEn, "en");
   const tagline = lang === "en"
     ? (sc["hero_tagline_en"] || t(translations.hero.tagline, "en"))
     : (sc["hero_tagline_ar"] || t(translations.hero.tagline, "ar"));
@@ -34,11 +36,11 @@ export function Hero() {
 
         <h1 className="mt-8 animate-fade-up delay-400">
           <span className="block font-arabic text-7xl leading-none text-gold drop-shadow-[0_4px_20px_rgba(212,175,55,0.3)] md:text-9xl">
-            {t(translations.hero.nameAr, lang)}
+            {nameAr}
           </span>
           {lang === "en" ? (
             <span className="mt-6 block font-serif-display text-3xl font-light italic tracking-wide text-cream md:text-5xl">
-              {t(translations.hero.nameEn, lang)}
+              {nameEn}
             </span>
           ) : (
             <span className="mt-6 block font-arabic text-3xl font-light text-cream md:text-5xl">
