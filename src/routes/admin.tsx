@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteFamilyMember } from "@/lib/api/invite-member";
 import { removeFamilyMember } from "@/lib/api/remove-member";
+import { resetMemberPassword } from "@/lib/api/reset-password";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1020,6 +1021,10 @@ function FamilyMembersTab() {
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [resetTarget, setResetTarget] = useState<{ id: string; email: string } | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [resetMsg, setResetMsg] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
 
   const loadMembers = useCallback(async () => {
     setLoading(true);
@@ -1048,6 +1053,21 @@ function FamilyMembersTab() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetTarget) return;
+    setResetLoading(true);
+    setResetMsg("");
+    const result = await resetMemberPassword({ data: { email: resetTarget.email, newPassword } });
+    setResetLoading(false);
+    if (result.success) {
+      setResetMsg("Password updated successfully.");
+      setNewPassword("");
+    } else {
+      setResetMsg(result.error ?? "Failed to reset password.");
+    }
+  };
+
   return (
     <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
       <h2 className="font-serif-display text-2xl text-navy">
@@ -1058,6 +1078,30 @@ function FamilyMembersTab() {
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       {!loading && !error && members.length === 0 && (
         <p className="mt-4 text-navy/60">No family members registered yet.</p>
+      )}
+
+      {resetTarget && (
+        <div className="mt-4 rounded-lg border border-gold/30 bg-white/70 p-4">
+          <p className="mb-2 text-sm font-medium text-navy">Reset password for <span className="text-gold">{resetTarget.email}</span></p>
+          <form onSubmit={handleResetPassword} className="flex gap-2">
+            <Input
+              type="password"
+              placeholder="New password (min 6 chars)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              minLength={6}
+              required
+              className="flex-1"
+            />
+            <Button type="submit" size="sm" disabled={resetLoading}>
+              {resetLoading ? "Saving..." : "Save"}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => { setResetTarget(null); setResetMsg(""); setNewPassword(""); }}>
+              Cancel
+            </Button>
+          </form>
+          {resetMsg && <p className="mt-2 text-sm text-green-600">{resetMsg}</p>}
+        </div>
       )}
 
       <ul className="mt-6 space-y-3">
@@ -1082,14 +1126,26 @@ function FamilyMembersTab() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-500 hover:bg-red-50 hover:text-red-700"
-              onClick={() => removeMember(member.id, member.email)}
-            >
-              Remove
-            </Button>
+            <div className="flex gap-2">
+              {member.email && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-blue-500 hover:bg-blue-50 hover:text-blue-700"
+                  onClick={() => { setResetTarget({ id: member.id, email: member.email! }); setResetMsg(""); setNewPassword(""); }}
+                >
+                  Reset Password
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-500 hover:bg-red-50 hover:text-red-700"
+                onClick={() => removeMember(member.id, member.email)}
+              >
+                Remove
+              </Button>
+            </div>
           </li>
         ))}
       </ul>
