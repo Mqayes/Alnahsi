@@ -23,7 +23,7 @@ const LEGACY_STORAGE_KEY = "alajlan.lang";
 const LANG_CHANGE_EVENT = "alnahsi:lang-change";
 
 function readStoredLang(): Lang {
-  if (typeof window === "undefined") return "en";
+  if (typeof window === "undefined") return "ar";
 
   try {
     const stored =
@@ -38,7 +38,7 @@ function readStoredLang(): Lang {
     /* noop */
   }
 
-  return "en";
+  return "ar";
 }
 
 function subscribeToLang(callback: () => void) {
@@ -80,7 +80,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const lang = useSyncExternalStore(
     subscribeToLang,
     readStoredLang,
-    () => "en" as Lang,
+    () => "ar" as Lang,
   );
 
   const setLang = useCallback((next: Lang) => {
