@@ -792,6 +792,10 @@ function HomeContentTab() {
           {tf("Paragraph 1 (Arabic)", "origin_p1_ar", 4, "rtl")}
           {tf("Paragraph 2 (English)", "origin_p2_en", 4)}
           {tf("Paragraph 2 (Arabic)", "origin_p2_ar", 4, "rtl")}
+          {tf("Pull Quote (English)", "origin_pull_en", 2)}
+          {tf("Pull Quote (Arabic)", "origin_pull_ar", 2, "rtl")}
+          {tf("Quote Author (English)", "origin_pull_author_en")}
+          {tf("Quote Author (Arabic)", "origin_pull_author_ar", 1, "rtl")}
         </div>
       </div>
 
