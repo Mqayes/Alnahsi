@@ -26,14 +26,8 @@ function readStoredLang(): Lang {
   if (typeof window === "undefined") return "ar";
 
   try {
-    const stored =
-      localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
-    if (stored === "en" || stored === "ar") {
-      if (stored !== localStorage.getItem(STORAGE_KEY)) {
-        localStorage.setItem(STORAGE_KEY, stored);
-      }
-      return stored;
-    }
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "en" || stored === "ar") return stored;
   } catch {
     /* noop */
   }
