@@ -432,7 +432,7 @@ function NewsTab() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="title-en">Title (English)</Label>
-              <Input id="title-en" required value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
+              <Input id="title-en" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="title-ar">Title (Arabic)</Label>
@@ -441,7 +441,7 @@ function NewsTab() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="content-en">Content (English)</Label>
-            <Textarea id="content-en" required rows={5} value={contentEn} onChange={(e) => setContentEn(e.target.value)} />
+            <Textarea id="content-en" rows={5} value={contentEn} onChange={(e) => setContentEn(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="content-ar">Content (Arabic)</Label>
