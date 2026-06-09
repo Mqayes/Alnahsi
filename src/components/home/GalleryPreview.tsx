@@ -5,6 +5,7 @@ import { translations, t } from "@/lib/i18n/translations";
 import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useSiteContent } from "@/lib/site-content";
 import g1 from "@/assets/gallery-1.jpg";
 import g2 from "@/assets/gallery-2.jpg";
 import g3 from "@/assets/gallery-3.jpg";
@@ -14,8 +15,14 @@ const staticPreview = [g1, g2, g4, g3];
 
 export function GalleryPreview() {
   const { lang } = useLang();
+  const sc = useSiteContent();
   const c = translations.gallery;
   const [preview, setPreview] = useState<string[]>(staticPreview);
+
+  const eyebrow = lang === "en" ? (sc["gallery_eyebrow_en"] || t(c.eyebrow, "en")) : (sc["gallery_eyebrow_ar"] || t(c.eyebrow, "ar"));
+  const title   = lang === "en" ? (sc["gallery_title_en"]   || t(c.title,   "en")) : (sc["gallery_title_ar"]   || t(c.title,   "ar"));
+  const intro   = lang === "en" ? (sc["gallery_intro_en"]   || t(c.intro,   "en")) : (sc["gallery_intro_ar"]   || t(c.intro,   "ar"));
+  const viewBtn = lang === "en" ? (sc["gallery_view_en"]    || t(c.view,    "en")) : (sc["gallery_view_ar"]    || t(c.view,    "ar"));
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -37,10 +44,10 @@ export function GalleryPreview() {
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
-            <div className="eyebrow">{t(c.eyebrow, lang)}</div>
-            <h2 className="mt-4 text-4xl md:text-5xl">{t(c.title, lang)}</h2>
+            <div className="eyebrow">{eyebrow}</div>
+            <h2 className="mt-4 text-4xl md:text-5xl">{title}</h2>
             <Ornament className="mt-6" />
-            <p className="mt-6 italic text-foreground/75">{t(c.intro, lang)}</p>
+            <p className="mt-6 italic text-foreground/75">{intro}</p>
           </div>
         </Reveal>
 
@@ -61,7 +68,7 @@ export function GalleryPreview() {
 
         <div className="mt-12 text-center">
           <Link to="/gallery" className="btn-ghost-gold">
-            {t(c.view, lang)}
+            {viewBtn}
           </Link>
         </div>
       </div>
