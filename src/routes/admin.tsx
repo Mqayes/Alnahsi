@@ -873,6 +873,24 @@ function HomeContentTab() {
         ))}
       </div>
 
+      {/* Portal CTA */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Portal CTA Section</h2>
+        <p className="mt-1 text-sm text-navy/60">The "For the Family" section with sign-in and request access buttons.</p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {tf("Eyebrow (English)", "portal_eyebrow_en")}
+          {tf("Eyebrow (Arabic)", "portal_eyebrow_ar", 1, "rtl")}
+          {tf("Title (English)", "portal_title_en")}
+          {tf("Title (Arabic)", "portal_title_ar", 1, "rtl")}
+          {tf("Body Text (English)", "portal_body_en", 3)}
+          {tf("Body Text (Arabic)", "portal_body_ar", 3, "rtl")}
+          {tf("Sign In Button (English)", "portal_login_en")}
+          {tf("Sign In Button (Arabic)", "portal_login_ar", 1, "rtl")}
+          {tf("Request Access Button (English)", "portal_request_en")}
+          {tf("Request Access Button (Arabic)", "portal_request_ar", 1, "rtl")}
+        </div>
+      </div>
+
       {/* Values */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Values Section</h2>
