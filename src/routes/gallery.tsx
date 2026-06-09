@@ -5,6 +5,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Ornament } from "@/components/site/Ornament";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useSiteContent } from "@/lib/site-content";
 import g1 from "@/assets/gallery-1.jpg";
 import g2 from "@/assets/gallery-2.jpg";
 import g3 from "@/assets/gallery-3.jpg";
@@ -33,8 +34,17 @@ const staticImages = [g1, g2, g3, g4, h, album, b3];
 
 function GalleryPage() {
   const { lang } = useLang();
+  const sc = useSiteContent();
   const c = translations.gallery;
   const [dynamicUrls, setDynamicUrls] = useState<string[]>([]);
+
+  const eyebrow = lang === "en" ? (sc["gallery_eyebrow_en"] || t(c.eyebrow, "en")) : (sc["gallery_eyebrow_ar"] || t(c.eyebrow, "ar"));
+  const title   = lang === "en" ? (sc["gallery_title_en"]   || t(c.title,   "en")) : (sc["gallery_title_ar"]   || t(c.title,   "ar"));
+  const intro   = lang === "en" ? (sc["gallery_intro_en"]   || t(c.intro,   "en")) : (sc["gallery_intro_ar"]   || t(c.intro,   "ar"));
+  const bottom  = lang === "en"
+    ? (sc["gallery_bottom_en"] || "The full archive — private albums, family portraits, and decades of memory — lives behind the family door.")
+    : (sc["gallery_bottom_ar"] || "الأرشيف الكامل — الألبومات الخاصة، صور العائلة، وعقودٌ من الذاكرة — محفوظٌ خلف باب العائلة.");
+  const viewBtn = lang === "en" ? (sc["gallery_view_en"] || t(c.view, "en")) : (sc["gallery_view_ar"] || t(c.view, "ar"));
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -64,10 +74,10 @@ function GalleryPage() {
     <>
       <section className="bg-navy pt-44 pb-20 text-cream md:pt-52 md:pb-28">
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <div className="eyebrow">{t(c.eyebrow, lang)}</div>
-          <h1 className="mt-6 text-cream text-5xl md:text-7xl">{t(c.title, lang)}</h1>
+          <div className="eyebrow">{eyebrow}</div>
+          <h1 className="mt-6 text-cream text-5xl md:text-7xl">{title}</h1>
           <Ornament className="mt-8" />
-          <p className="mt-6 italic text-cream/80">{t(c.intro, lang)}</p>
+          <p className="mt-6 italic text-cream/80">{intro}</p>
         </div>
       </section>
 
@@ -94,13 +104,9 @@ function GalleryPage() {
           </div>
 
           <div className="mt-16 border-t border-gold/30 pt-12 text-center">
-            <p className="mx-auto max-w-xl italic text-foreground/75">
-              {lang === "en"
-                ? "The full archive — private albums, family portraits, and decades of memory — lives behind the family door."
-                : "الأرشيف الكامل — الألبومات الخاصة، صور العائلة، وعقودٌ من الذاكرة — محفوظٌ خلف باب العائلة."}
-            </p>
+            <p className="mx-auto max-w-xl italic text-foreground/75">{bottom}</p>
             <Link to="/portal" className="btn-gold mt-8 inline-flex">
-              {t(c.view, lang)}
+              {viewBtn}
             </Link>
           </div>
         </div>

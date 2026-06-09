@@ -924,11 +924,30 @@ function HomeContentTab() {
 }
 
 function GalleryTab() {
+  const sc = useSiteContent();
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [deletingName, setDeletingName] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const save = useCallback(async (key: string, value: string) => {
+    setSaving(key);
+    setErrors((p) => ({ ...p, [key]: "" }));
+    const err = await upsertSiteContent(key, value);
+    if (err) setErrors((p) => ({ ...p, [key]: err }));
+    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    setSaving(null);
+  }, []);
+
+  const tf = (label: string, contentKey: string, rows = 1, dir?: string) => (
+    <HCTextField key={contentKey} label={label} contentKey={contentKey} rows={rows} dir={dir}
+      initialValue={sc[contentKey] ?? ""} saving={saving} saved={saved}
+      error={errors[contentKey]} onSave={save} />
+  );
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -974,7 +993,27 @@ function GalleryTab() {
   };
 
   return (
-    <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+    <div className="space-y-8">
+      {/* Page text */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Archive Page Text</h2>
+        <p className="mt-1 text-sm text-navy/60">Headings and paragraphs shown on the Archive page.</p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {tf("Eyebrow (English)", "gallery_eyebrow_en")}
+          {tf("Eyebrow (Arabic)", "gallery_eyebrow_ar", 1, "rtl")}
+          {tf("Title (English)", "gallery_title_en")}
+          {tf("Title (Arabic)", "gallery_title_ar", 1, "rtl")}
+          {tf("Intro (English)", "gallery_intro_en", 3)}
+          {tf("Intro (Arabic)", "gallery_intro_ar", 3, "rtl")}
+          {tf("Bottom Paragraph (English)", "gallery_bottom_en", 3)}
+          {tf("Bottom Paragraph (Arabic)", "gallery_bottom_ar", 3, "rtl")}
+          {tf("Button Text (English)", "gallery_view_en")}
+          {tf("Button Text (Arabic)", "gallery_view_ar", 1, "rtl")}
+        </div>
+      </div>
+
+      {/* Images */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
       <h2 className="font-serif-display text-2xl text-navy">Archive Gallery</h2>
       <p className="mt-1 text-sm text-navy/60">Images uploaded here appear on the public Archive page.</p>
 
@@ -1004,6 +1043,7 @@ function GalleryTab() {
             </button>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
