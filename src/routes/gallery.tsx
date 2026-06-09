@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Reveal } from "@/components/site/Reveal";
 import { useLang } from "@/lib/i18n/LanguageContext";
@@ -18,13 +18,8 @@ export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
       { title: "The Archive — Al Bukhuf Alnahsi Family Heritage" },
-      {
-        name: "description",
-        content:
-          "A curated public selection from the Al Bukhuf Alnahsi family archive. The full albums are reserved for family members.",
-      },
+      { name: "robots", content: "noindex" },
       { property: "og:title", content: "The Archive — Al Bukhuf Alnahsi" },
-      { property: "og:description", content: "Fragments of a long memory." },
     ],
   }),
   component: GalleryPage,
@@ -33,10 +28,36 @@ export const Route = createFileRoute("/gallery")({
 const staticImages = [g1, g2, g3, g4, h, album, b3];
 
 function GalleryPage() {
+  const navigate = useNavigate();
   const { lang } = useLang();
   const sc = useSiteContent();
   const c = translations.gallery;
+  const [authReady, setAuthReady] = useState(false);
   const [dynamicUrls, setDynamicUrls] = useState<string[]>([]);
+
+  // Auth gate — members and admins only
+  useEffect(() => {
+    if (!isSupabaseConfigured()) { void navigate({ to: "/portal" }); return; }
+    getSupabase().auth.getSession().then(({ data: { session } }) => {
+      if (!session) { void navigate({ to: "/portal" }); return; }
+      setAuthReady(true);
+    });
+  }, [navigate]);
+
+  // Load images only after auth confirmed
+  useEffect(() => {
+    if (!authReady) return;
+    getSupabase()
+      .storage.from("gallery-images")
+      .list("gallery", { sortBy: { column: "created_at", order: "desc" } })
+      .then(({ data }) => {
+        if (!data) return;
+        const urls = data
+          .filter((f) => f.name !== ".emptyFolderPlaceholder")
+          .map((f) => getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data.publicUrl);
+        setDynamicUrls(urls);
+      });
+  }, [authReady]);
 
   const eyebrow = lang === "en" ? (sc["gallery_eyebrow_en"] || t(c.eyebrow, "en")) : (sc["gallery_eyebrow_ar"] || t(c.eyebrow, "ar"));
   const title   = lang === "en" ? (sc["gallery_title_en"]   || t(c.title,   "en")) : (sc["gallery_title_ar"]   || t(c.title,   "ar"));
@@ -46,29 +67,20 @@ function GalleryPage() {
     : (sc["gallery_bottom_ar"] || "الأرشيف الكامل — الألبومات الخاصة، صور العائلة، وعقودٌ من الذاكرة — محفوظٌ خلف باب العائلة.");
   const viewBtn = lang === "en" ? (sc["gallery_view_en"] || t(c.view, "en")) : (sc["gallery_view_ar"] || t(c.view, "ar"));
 
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-    getSupabase()
-      .storage.from("gallery-images")
-      .list("gallery", { sortBy: { column: "created_at", order: "desc" } })
-      .then(({ data }) => {
-        if (!data) return;
-        const urls = data
-          .filter((f) => f.name !== ".emptyFolderPlaceholder")
-          .map(
-            (f) =>
-              getSupabase()
-                .storage.from("gallery-images")
-                .getPublicUrl(`gallery/${f.name}`).data.publicUrl,
-          );
-        setDynamicUrls(urls);
-      });
-  }, []);
-
-  const allImages: Array<{ src: string; dynamic: boolean }> =
+  const allImages: Array<{ src: string }> =
     dynamicUrls.length > 0
-      ? dynamicUrls.map((src) => ({ src, dynamic: true }))
-      : staticImages.map((src) => ({ src, dynamic: false }));
+      ? dynamicUrls.map((src) => ({ src }))
+      : staticImages.map((src) => ({ src }));
+
+  if (!authReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-parchment">
+        <p className="font-serif-display text-lg text-navy/50">
+          {lang === "en" ? "Loading..." : "جاري التحميل..."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
