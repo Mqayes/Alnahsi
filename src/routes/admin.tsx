@@ -873,6 +873,37 @@ function HomeContentTab() {
         ))}
       </div>
 
+      {/* Values */}
+      <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
+        <h2 className="font-serif-display text-2xl text-navy">Values Section</h2>
+        <p className="mt-1 text-sm text-navy/60">The "What We Inherit" section with 5 value cards.</p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {tf("Eyebrow (English)", "values_eyebrow_en")}
+          {tf("Eyebrow (Arabic)", "values_eyebrow_ar", 1, "rtl")}
+          {tf("Title (English)", "values_title_en")}
+          {tf("Title (Arabic)", "values_title_ar", 1, "rtl")}
+        </div>
+        {[
+          { label: "Card 1 — Trust / الأمانة",    i: 0 },
+          { label: "Card 2 — Generosity / الكرم", i: 1 },
+          { label: "Card 3 — Loyalty / الوفاء",   i: 2 },
+          { label: "Card 4 — Knowledge / العلم",  i: 3 },
+          { label: "Card 5 — Patience / الصبر",   i: 4 },
+        ].map(({ label, i }) => (
+          <div key={i} className="mt-6 border-t border-gold/15 pt-6">
+            <p className="mb-4 font-medium text-navy">{label}</p>
+            <div className="grid gap-4 md:grid-cols-2">
+              {tf("Arabic Word", `values_card_${i}_ar`, 1, "rtl")}
+              <div />
+              {tf("Name (English)", `values_card_${i}_name_en`)}
+              {tf("Name (Arabic)", `values_card_${i}_name_ar`, 1, "rtl")}
+              {tf("Description (English)", `values_card_${i}_desc_en`, 2)}
+              {tf("Description (Arabic)", `values_card_${i}_desc_ar`, 2, "rtl")}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Footer */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Footer</h2>
