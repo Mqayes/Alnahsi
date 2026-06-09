@@ -522,6 +522,8 @@ function OurStoryTab() {
 
   type FieldKey = string;
   const allKeys: FieldKey[] = [
+    "story_patriarch_caption_en",
+    "story_patriarch_caption_ar",
     ...STORY_SECTIONS.flatMap((s) => [
       `${s.key}_h_en`, `${s.key}_h_ar`,
       `${s.key}_p_en`, `${s.key}_p_ar`,
@@ -608,6 +610,22 @@ function OurStoryTab() {
           </div>
           {errors[patriarchKey] && <p className="text-xs text-red-600">{errors[patriarchKey]}</p>}
           {saved === patriarchKey && <p className="text-xs text-green-700">Saved!</p>}
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            {[
+              { label: "Photo Caption (English)", fk: "story_patriarch_caption_en", dir: "ltr" },
+              { label: "Photo Caption (Arabic)",  fk: "story_patriarch_caption_ar", dir: "rtl" },
+            ].map(({ label, fk, dir }) => (
+              <div key={fk} className="space-y-2">
+                <Label>{label}</Label>
+                <Input dir={dir} value={fields[fk] ?? ""} className={dir === "rtl" ? "font-arabic" : ""}
+                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))} />
+                <Button size="sm" disabled={saving === fk} onClick={() => void save(fk)}>
+                  {saving === fk ? "Saving..." : saved === fk ? "Saved!" : "Save"}
+                </Button>
+                {errors[fk] && <p className="text-xs text-red-600">{errors[fk]}</p>}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

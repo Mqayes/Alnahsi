@@ -57,7 +57,7 @@ function StoryPage() {
               className="heritage-image relative h-auto w-full"
             />
             <div className="mt-4 text-center font-serif-display text-xs uppercase tracking-[0.22em] text-gold">
-              {lang === "en" ? "The Patriarch · c. 1925" : "الجدّ الأكبر · نحو ١٩٢٥"}
+              {lang === "en" ? (sc["story_patriarch_caption_en"] || "The Patriarch · c. 1925") : (sc["story_patriarch_caption_ar"] || "الجدّ الأكبر · نحو ١٩٢٥")}
             </div>
           </div>
 
