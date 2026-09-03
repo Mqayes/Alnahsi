@@ -84,12 +84,12 @@ function GalleryPage() {
 
   return (
     <>
-      <section className="bg-navy pt-44 pb-20 text-cream md:pt-52 md:pb-28">
+      <section className="bg-cream pt-44 pb-20 text-navy md:pt-52 md:pb-28">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <div className="eyebrow">{eyebrow}</div>
-          <h1 className="mt-6 text-cream text-5xl md:text-7xl">{title}</h1>
+          <h1 className="mt-6 text-navy text-5xl md:text-7xl">{title}</h1>
           <Ornament className="mt-8" />
-          <p className="mt-6 italic text-cream/80">{intro}</p>
+          <p className="mt-6 italic text-navy/70">{intro}</p>
         </div>
       </section>
 
