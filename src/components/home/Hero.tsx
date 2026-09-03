@@ -21,7 +21,7 @@ export function Hero() {
         <div className="hero-glow" />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-16 pt-32 text-center md:pb-24">
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-12 pt-36 text-center md:pb-20">
         <div className="hero-nasab animate-fade-in delay-200">
           <b>{ar ? "خثعم" : "Khath'am"}</b><i>◆</i>
           <b>{ar ? "ناهس شهران" : "Nahas Shahran"}</b><i>◆</i>
@@ -39,13 +39,8 @@ export function Hero() {
           {ar ? "بيتٌ بُني عبر الأجيال — من الحفائر وبلاد ناهس إلى الرياض" : "A house built across generations — from Al-Hafayer to Riyadh"}
         </p>
 
-        <div className="mx-auto mt-8 grid max-w-lg grid-cols-3 gap-2.5 animate-fade-up delay-600">
-          <div className="hero-stat"><b>٥٧١</b><span>{ar ? "ميلادية · الجذور" : "CE · Roots"}</span></div>
-          <div className="hero-stat"><b>١٨٣٤</b><span>{ar ? "بداية التجارة" : "Trade begins"}</span></div>
-          <div className="hero-stat"><b>٥</b><span>{ar ? "أجيال موثقة" : "Generations"}</span></div>
-        </div>
-
-        <div className="mt-9 flex flex-col items-stretch justify-center gap-3 animate-fade-up delay-800 sm:flex-row sm:items-center">
+        
+        <div className="mt-40 flex flex-col items-stretch sm:mt-28 justify-center gap-3 animate-fade-up delay-800 sm:flex-row sm:items-center">
           <Link to="/tree" className="btn-gold">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v4M12 11H6v6M12 11h6v6"/></svg>
             {ar ? "استكشف شجرة العائلة" : "Explore the Family Tree"}
@@ -55,7 +50,7 @@ export function Hero() {
           </Link>
         </div>
 
-        <div className="mt-12 flex justify-center"><div className="scroll-cue" /></div>
+        <div className="mt-8 flex justify-center"><div className="scroll-cue" /></div>
       </div>
     </section>
   );
