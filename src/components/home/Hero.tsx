@@ -26,8 +26,8 @@ export function Hero() {
           fetchPriority="high"
           decoding="async"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/30 to-parchment" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(10,25,47,0.6)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy/35 via-navy/15 to-parchment" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(10,25,47,0.35)_100%)]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center">
