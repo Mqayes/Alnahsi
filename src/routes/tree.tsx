@@ -286,7 +286,7 @@ function TreePage() {
           <p className="mt-5 text-navy/60">{ar ? "سجّل بياناتك وسيراجعها مشرف العائلة ويضيفها للشجرة." : "Submit your details; the family admin will review and add them."}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <button onClick={() => setShowAdd(true)} className="btn-gold">{ar ? "أضف اسمك الآن" : "Add your name"}</button>
-            <Link to="/portal" className="btn-ghost-gold">{ar ? "بوابة العائلة" : "Family Portal"}</Link>
+            <Link to="/portal" className="btn-outline-navy">{ar ? "بوابة العائلة" : "Family Portal"}</Link>
           </div>
         </div>
       </section>
