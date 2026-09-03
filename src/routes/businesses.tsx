@@ -23,14 +23,14 @@ function BusinessesPage() {
   const { lang } = useLang();
   return (
     <>
-      <section className="bg-navy pt-44 pb-24 text-cream md:pt-52 md:pb-32">
+      <section className="bg-cream pt-44 pb-24 text-navy md:pt-52 md:pb-32">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <div className="eyebrow">{lang === "en" ? "The Legacy" : "الإرث"}</div>
-          <h1 className="mt-6 text-cream text-5xl md:text-7xl">
+          <h1 className="mt-6 text-navy text-5xl md:text-7xl">
             {lang === "en" ? "Houses we built." : "بيوتٌ بنيناها."}
           </h1>
           <Ornament className="mt-8" />
-          <p className="mx-auto mt-6 max-w-2xl text-lg italic text-cream/80">
+          <p className="mx-auto mt-6 max-w-2xl text-lg italic text-navy/70">
             {lang === "en"
               ? "Each enterprise carries a name, a year, and a story. The fuller details live behind the family door."
               : "كلُّ مؤسسةٍ تحمل اسماً وسنةً وقصة. التفاصيل الكاملة تبقى خلف باب العائلة."}
