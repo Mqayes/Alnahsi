@@ -183,7 +183,12 @@
   }
 
   html[dir="rtl"] h1,
-  html[dir="rtl"] h2,
+  html[dir="rtl"] h2 {
+    font-family: var(--font-arabic-kufi);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.25;
+  }
   html[dir="rtl"] h3,
   html[dir="rtl"] h4 {
     font-family: var(--font-arabic-display);
