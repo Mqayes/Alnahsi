@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TreeRouteImport } from './routes/tree'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as OurStoryRouteImport } from './routes/our-story'
 import { Route as NewsRouteImport } from './routes/news'
@@ -19,6 +20,11 @@ import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TreeRoute = TreeRouteImport.update({
+  id: '/tree',
+  path: '/tree',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PortalRoute = PortalRouteImport.update({
   id: '/portal',
   path: '/portal',
@@ -74,7 +80,8 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
-  '/portal': typeof PortalRoute
+  '/tree': typeof TreeRoute
+    '/portal': typeof PortalRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,7 +92,8 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
-  '/portal': typeof PortalRoute
+  '/tree': typeof TreeRoute
+    '/portal': typeof PortalRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,7 +105,8 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
-  '/portal': typeof PortalRoute
+  '/tree': typeof TreeRoute
+    '/portal': typeof PortalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -224,7 +233,8 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   NewsRoute: NewsRoute,
   OurStoryRoute: OurStoryRoute,
-  PortalRoute: PortalRoute,
+  PortalRoute: TreeRoute,
+    PortalRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
