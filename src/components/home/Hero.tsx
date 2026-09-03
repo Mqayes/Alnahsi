@@ -6,72 +6,56 @@ import hero from "@/assets/hero-heritage.jpg";
 
 export function Hero() {
   const { lang } = useLang();
+  const ar = lang === "ar";
   const sc = useSiteContent();
   const heroSrc = sc["hero_image_url"] || hero;
   const nameAr = sc["site_name_ar"] || t(translations.hero.nameAr, lang);
   const nameEn = sc["site_name_en"] || t(translations.hero.nameEn, "en");
-  const eyebrow = lang === "en" ? (sc["hero_eyebrow_en"] || t(translations.hero.eyebrow, "en")) : (sc["hero_eyebrow_ar"] || t(translations.hero.eyebrow, "ar"));
-  const tagline = lang === "en"
-    ? (sc["hero_tagline_en"] || t(translations.hero.tagline, "en"))
-    : (sc["hero_tagline_ar"] || t(translations.hero.tagline, "ar"));
+
   return (
-    <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden">
+    <section className="relative isolate flex min-h-[100svh] items-end justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <img
-          src={heroSrc}
-          alt=""
-          width={1920}
-          height={1280}
-          className="heritage-image h-full w-full object-cover"
-          fetchPriority="high"
-          decoding="async"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#14243A]/55 via-[#1F5C4F]/25 to-parchment" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(20,36,58,0.45)_100%)]" />
+        <img src={heroSrc} alt="" width={1920} height={1280} fetchPriority="high" decoding="async"
+             className="h-full w-full object-cover object-center saturate-[1.08] contrast-[1.08]" />
+        <div className="hero-scrim absolute inset-0" />
+        <div className="hero-glow" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-4xl px-6 pt-32 pb-20 text-center">
-        <div className="animate-fade-in delay-200 eyebrow text-gold/90">
-          {eyebrow}
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-16 pt-32 text-center md:pb-24">
+        <div className="hero-nasab animate-fade-in delay-200">
+          <b>{ar ? "خثعم" : "Khath'am"}</b><i>◆</i>
+          <b>{ar ? "ناهس شهران" : "Nahas Shahran"}</b><i>◆</i>
+          <b>{ar ? "المزارقة" : "Al-Mazarigah"}</b><i>◆</i>
+          <b>{ar ? "آل بوخف" : "Al Bukhuf"}</b>
         </div>
 
-        <h1 className="mt-8 animate-fade-up delay-400">
-          <span className="block font-arabic text-7xl leading-none text-gold drop-shadow-[0_4px_20px_rgba(212,175,55,0.3)] md:text-9xl">
-            {nameAr}
+        <h1 className="mt-7 animate-fade-up delay-400">
+          <span className="hero-kufi hero-shine block text-[3.4rem] sm:text-7xl md:text-[6.5rem]">
+            {ar ? nameAr : nameEn}
           </span>
-          {lang === "en" ? (
-            <span className="mt-6 block font-serif-display text-3xl font-light italic tracking-wide text-cream md:text-5xl">
-              {nameEn}
-            </span>
-          ) : (
-            <span className="mt-6 block font-arabic text-3xl font-light text-cream md:text-5xl">
-              {eyebrow}
-            </span>
-          )}
         </h1>
 
-        <div className="ornament mx-auto mt-10 max-w-xs animate-fade-in delay-600 text-gold/70">
-          <span className="text-sm">✦</span>
-        </div>
-
-        <p className="mx-auto mt-6 max-w-2xl animate-fade-up delay-600 font-serif-display text-xl italic text-cream/90 md:text-2xl">
-          {tagline}
+        <p className="mx-auto mt-5 max-w-xl animate-fade-up delay-600 font-arabic text-xl leading-relaxed text-[#FFF8E6] drop-shadow-[0_2px_12px_rgba(0,0,0,.6)] md:text-2xl">
+          {ar ? "بيتٌ بُني عبر الأجيال — من الحفائر وبلاد ناهس إلى الرياض" : "A house built across generations — from Al-Hafayer to Riyadh"}
         </p>
 
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-4 animate-fade-up delay-800">
-          <Link to="/our-story" className="btn-gold">
-            {t(translations.hero.cta, lang)}
+        <div className="mx-auto mt-8 grid max-w-lg grid-cols-3 gap-2.5 animate-fade-up delay-600">
+          <div className="hero-stat"><b>٥٧١</b><span>{ar ? "ميلادية · الجذور" : "CE · Roots"}</span></div>
+          <div className="hero-stat"><b>١٨٣٤</b><span>{ar ? "بداية التجارة" : "Trade begins"}</span></div>
+          <div className="hero-stat"><b>٥</b><span>{ar ? "أجيال موثقة" : "Generations"}</span></div>
+        </div>
+
+        <div className="mt-9 flex flex-col items-stretch justify-center gap-3 animate-fade-up delay-800 sm:flex-row sm:items-center">
+          <Link to="/tree" className="btn-gold">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v4M12 11H6v6M12 11h6v6"/></svg>
+            {ar ? "استكشف شجرة العائلة" : "Explore the Family Tree"}
           </Link>
           <Link to="/portal" className="btn-ghost-gold">
-            {t(translations.hero.ctaPortal, lang)}
+            {ar ? "بوابة العائلة" : "Family Portal"}
           </Link>
         </div>
-      </div>
 
-      <div className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-gold/60 animate-shimmer">
-        <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
-          <path d="M10 2v24M4 22l6 6 6-6" stroke="currentColor" strokeWidth="1" />
-        </svg>
+        <div className="mt-12 flex justify-center"><div className="scroll-cue" /></div>
       </div>
     </section>
   );
