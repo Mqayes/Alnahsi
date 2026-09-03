@@ -6,6 +6,7 @@ export const translations = {
     story: { en: "Our Story", ar: "قصتنا" },
     businesses: { en: "Legacy", ar: "إرثنا" },
     gallery: { en: "Archive", ar: "الأرشيف" },
+    tree: { en: "Family Tree", ar: "شجرة العائلة" },
     news: { en: "News", ar: "الأخبار" },
     contact: { en: "Contact", ar: "تواصل" },
     portal: { en: "Family Portal", ar: "بوابة العائلة" },
