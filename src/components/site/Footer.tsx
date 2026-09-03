@@ -12,25 +12,25 @@ export function Footer() {
   const quote = lang === "en" ? (sc["footer_quote_en"] || "“A family is the first country a child knows.”") : (sc["footer_quote_ar"] || "«العائلة هي أول وطنٍ يعرفه الطفل.»");
   const rights = lang === "en" ? (sc["footer_rights_en"] || t(translations.footer.rights, "en")) : (sc["footer_rights_ar"] || t(translations.footer.rights, "ar"));
   return (
-    <footer className="border-t border-gold/20 bg-navy text-cream">
+    <footer className="border-t border-gold/25 bg-cream text-navy">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-3">
         <div>
           <div className="font-arabic text-3xl text-gold">{nameAr}</div>
-          <div className="mt-2 font-serif-display text-sm uppercase tracking-[0.28em] text-cream/80">
+          <div className="mt-2 font-serif-display text-sm uppercase tracking-[0.28em] text-navy/70">
             {line1}
           </div>
-          <p className="mt-4 italic text-cream/60">
+          <p className="mt-4 italic text-navy/55">
             {line2}
           </p>
         </div>
         <div className="md:text-center">
           <div className="ornament mb-4" />
-          <p className="font-serif-display italic text-cream/70">
+          <p className="font-serif-display italic text-navy/60">
             {quote}
           </p>
         </div>
         <div className="md:text-right rtl:md:text-left">
-          <div className="space-y-2 font-serif-display text-sm uppercase tracking-[0.22em] text-cream/80">
+          <div className="space-y-2 font-serif-display text-sm uppercase tracking-[0.22em] text-navy/70">
             <Link to="/our-story" className="block hover:text-gold">
               {t(translations.nav.story, lang)}
             </Link>
@@ -46,13 +46,13 @@ export function Footer() {
             <Link to="/contact" className="block hover:text-gold">
               {t(translations.nav.contact, lang)}
             </Link>
-            <Link to="/portal" className="block text-gold hover:text-cream">
+            <Link to="/portal" className="block text-gold hover:text-navy">
               {t(translations.nav.portal, lang)}
             </Link>
           </div>
         </div>
       </div>
-      <div className="border-t border-cream/10 px-6 py-6 text-center font-serif-display text-xs uppercase tracking-[0.28em] text-cream/50">
+      <div className="border-t border-gold/15 px-6 py-6 text-center font-serif-display text-xs uppercase tracking-[0.28em] text-navy/45">
         © {new Date().getFullYear()} · {rights}
       </div>
     </footer>
