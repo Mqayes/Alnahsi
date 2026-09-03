@@ -3,11 +3,10 @@ import { translations, t } from "@/lib/i18n/translations";
 import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
 import { useSiteContent } from "@/lib/site-content";
-import b1 from "@/assets/business-1.jpg";
-import b2 from "@/assets/business-2.jpg";
-import b3 from "@/assets/business-3.jpg";
+import { HeritagePlate } from "@/components/site/HeritagePlate";
 
-const staticImages = [b1, b2, b3, b1, b2, b3];
+const MOTIFS = ["mountain", "horse", "palm", "wheat", "wheat", "gear"] as const;
+const AR_YEARS = ["٥٧١", "١٨٣٤", "١٩٠٢", "١٩٤٠", "١٩٨٠", "٢٠٠١"];
 
 export function Businesses() {
   const { lang } = useLang();
@@ -40,20 +39,7 @@ export function Businesses() {
               : (sc[`legacy_card_${i}_story_ar`] || t(card.story, "ar"));
             return (
               <article key={i} className="premium-card group flex h-full flex-col">
-                <div className="relative aspect-[5/4] overflow-hidden">
-                  <img
-                    src={sc[`business_image_${i}`] || staticImages[i]}
-                    alt=""
-                    loading="lazy"
-                    width={1200}
-                    height={900}
-                    className="heritage-image h-full w-full object-cover transition-transform duration-[1500ms] group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy/50 to-transparent" />
-                  <div className="absolute bottom-4 left-4 rtl:left-auto rtl:right-4 font-serif-display text-sm uppercase tracking-[0.22em] text-gold">
-                    Est. {year}
-                  </div>
-                </div>
+                <HeritagePlate year={lang === "ar" ? AR_YEARS[i] : year} motif={MOTIFS[i]} className="aspect-[5/4]" />
                 <div className="flex flex-1 flex-col p-7">
                   <h3 className="text-2xl">{name}</h3>
                   <p className="mt-4 flex-1 italic leading-relaxed text-foreground/75">{story}</p>
