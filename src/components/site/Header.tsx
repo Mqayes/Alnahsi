@@ -9,6 +9,7 @@ const navItems = [
   { to: "/our-story", key: "story" as const },
   { to: "/businesses", key: "businesses" as const },
   { to: "/gallery", key: "gallery" as const },
+  { to: "/tree", key: "tree" as const },
   { to: "/news", key: "news" as const },
   { to: "/contact", key: "contact" as const },
 ];
