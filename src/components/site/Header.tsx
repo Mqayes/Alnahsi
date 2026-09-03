@@ -50,7 +50,7 @@ export function Header() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:py-5">
         <Link to="/" className="group flex items-center gap-3">
-          <span className="font-arabic text-2xl text-gold transition-colors group-hover:text-navy">
+          <span className="hero-kufi text-[1.35rem] text-gold transition-colors group-hover:text-navy md:text-2xl">
             {nameAr}
           </span>
           <span className="hidden h-6 w-px bg-gold/40 md:block" />
@@ -99,7 +99,7 @@ export function Header() {
           </button>
           <Link
             to="/portal"
-            className="hidden rounded-sm border border-navy/80 bg-navy px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.2em] text-cream transition-all hover:bg-gold hover:text-navy md:inline-block"
+            className="hidden rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-4 py-2 text-xs font-bold text-navy shadow-[0_6px_18px_rgba(207,169,58,.4)] transition-all hover:brightness-105 md:inline-block"
           >
             {t(translations.nav.portal, lang)}
           </Link>
@@ -125,14 +125,14 @@ export function Header() {
               <Link
                 key={item.to}
                 to={item.to}
-                className="border-b border-border/60 py-3 font-cinzel text-sm uppercase tracking-[0.22em] text-navy"
+                className="border-b border-gold/20 py-3.5 font-arabic-body text-base font-semibold text-navy"
               >
                 {t(translations.nav[item.key], lang)}
               </Link>
             ))}
             <Link
               to="/portal"
-              className="mt-4 inline-block rounded-sm bg-navy px-4 py-3 text-center font-cinzel text-xs uppercase tracking-[0.22em] text-cream"
+              className="btn-gold mt-4"
             >
               {t(translations.nav.portal, lang)}
             </Link>
