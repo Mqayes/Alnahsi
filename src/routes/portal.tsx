@@ -201,7 +201,7 @@ function PortalPage() {
   }
 
   return (
-    <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-navy py-32 text-cream">
+    <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-cream py-32 text-navy">
       <div className="absolute inset-0 -z-10 opacity-[0.07] [background-image:radial-gradient(circle_at_1px_1px,#D4AF37_1px,transparent_0)] [background-size:36px_36px]" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-navy via-navy to-navy-deep" />
 
@@ -210,21 +210,21 @@ function PortalPage() {
           <span className="font-arabic text-6xl text-gold">الناهسي
 </span>
           <Ornament className="mt-6" />
-          <h1 className="mt-6 text-cream text-3xl md:text-4xl">{t(c.title, lang)}</h1>
-          <p className="mt-3 text-sm italic text-cream/70">{t(c.sub, lang)}</p>
+          <h1 className="mt-6 text-navy text-3xl md:text-4xl">{t(c.title, lang)}</h1>
+          <p className="mt-3 text-sm italic text-navy/65">{t(c.sub, lang)}</p>
         </div>
 
         {/* SET PASSWORD FORM — shown after clicking invite or reset link */}
         {showSetPassword && (
-          <form onSubmit={handleSetPassword} className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm">
+          <form onSubmit={handleSetPassword} className="mt-12 border border-gold/30 bg-white/80 p-8 backdrop-blur-sm">
             <h2 className="text-center text-lg uppercase tracking-[0.18em] text-gold mb-2">
               {lang === 'en' ? 'Set Your Password' : 'تعيين كلمة المرور'}
             </h2>
-            <p className="text-center text-xs text-cream/50 mb-6">
+            <p className="text-center text-xs text-navy/45 mb-6">
               {lang === 'en' ? 'Choose a password to access the family portal.' : 'اختر كلمة مرور للوصول إلى بوابة العائلة.'}
             </p>
             <label className="block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {lang === 'en' ? 'New Password' : 'كلمة المرور الجديدة'}
               </span>
               <input
@@ -233,11 +233,11 @@ function PortalPage() {
                 minLength={6}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold"
               />
             </label>
             <label className="mt-5 block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {lang === 'en' ? 'Confirm Password' : 'تأكيد كلمة المرور'}
               </span>
               <input
@@ -246,7 +246,7 @@ function PortalPage() {
                 minLength={6}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold"
               />
             </label>
             {setPasswordError && <p className="mt-3 text-sm text-red-400">{setPasswordError}</p>}
@@ -264,20 +264,20 @@ function PortalPage() {
 
         {/* FORGOT PASSWORD FORM */}
         {showForgot && (
-          <form onSubmit={handleForgot} className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm">
+          <form onSubmit={handleForgot} className="mt-12 border border-gold/30 bg-white/80 p-8 backdrop-blur-sm">
             <h2 className="text-center text-lg uppercase tracking-[0.18em] text-gold mb-6">
               {lang === 'en' ? 'Reset Password' : 'إعادة تعيين كلمة السر'}
             </h2>
             {forgotSent ? (
-              <p className="text-center text-sm text-cream/80">
+              <p className="text-center text-sm text-navy/70">
                 {lang === 'en' ? 'Check your email for a reset link.' : 'تحقق من بريدك الإلكتروني للحصول على رابط إعادة التعيين.'}
               </p>
             ) : (
               <>
                 <label className="block">
-                  <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">{lang === 'en' ? 'Email' : 'البريد الإلكتروني'}</span>
+                  <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">{lang === 'en' ? 'Email' : 'البريد الإلكتروني'}</span>
                   <input type="email" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)}
-                    className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold" />
+                    className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold" />
                 </label>
                 {forgotError && <p className="mt-3 text-sm text-red-400">{forgotError}</p>}
                 <button type="submit" disabled={forgotLoading} className="btn-gold mt-6 w-full justify-center disabled:opacity-50">
@@ -286,7 +286,7 @@ function PortalPage() {
               </>
             )}
             <button type="button" onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail(''); }}
-              className="mt-4 w-full text-center text-xs text-cream/50 hover:text-cream">
+              className="mt-4 w-full text-center text-xs text-navy/45 hover:text-navy">
               {lang === 'en' ? '← Back to sign in' : '← العودة لتسجيل الدخول'}
             </button>
           </form>
@@ -296,10 +296,10 @@ function PortalPage() {
         {!showRequest && !showForgot && !showSetPassword && (
           <form
             onSubmit={handleLogin}
-            className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm"
+            className="mt-12 border border-gold/30 bg-white/80 p-8 backdrop-blur-sm"
           >
             <label className="block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {t(c.email, lang)}
               </span>
               <input
@@ -308,11 +308,11 @@ function PortalPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold"
               />
             </label>
             <label className="mt-5 block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {t(c.password, lang)}
               </span>
               <input
@@ -321,7 +321,7 @@ function PortalPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold"
               />
             </label>
             {loginError && (
@@ -335,13 +335,13 @@ function PortalPage() {
               {loginLoading ? '...' : t(c.signIn, lang)}
             </button>
             <div className="mt-6 flex items-center justify-between text-xs font-serif-display uppercase tracking-[0.18em]">
-              <button type="button" onClick={() => setShowForgot(true)} className="text-cream/60 hover:text-gold">
+              <button type="button" onClick={() => setShowForgot(true)} className="text-navy/55 hover:text-gold">
                 {t(c.forgot, lang)}
               </button>
               <button
                 type="button"
                 onClick={() => setShowRequest(true)}
-                className="text-gold hover:text-cream"
+                className="text-gold hover:text-navy"
               >
                 {t(c.request, lang)}
               </button>
@@ -353,13 +353,13 @@ function PortalPage() {
         {showRequest && !reqSuccess && !showForgot && (
           <form
             onSubmit={handleRequest}
-            className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 backdrop-blur-sm"
+            className="mt-12 border border-gold/30 bg-white/80 p-8 backdrop-blur-sm"
           >
             <h2 className="text-center text-lg uppercase tracking-[0.18em] text-gold mb-6">
               {lang === 'en' ? 'Request Family Access' : 'طلب الانضمام للعائلة'}
             </h2>
             <label className="block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {lang === 'en' ? 'Full Name' : 'الاسم الكامل'}
               </span>
               <input
@@ -367,11 +367,11 @@ function PortalPage() {
                 required
                 value={reqName}
                 onChange={(e) => setReqName(e.target.value)}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold"
               />
             </label>
             <label className="mt-5 block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {lang === 'en' ? 'Email' : 'البريد الإلكتروني'}
               </span>
               <input
@@ -379,11 +379,11 @@ function PortalPage() {
                 required
                 value={reqEmail}
                 onChange={(e) => setReqEmail(e.target.value)}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold"
               />
             </label>
             <label className="mt-5 block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {lang === 'en' ? 'Relation to Family' : 'صلة القرابة'}
               </span>
               <input
@@ -391,18 +391,18 @@ function PortalPage() {
                 value={reqRelation}
                 onChange={(e) => setReqRelation(e.target.value)}
                 placeholder={lang === 'en' ? 'e.g. Son of Ibrahim' : 'مثال: ابن إبراهيم'}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold placeholder:text-cream/30"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold placeholder:text-navy/30"
               />
             </label>
             <label className="mt-5 block">
-              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-cream/70">
+              <span className="mb-2 block font-serif-display text-xs uppercase tracking-[0.22em] text-navy/65">
                 {lang === 'en' ? 'Message (optional)' : 'رسالة (اختياري)'}
               </span>
               <textarea
                 rows={3}
                 value={reqMessage}
                 onChange={(e) => setReqMessage(e.target.value)}
-                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-cream outline-none transition-colors focus:border-gold"
+                className="w-full border border-cream/20 bg-transparent px-4 py-3 text-navy outline-none transition-colors focus:border-gold"
               />
             </label>
             {reqError && (
@@ -418,7 +418,7 @@ function PortalPage() {
             <button
               type="button"
               onClick={() => setShowRequest(false)}
-              className="mt-4 w-full text-center text-xs text-cream/50 hover:text-cream"
+              className="mt-4 w-full text-center text-xs text-navy/45 hover:text-navy"
             >
               {lang === 'en' ? '← Back to sign in' : '← العودة لتسجيل الدخول'}
             </button>
@@ -427,31 +427,31 @@ function PortalPage() {
 
         {/* SUCCESS MESSAGE */}
         {reqSuccess && (
-          <div className="mt-12 border border-gold/30 bg-navy-deep/60 p-8 text-center backdrop-blur-sm">
+          <div className="mt-12 border border-gold/30 bg-white/80 p-8 text-center backdrop-blur-sm">
             <p className="text-2xl text-gold mb-4">✓</p>
-            <h2 className="text-lg uppercase tracking-[0.18em] text-cream mb-3">
+            <h2 className="text-lg uppercase tracking-[0.18em] text-navy mb-3">
               {lang === 'en' ? 'Request Sent' : 'تم إرسال الطلب'}
             </h2>
-            <p className="text-sm text-cream/70">
+            <p className="text-sm text-navy/65">
               {lang === 'en'
                 ? 'Your request has been received. The admin will review it and send you an invite by email.'
                 : 'تم استلام طلبك. سيقوم المسؤول بمراجعته وإرسال دعوة إلى بريدك الإلكتروني.'}
             </p>
             <button
               onClick={() => { setShowRequest(false); setReqSuccess(false); }}
-              className="mt-6 text-xs text-gold hover:text-cream"
+              className="mt-6 text-xs text-gold hover:text-navy"
             >
               {lang === 'en' ? '← Back to sign in' : '← العودة لتسجيل الدخول'}
             </button>
           </div>
         )}
 
-        <p className="mt-10 text-center text-xs italic text-cream/50">{t(c.notice, lang)}</p>
+        <p className="mt-10 text-center text-xs italic text-navy/45">{t(c.notice, lang)}</p>
 
         <div className="mt-10 text-center">
           <Link
             to="/"
-            className="font-serif-display text-xs uppercase tracking-[0.22em] text-cream/60 hover:text-gold"
+            className="font-serif-display text-xs uppercase tracking-[0.22em] text-navy/55 hover:text-gold"
           >
             ← {lang === "en" ? "Return Home" : "العودة للرئيسية"}
           </Link>
