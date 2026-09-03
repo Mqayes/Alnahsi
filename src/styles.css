@@ -65,7 +65,8 @@
   --font-body: "Lora", "Cormorant Garamond", serif;
   --font-display-caps: "Cinzel", serif;
   --font-arabic-display: "Amiri", serif;
-  --font-arabic-body: "Tajawal", sans-serif;
+  --font-arabic-kufi: "Reem Kufi", "Amiri", serif;
+  --font-arabic-body: "IBM Plex Sans Arabic", "Tajawal", sans-serif;
 }
 
 :root {
@@ -253,40 +254,35 @@
   }
 
   .btn-gold {
-    background: var(--navy);
-    color: var(--cream);
-    border: 1px solid var(--gold);
-    padding: 0.85rem 1.75rem;
-    font-family: var(--font-serif);
-    font-size: 0.875rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    transition: all 0.35s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
+    background: linear-gradient(135deg,#E2BC4A,#B8860B);
+    color: #14243A;
+    border: 1px solid rgba(255,255,255,.25);
+    padding: 1rem 2.1rem;
+    font-family: var(--font-arabic-body);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(207,169,58,.45), inset 0 1px 0 rgba(255,255,255,.45);
+    transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s, filter .3s;
+    display: inline-flex; align-items: center; justify-content:center; gap: .6rem; cursor: pointer;
   }
-  .btn-gold:hover {
-    background: var(--gold);
-    color: var(--navy);
-  }
+  .btn-gold:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 40px rgba(207,169,58,.55), inset 0 1px 0 rgba(255,255,255,.5); }
+  .btn-gold:active { transform: translateY(0) scale(.98); }
   .btn-ghost-gold {
-    background: transparent;
-    color: var(--gold);
-    border: 1px solid var(--gold);
-    padding: 0.85rem 1.75rem;
-    font-family: var(--font-serif);
-    font-size: 0.875rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    transition: all 0.35s ease;
-    cursor: pointer;
+    background: rgba(255,255,255,.10);
+    color: #FFF8E6;
+    border: 1.5px solid rgba(240,204,96,.85);
+    padding: 1rem 2.1rem;
+    font-family: var(--font-arabic-body);
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    transition: all .3s cubic-bezier(.22,1,.36,1);
+    display: inline-flex; align-items: center; justify-content:center; gap: .6rem; cursor: pointer;
   }
-  .btn-ghost-gold:hover {
-    background: var(--gold);
-    color: var(--navy);
-  }
+  .btn-ghost-gold:hover { background: rgba(240,204,96,.18); border-color:#F0CC60; transform: translateY(-2px); }
 
   /* Heritage photos — keep sharp; optional warmth without blur */
   .heritage-image {
@@ -369,3 +365,22 @@
 .stat-tile{background:rgba(255,255,255,.08);border:1px solid rgba(240,204,96,.25);border-radius:12px;padding:1.25rem;text-align:center;backdrop-filter:blur(6px)}
 .eyebrow-pill{display:inline-flex;align-items:center;gap:.5rem;border:1px solid oklch(0.72 0.13 80/.45);border-radius:999px;padding:.3rem 1rem;font-size:.7rem;letter-spacing:.2em;color:var(--gold);background:#fff}
 .gold-text{background:linear-gradient(90deg,#B8860B,#F0CC60,#B8860B);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ═══ Hero v3 ═══ */
+.hero-kufi{font-family:var(--font-arabic-kufi);font-weight:700;line-height:1.05;letter-spacing:-.01em}
+.hero-shine{background:linear-gradient(100deg,#F7E7B0 0%,#FFFFFF 40%,#F0CC60 60%,#FFF8E6 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 6px 24px rgba(0,0,0,.55))}
+.hero-scrim{background:linear-gradient(180deg,rgba(10,20,34,.55) 0%,rgba(10,20,34,.35) 35%,rgba(10,20,34,.78) 75%,var(--parchment) 100%)}
+.hero-glow{position:absolute;left:50%;top:38%;width:min(90vw,760px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(240,204,96,.22) 0%,rgba(240,204,96,.08) 35%,transparent 65%);filter:blur(8px);pointer-events:none;animation:glow-pulse 7s ease-in-out infinite}
+@keyframes glow-pulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.8}50%{transform:translate(-50%,-50%) scale(1.15);opacity:1}}
+.hero-nasab{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:.6rem;align-items:center;background:rgba(10,20,34,.55);border:1px solid rgba(240,204,96,.45);backdrop-filter:blur(12px);
+  border-radius:999px;padding:.55rem 1.25rem;color:#F7E7B0;font-family:var(--font-arabic-body);font-size:.85rem;letter-spacing:.06em}
+.hero-nasab b{color:#F0CC60;font-weight:700}
+.hero-nasab i{color:rgba(240,204,96,.55);font-style:normal}
+.hero-stat{border:1px solid rgba(240,204,96,.35);background:rgba(10,20,34,.45);backdrop-filter:blur(10px);border-radius:14px;padding:.9rem .6rem;text-align:center}
+.hero-stat b{display:block;font-family:var(--font-arabic-kufi);font-size:1.6rem;color:#F0CC60;line-height:1}
+.hero-stat span{display:block;margin-top:.25rem;font-size:.68rem;color:rgba(247,231,176,.8);letter-spacing:.06em}
+.scroll-cue{width:26px;height:42px;border:1.5px solid rgba(240,204,96,.7);border-radius:999px;position:relative}
+.scroll-cue::after{content:'';position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#F0CC60;animation:cue 1.8s ease-in-out infinite}
+@keyframes cue{0%{transform:translateY(0);opacity:1}70%{transform:translateY(16px);opacity:0}100%{opacity:0}}
