@@ -124,8 +124,8 @@ function TreeNode({
   const isHit = hit(p);
   const size = level === 0 ? "px-8 py-4 text-lg" : level === 1 ? "px-6 py-3 text-base" : level === 2 ? "px-5 py-2.5 text-sm" : "px-4 py-2 text-sm";
   const tone = level === 0
-    ? "bg-gold text-white shadow-[0_10px_30px_rgba(201,162,39,0.35)]"
-    : isSel ? "bg-navy text-white shadow-lg"
+    ? "bg-gradient-to-br from-[#CFA93A] to-[#9A7A1E] text-white shadow-[0_12px_34px_rgba(207,169,58,0.4)]"
+    : isSel ? "bg-gradient-to-br from-[#1F5C4F] to-[#143D34] text-[#F0CC60] shadow-lg border-transparent"
     : isHit ? "bg-[#FFF3C4] text-navy border-gold ring-2 ring-gold/40"
     : "bg-white text-navy border-gold/40 hover:border-gold hover:shadow-[0_8px_24px_rgba(201,162,39,0.18)]";
 
@@ -197,14 +197,14 @@ function TreePage() {
     <main className="min-h-screen bg-parchment" dir={ar ? "rtl" : "ltr"}>
 
       {/* Header */}
-      <section className="bg-gradient-to-b from-cream to-parchment pb-10 pt-36 text-center">
+      <section className="emerald-band pattern-bg pb-12 pt-36 text-center">
         <div className="mx-auto max-w-4xl px-6">
-          <div className="eyebrow">{ar ? "النسب" : "Lineage"}</div>
-          <h1 className="mt-4 font-arabic text-5xl text-navy md:text-7xl">
+          <span className="eyebrow-pill">✦ {ar ? "النسب" : "Lineage"}</span>
+          <h1 className="mt-5 font-arabic text-5xl text-[#F5EDD8] md:text-7xl">
             {ar ? "شجرة العائلة التفاعلية" : "Interactive Family Tree"}
           </h1>
           <Ornament className="mt-6" />
-          <p className="mx-auto mt-5 max-w-2xl font-serif-display text-lg italic text-navy/60">
+          <p className="mx-auto mt-5 max-w-2xl font-serif-display text-lg italic text-cream/75">
             {ar ? "خثعم ← ناهس شهران ← المزارقة ← آل بوخف" : "Khath'am → Nahas Shahran → Al-Mazarigah → Al Bukhuf"}
           </p>
 
@@ -215,9 +215,9 @@ function TreePage() {
               { n: gens, l: ar ? "أجيال موثقة" : "Generations" },
               { n: "٥٧١", l: ar ? "ميلادية · الجذور" : "CE · Roots" },
             ].map((s, i) => (
-              <div key={i} className="rounded-lg border border-gold/25 bg-white p-5 shadow-sm">
-                <div className="font-arabic text-3xl text-gold">{s.n}</div>
-                <div className="mt-1 text-xs text-navy/60">{s.l}</div>
+              <div key={i} className="stat-tile">
+                <div className="font-arabic text-3xl text-[#F0CC60]">{s.n}</div>
+                <div className="mt-1 text-xs text-cream/75">{s.l}</div>
               </div>
             ))}
           </div>
@@ -225,7 +225,7 @@ function TreePage() {
       </section>
 
       {/* Toolbar */}
-      <section className="sticky top-16 z-30 border-y border-gold/20 bg-cream/95 backdrop-blur">
+      <section className="sticky top-16 z-30 border-y border-gold/25 bg-white/92 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-3">
           <input
             value={q} onChange={(e) => setQ(e.target.value)}
@@ -247,13 +247,13 @@ function TreePage() {
 
       {/* Tree + Detail */}
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-10 lg:grid-cols-[1fr_320px]">
-        <div className="overflow-auto rounded-xl border border-gold/25 bg-white p-8 shadow-[0_20px_60px_rgba(10,25,47,0.06)]">
+        <div className="premium-card overflow-auto p-6 md:p-8">
           <div className="min-w-max origin-top transition-transform" style={{ transform: `scale(${zoom})` }}>
             <TreeNode p={ROOT} level={0} open={open} toggle={toggle} select={setSelected} selected={selected.id} hit={hit} ar={ar} />
           </div>
         </div>
 
-        <aside className="h-fit rounded-xl border border-gold/25 bg-white p-6 shadow-sm lg:sticky lg:top-36">
+        <aside className="premium-card h-fit p-6 lg:sticky lg:top-36">
           <div className="eyebrow">{ar ? "بطاقة الفرد" : "Profile"}</div>
           <h3 className="mt-2 font-arabic text-2xl text-navy">{ar ? selected.ar : selected.en}</h3>
           {selected.year && <p className="mt-1 text-sm text-gold">{selected.year}</p>}
