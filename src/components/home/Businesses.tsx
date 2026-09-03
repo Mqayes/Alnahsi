@@ -29,7 +29,7 @@ export function Businesses() {
           </div>
         </Reveal>
 
-        <div className="mt-20 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid gap-5 md:grid-cols-2 md:gap-7 lg:grid-cols-3">
           {c.cards.map((card, i) => {
             const year  = sc[`legacy_card_${i}_year`]     || card.year;
             const name  = lang === "en"
@@ -39,7 +39,7 @@ export function Businesses() {
               ? (sc[`legacy_card_${i}_story_en`] || t(card.story, "en"))
               : (sc[`legacy_card_${i}_story_ar`] || t(card.story, "ar"));
             return (
-              <article key={i} className="heritage-card group flex h-full flex-col overflow-hidden">
+              <article key={i} className="premium-card group flex h-full flex-col">
                 <div className="relative aspect-[5/4] overflow-hidden">
                   <img
                     src={sc[`business_image_${i}`] || staticImages[i]}
