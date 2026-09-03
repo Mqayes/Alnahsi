@@ -5,7 +5,7 @@ import { Ornament } from "@/components/site/Ornament";
 import { useSiteContent } from "@/lib/site-content";
 import { HeritagePlate } from "@/components/site/HeritagePlate";
 
-const MOTIFS = ["mountain", "horse", "palm", "wheat", "wheat", "gear"] as const;
+const MOTIFS = ["mountain", "camel", "palm", "wheat", "wheat", "gear"] as const;
 const AR_YEARS = ["٥٧١", "١٨٣٤", "١٩٠٢", "١٩٤٠", "١٩٨٠", "٢٠٠١"];
 
 export function Businesses() {
