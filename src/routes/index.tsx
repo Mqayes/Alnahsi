@@ -6,6 +6,7 @@ import { Businesses } from "@/components/home/Businesses";
 import { Values } from "@/components/home/Values";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { PortalCta } from "@/components/home/PortalCta";
+import { Platform } from "@/components/home/Platform";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,6 +32,7 @@ function Index() {
     <>
       <Hero />
       <Origin />
+      <Platform />
       <Timeline />
       <Businesses />
       <Values />
