@@ -14,7 +14,7 @@ export function Timeline() {
     : (sc["timeline_title_ar"] || t(c.title, "ar"));
 
   return (
-    <section className="relative bg-cream py-28 text-navy md:py-36">
+    <section className="relative pattern-bg bg-parchment py-24 text-navy md:py-36">
       <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(circle_at_1px_1px,#D4AF37_1px,transparent_0)] [background-size:32px_32px]" />
       <div className="relative mx-auto max-w-7xl px-6">
         <Reveal>
@@ -39,7 +39,7 @@ export function Timeline() {
               return (
                 <Reveal key={i} delay={i * 120}>
                   <div className="relative flex flex-col items-center text-center">
-                    <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-gold/50 bg-white shadow-[0_8px_30px_rgba(201,162,39,0.18)]">
+                    <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-gold/60 bg-gradient-to-br from-white to-[#FAF0D0] shadow-[0_10px_34px_rgba(207,169,58,0.28)]">
                       <span className="font-serif-display text-xl text-gold">{year}</span>
                     </div>
                     <h3 className="mt-6 font-serif-display text-lg uppercase tracking-[0.18em] text-navy">{gen}</h3>
