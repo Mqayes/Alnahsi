@@ -36,7 +36,7 @@ export function PortalCta() {
             <Link to="/portal" className="btn-gold">
               {login}
             </Link>
-            <Link to="/portal" className="btn-ghost-gold">
+            <Link to="/portal" className="btn-outline-navy">
               {request}
             </Link>
           </div>
