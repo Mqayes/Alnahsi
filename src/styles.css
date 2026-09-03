@@ -389,3 +389,10 @@
 .scroll-cue{width:26px;height:42px;border:1.5px solid rgba(240,204,96,.7);border-radius:999px;position:relative}
 .scroll-cue::after{content:'';position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#F0CC60;animation:cue 1.8s ease-in-out infinite}
 @keyframes cue{0%{transform:translateY(0);opacity:1}70%{transform:translateY(16px);opacity:0}100%{opacity:0}}
+
+/* ═══ Light-context outline button + Arabic typography fixes ═══ */
+.btn-outline-navy{background:#fff;color:var(--navy);border:1.5px solid var(--gold);padding:1rem 2.1rem;font-family:var(--font-arabic-body);font-size:1rem;font-weight:700;border-radius:12px;
+  display:inline-flex;align-items:center;justify-content:center;gap:.6rem;transition:all .3s cubic-bezier(.22,1,.36,1);box-shadow:0 6px 18px rgba(207,169,58,.18)}
+.btn-outline-navy:hover{background:var(--gold);color:#14243A;transform:translateY(-2px)}
+html[dir="rtl"] .font-cinzel, html[dir="rtl"] .font-serif-display, html[dir="rtl"] .uppercase{font-family:var(--font-arabic-body)!important;letter-spacing:0!important;text-transform:none!important;font-style:normal!important}
+html[dir="rtl"] input, html[dir="rtl"] textarea, html[dir="rtl"] select, html[dir="rtl"] label{font-family:var(--font-arabic-body)}
