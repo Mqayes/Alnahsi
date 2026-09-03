@@ -34,13 +34,13 @@ function StoryPage() {
 
   return (
     <>
-      <section className="relative bg-navy pt-44 pb-24 text-cream md:pt-52 md:pb-32">
+      <section className="relative bg-cream pt-44 pb-24 text-navy md:pt-52 md:pb-32">
         <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(circle_at_1px_1px,#D4AF37_1px,transparent_0)] [background-size:32px_32px]" />
         <div className="relative mx-auto max-w-4xl px-6 text-center">
           <div className="eyebrow">{lang === "en" ? "A Family Record" : "سجلٌ عائلي"}</div>
-          <h1 className="mt-6 text-cream text-5xl md:text-7xl">{t(c.title, lang)}</h1>
+          <h1 className="mt-6 text-navy text-5xl md:text-7xl">{t(c.title, lang)}</h1>
           <Ornament className="mt-8" />
-          <p className="mt-6 text-lg italic text-cream/80">{t(c.sub, lang)}</p>
+          <p className="mt-6 text-lg italic text-navy/70">{t(c.sub, lang)}</p>
         </div>
       </section>
 
