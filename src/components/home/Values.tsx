@@ -21,14 +21,14 @@ export function Values() {
           </div>
         </Reveal>
 
-        <div className="mt-20 grid gap-px overflow-hidden border border-border bg-border md:grid-cols-5">
+        <div className="mt-20 grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
           {c.items.map((item, i) => {
             const nameAr = sc[`values_card_${i}_ar`] || item.ar;
             const nameEn = lang === "en" ? (sc[`values_card_${i}_name_en`] || t(item.en, "en")) : (sc[`values_card_${i}_name_ar`] || t(item.en, "ar"));
             const desc = lang === "en" ? (sc[`values_card_${i}_desc_en`] || t(item.desc, "en")) : (sc[`values_card_${i}_desc_ar`] || t(item.desc, "ar"));
             return (
               <Reveal key={i} delay={i * 100}>
-                <div className="flex h-full flex-col items-center bg-cream p-10 text-center transition-colors hover:bg-parchment">
+                <div className="premium-card flex h-full flex-col items-center bg-white p-8 md:p-10 text-center transition-colors hover:bg-[#FAF0D0]">
                   <span className="font-arabic text-5xl text-gold md:text-6xl">{nameAr}</span>
                   <h3 className="mt-6 font-serif-display text-lg uppercase tracking-[0.22em] text-navy">
                     {nameEn}
