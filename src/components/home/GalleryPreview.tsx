@@ -73,7 +73,7 @@ export function GalleryPreview() {
               </Reveal>
             </div>
             <div className="mt-12 text-center">
-              <Link to="/gallery" className="btn-ghost-gold">{viewBtn}</Link>
+              <Link to="/gallery" className="btn-outline-navy">{viewBtn}</Link>
             </div>
           </>
         ) : (
