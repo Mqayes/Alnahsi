@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
-import { DbUpgrade } from "@/components/admin/DbUpgrade";
 
 type Stats = { members: number; users: number; pending: number; news: number; suspended: number };
 type Req = { id: string; full_name_en: string; email: string; created_at: string; status: string };
@@ -83,7 +82,6 @@ export function Dashboard({
         <p className="text-sm text-navy/60">نظرة عامة على العائلة والمنصة</p>
       </div>
       {err && <p className="text-sm text-red-600">{err}</p>}
-      <DbUpgrade autoRun={isOwner} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <Card label="أفراد في الشجرة" value={s?.members ?? "…"} tab="members" />
         <Card label="حسابات مسجّلة" value={s?.users ?? "…"} tab="users" tone="emerald" />

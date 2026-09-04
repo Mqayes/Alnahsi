@@ -2,6 +2,7 @@ import { MembersManager } from "@/components/admin/MembersManager";
 import { UsersManager } from "@/components/admin/UsersManager";
 import { Dashboard } from "@/components/admin/Dashboard";
 import { SettingsTab } from "@/components/admin/SettingsTab";
+import { DbUpgrade } from "@/components/admin/DbUpgrade";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -213,6 +214,11 @@ function AdminPage() {
             تسجيل الخروج
           </Button>
         </div>
+      </div>
+
+      {/* حالة قاعدة البيانات — فوق كل شيء، مرئية من أي تبويب */}
+      <div className="mb-6">
+        <DbUpgrade autoRun={role === "owner"} />
       </div>
 
       {/* Mobile nav */}
