@@ -1,3 +1,4 @@
+import { StaffTab } from "@/components/admin/StaffTab";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteFamilyMember } from "@/lib/api/invite-member";
@@ -91,7 +92,7 @@ function AdminPage() {
           return;
         }
 
-        if (!profile || profile.role !== "admin") {
+        if (!profile || !["owner","admin","moderator"].includes(profile.role)) {
           setAuth({
             status: "denied",
             message:
@@ -173,6 +174,7 @@ function AdminPage() {
           <TabsTrigger value="our-story">Our Story</TabsTrigger>
           <TabsTrigger value="members">Add Member</TabsTrigger>
           <TabsTrigger value="view-members">Family Members</TabsTrigger>
+          <TabsTrigger value="staff">المشرفون والصلاحيات</TabsTrigger>
         </TabsList>
 
         <TabsContent value="requests" className="mt-6">
@@ -195,6 +197,9 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="view-members" className="mt-6">
           <FamilyMembersTab />
+        </TabsContent>
+        <TabsContent value="staff" className="mt-6">
+          <StaffTab me={{ id: auth.profile.id, role: auth.profile.role }} />
         </TabsContent>
       </Tabs>
     </section>
