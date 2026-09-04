@@ -1,37 +1,39 @@
-import { execSync } from 'child_process'
-import { mkdirSync, writeFileSync, rmSync, cpSync } from 'fs'
-import { build } from 'esbuild'
-import { resolve } from 'path'
+import { execSync } from "child_process";
+import { mkdirSync, writeFileSync, rmSync, cpSync } from "fs";
+import { build } from "esbuild";
+import { resolve } from "path";
 
 // 1. Build the app (produces dist/client/ and dist/server/)
-console.log('Building app...')
-execSync('npm run build', { stdio: 'inherit' })
+console.log("Building app...");
+execSync("npm run build", { stdio: "inherit" });
 
 // 2. Set up .vercel/output structure (Vercel Build Output API v3)
-rmSync('.vercel/output', { recursive: true, force: true })
-mkdirSync('.vercel/output/functions/index.func', { recursive: true })
-mkdirSync('.vercel/output/static', { recursive: true })
+rmSync(".vercel/output", { recursive: true, force: true });
+mkdirSync(".vercel/output/functions/index.func", { recursive: true });
+mkdirSync(".vercel/output/static", { recursive: true });
 
 // 3. Static assets served directly by Vercel CDN
-cpSync('dist/client', '.vercel/output/static', { recursive: true })
+cpSync("dist/client", ".vercel/output/static", { recursive: true });
 
 // 4. Bundle server + all node_modules into a single self-contained CJS file.
 //    CJS format avoids the "Dynamic require" error that ESM bundles produce
 //    when packages internally use require().
-console.log('Bundling server for Vercel...')
+console.log("Bundling server for Vercel...");
 await build({
-  entryPoints: [resolve('dist/server/server.js')],
+  entryPoints: [resolve("dist/server/server.js")],
   bundle: true,
-  platform: 'node',
-  format: 'cjs',
-  outfile: '.vercel/output/functions/index.func/server.bundle.cjs',
-  external: ['node:*', 'fsevents'],
-  logLevel: 'error',
+  platform: "node",
+  format: "cjs",
+  outfile: ".vercel/output/functions/index.func/server.bundle.cjs",
+  external: ["node:*", "fsevents"],
+  logLevel: "error",
   absWorkingDir: process.cwd(),
-})
+});
 
 // 5. Vercel function entry (CJS) — adapts Web Standard fetch handler to Node.js req/res
-writeFileSync('.vercel/output/functions/index.func/index.js', `
+writeFileSync(
+  ".vercel/output/functions/index.func/index.js",
+  `
 const bundle = require('./server.bundle.cjs')
 const server = bundle.default || bundle
 
@@ -58,22 +60,34 @@ module.exports = async function handler(req, res) {
   for (const [k, v] of response.headers) res.setHeader(k, v)
   res.end(Buffer.from(await response.arrayBuffer()))
 }
-`.trim())
+`.trim(),
+);
 
 // 6. Vercel function metadata
-writeFileSync('.vercel/output/functions/index.func/.vc-config.json', JSON.stringify({
-  runtime: 'nodejs22.x',
-  handler: 'index.js',
-  launcherType: 'Nodejs'
-}, null, 2))
+writeFileSync(
+  ".vercel/output/functions/index.func/.vc-config.json",
+  JSON.stringify(
+    {
+      runtime: "nodejs22.x",
+      handler: "index.js",
+      launcherType: "Nodejs",
+    },
+    null,
+    2,
+  ),
+);
 
 // 7. Routing: static files first, then SSR function for everything else
-writeFileSync('.vercel/output/config.json', JSON.stringify({
-  version: 3,
-  routes: [
-    { handle: 'filesystem' },
-    { src: '/(.*)', dest: '/index' }
-  ]
-}, null, 2))
+writeFileSync(
+  ".vercel/output/config.json",
+  JSON.stringify(
+    {
+      version: 3,
+      routes: [{ handle: "filesystem" }, { src: "/(.*)", dest: "/index" }],
+    },
+    null,
+    2,
+  ),
+);
 
-console.log('✓ Vercel output ready')
+console.log("✓ Vercel output ready");

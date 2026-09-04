@@ -71,11 +71,7 @@ function HtmlLangAttributes() {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const lang = useSyncExternalStore(
-    subscribeToLang,
-    readStoredLang,
-    () => "ar" as Lang,
-  );
+  const lang = useSyncExternalStore(subscribeToLang, readStoredLang, () => "ar" as Lang);
 
   const setLang = useCallback((next: Lang) => {
     writeLang(next);

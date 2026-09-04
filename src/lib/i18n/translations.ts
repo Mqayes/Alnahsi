@@ -47,7 +47,10 @@ export const translations = {
   },
   timeline: {
     eyebrow: { en: "Generations", ar: "الأجيال" },
-    title: { en: "From Al-Hafayer to Riyadh — four generations.", ar: "من الحفائر إلى الرياض — أربعة أجيال." },
+    title: {
+      en: "From Al-Hafayer to Riyadh — four generations.",
+      ar: "من الحفائر إلى الرياض — أربعة أجيال.",
+    },
     items: [
       {
         year: "1834",
@@ -91,12 +94,54 @@ export const translations = {
       ar: "كلُّ عملٍ أسسته العائلة كان امتداداً لإيمانٍ واحد — أن العمل بصدقٍ هو في ذاته ميراث.",
     },
     cards: [
-      { year: "571", name: { en: "Nahas · Al-Mazarigah · Al Bukhuf", ar: "ناهس · المزارقة · آل بوخف" }, story: { en: "The historic battle at Al-Hafayer, birthplace of Nahas, between the tribes of Khath'am led by Nahas and Abraha's army.", ar: "المعركة التاريخية في الحفائر، مسقط رأس ناهس، بين قبائل خثعم وعلى رأسها ناهس وجيش أبرهة." } },
-      { year: "1834", name: { en: "Horses & Livestock Trade", ar: "الخيل وتجارة الأنعام" }, story: { en: "Our ancestors traded livestock and farmed the land, believing honesty and generosity were the family's true measure.", ar: "عمل أجدادنا في تجارة الأنعام والزراعة، وآمنوا أن الصدق والكرم هما ميزان العائلة." } },
-      { year: "1902", name: { en: "Farming in Tanduhah", ar: "الزراعة في تندحه" }, story: { en: "Saud Muflih Al Bukhuf builds farms and provides work for people — his wealth and reputation devoted to all.", ar: "سعود مفلح آل بوخف يؤسس المزارع ويوفر للناس عملاً — ماله وسمعته مسخّران للجميع." } },
-      { year: "1940", name: { en: "Qassim · Tabuk · Riyadh", ar: "القصيم · تبوك · الرياض" }, story: { en: "Sheikh Saud Fahd extends farming to Qassim and Tabuk and settles the family in Riyadh.", ar: "الشيخ سعود فهد يمتد بالزراعة إلى القصيم وتبوك ويستقر بالعائلة في الرياض." } },
-      { year: "1980", name: { en: "Agriculture & Employment", ar: "الزراعة وفرص العمل" }, story: { en: "Agriculture stays a family passion — a branch of trade that kept building the name.", ar: "الزراعة هاجس متوارث — فرع من فروع التجارة استمر ببناء الاسم." } },
-      { year: "2001", name: { en: "Trade, Industry & Investment", ar: "التجارة والصناعة والاستثمار" }, story: { en: "The family's horizons expand into trading and industrial companies and diversified investment.", ar: "تتوسع آفاق العائلة إلى الشركات التجارية والصناعية والاستثمار المتنوع." } },
+      {
+        year: "571",
+        name: { en: "Nahas · Al-Mazarigah · Al Bukhuf", ar: "ناهس · المزارقة · آل بوخف" },
+        story: {
+          en: "The historic battle at Al-Hafayer, birthplace of Nahas, between the tribes of Khath'am led by Nahas and Abraha's army.",
+          ar: "المعركة التاريخية في الحفائر، مسقط رأس ناهس، بين قبائل خثعم وعلى رأسها ناهس وجيش أبرهة.",
+        },
+      },
+      {
+        year: "1834",
+        name: { en: "Horses & Livestock Trade", ar: "الخيل وتجارة الأنعام" },
+        story: {
+          en: "Our ancestors traded livestock and farmed the land, believing honesty and generosity were the family's true measure.",
+          ar: "عمل أجدادنا في تجارة الأنعام والزراعة، وآمنوا أن الصدق والكرم هما ميزان العائلة.",
+        },
+      },
+      {
+        year: "1902",
+        name: { en: "Farming in Tanduhah", ar: "الزراعة في تندحه" },
+        story: {
+          en: "Saud Muflih Al Bukhuf builds farms and provides work for people — his wealth and reputation devoted to all.",
+          ar: "سعود مفلح آل بوخف يؤسس المزارع ويوفر للناس عملاً — ماله وسمعته مسخّران للجميع.",
+        },
+      },
+      {
+        year: "1940",
+        name: { en: "Qassim · Tabuk · Riyadh", ar: "القصيم · تبوك · الرياض" },
+        story: {
+          en: "Sheikh Saud Fahd extends farming to Qassim and Tabuk and settles the family in Riyadh.",
+          ar: "الشيخ سعود فهد يمتد بالزراعة إلى القصيم وتبوك ويستقر بالعائلة في الرياض.",
+        },
+      },
+      {
+        year: "1980",
+        name: { en: "Agriculture & Employment", ar: "الزراعة وفرص العمل" },
+        story: {
+          en: "Agriculture stays a family passion — a branch of trade that kept building the name.",
+          ar: "الزراعة هاجس متوارث — فرع من فروع التجارة استمر ببناء الاسم.",
+        },
+      },
+      {
+        year: "2001",
+        name: { en: "Trade, Industry & Investment", ar: "التجارة والصناعة والاستثمار" },
+        story: {
+          en: "The family's horizons expand into trading and industrial companies and diversified investment.",
+          ar: "تتوسع آفاق العائلة إلى الشركات التجارية والصناعية والاستثمار المتنوع.",
+        },
+      },
     ],
   },
 

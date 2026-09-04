@@ -8,9 +8,7 @@ const listeners = new Set<(c: SiteContent) => void>();
 
 async function loadContent(): Promise<SiteContent> {
   if (!isSupabaseConfigured()) return {};
-  const { data } = await getSupabase()
-    .from("site_content")
-    .select("key, value");
+  const { data } = await getSupabase().from("site_content").select("key, value");
   const result: SiteContent = {};
   for (const row of data ?? []) result[row.key] = row.value;
   return result;
@@ -56,7 +54,9 @@ export function useSiteContent(): SiteContent {
         listeners.forEach((fn) => fn(c));
       });
     }
-    return () => { listeners.delete(setContent); };
+    return () => {
+      listeners.delete(setContent);
+    };
   }, []);
 
   return content;

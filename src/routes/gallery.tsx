@@ -37,11 +37,19 @@ function GalleryPage() {
 
   // Auth gate — members and admins only
   useEffect(() => {
-    if (!isSupabaseConfigured()) { void navigate({ to: "/portal" }); return; }
-    getSupabase().auth.getSession().then(({ data: { session } }) => {
-      if (!session) { void navigate({ to: "/portal" }); return; }
-      setAuthReady(true);
-    });
+    if (!isSupabaseConfigured()) {
+      void navigate({ to: "/portal" });
+      return;
+    }
+    getSupabase()
+      .auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!session) {
+          void navigate({ to: "/portal" });
+          return;
+        }
+        setAuthReady(true);
+      });
   }, [navigate]);
 
   // Load images only after auth confirmed
@@ -54,18 +62,37 @@ function GalleryPage() {
         if (!data) return;
         const urls = data
           .filter((f) => f.name !== ".emptyFolderPlaceholder")
-          .map((f) => getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data.publicUrl);
+          .map(
+            (f) =>
+              getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data
+                .publicUrl,
+          );
         setDynamicUrls(urls);
       });
   }, [authReady]);
 
-  const eyebrow = lang === "en" ? (sc["gallery_eyebrow_en"] || t(c.eyebrow, "en")) : (sc["gallery_eyebrow_ar"] || t(c.eyebrow, "ar"));
-  const title   = lang === "en" ? (sc["gallery_title_en"]   || t(c.title,   "en")) : (sc["gallery_title_ar"]   || t(c.title,   "ar"));
-  const intro   = lang === "en" ? (sc["gallery_intro_en"]   || t(c.intro,   "en")) : (sc["gallery_intro_ar"]   || t(c.intro,   "ar"));
-  const bottom  = lang === "en"
-    ? (sc["gallery_bottom_en"] || "The full archive — private albums, family portraits, and decades of memory — lives behind the family door.")
-    : (sc["gallery_bottom_ar"] || "الأرشيف الكامل — الألبومات الخاصة، صور العائلة، وعقودٌ من الذاكرة — محفوظٌ خلف باب العائلة.");
-  const viewBtn = lang === "en" ? (sc["gallery_view_en"] || t(c.view, "en")) : (sc["gallery_view_ar"] || t(c.view, "ar"));
+  const eyebrow =
+    lang === "en"
+      ? sc["gallery_eyebrow_en"] || t(c.eyebrow, "en")
+      : sc["gallery_eyebrow_ar"] || t(c.eyebrow, "ar");
+  const title =
+    lang === "en"
+      ? sc["gallery_title_en"] || t(c.title, "en")
+      : sc["gallery_title_ar"] || t(c.title, "ar");
+  const intro =
+    lang === "en"
+      ? sc["gallery_intro_en"] || t(c.intro, "en")
+      : sc["gallery_intro_ar"] || t(c.intro, "ar");
+  const bottom =
+    lang === "en"
+      ? sc["gallery_bottom_en"] ||
+        "The full archive — private albums, family portraits, and decades of memory — lives behind the family door."
+      : sc["gallery_bottom_ar"] ||
+        "الأرشيف الكامل — الألبومات الخاصة، صور العائلة، وعقودٌ من الذاكرة — محفوظٌ خلف باب العائلة.";
+  const viewBtn =
+    lang === "en"
+      ? sc["gallery_view_en"] || t(c.view, "en")
+      : sc["gallery_view_ar"] || t(c.view, "ar");
 
   const allImages: Array<{ src: string }> =
     dynamicUrls.length > 0

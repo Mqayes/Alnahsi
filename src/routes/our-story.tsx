@@ -57,19 +57,19 @@ function StoryPage() {
               className="heritage-image relative h-auto w-full"
             />
             <div className="mt-4 text-center font-serif-display text-xs uppercase tracking-[0.22em] text-gold">
-              {lang === "en" ? (sc["story_patriarch_caption_en"] || "The Patriarch · c. 1925") : (sc["story_patriarch_caption_ar"] || "الجدّ الأكبر · نحو ١٩٢٥")}
+              {lang === "en"
+                ? sc["story_patriarch_caption_en"] || "The Patriarch · c. 1925"
+                : sc["story_patriarch_caption_ar"] || "الجدّ الأكبر · نحو ١٩٢٥"}
             </div>
           </div>
 
           <div className="space-y-16">
             {c.sections.map((s, i) => {
               const sk = SECTION_KEYS[i];
-              const heading = lang === "en"
-                ? (sc[`${sk}_h_en`] || t(s.h, "en"))
-                : (sc[`${sk}_h_ar`] || t(s.h, "ar"));
-              const paragraph = lang === "en"
-                ? (sc[`${sk}_p_en`] || t(s.p, "en"))
-                : (sc[`${sk}_p_ar`] || t(s.p, "ar"));
+              const heading =
+                lang === "en" ? sc[`${sk}_h_en`] || t(s.h, "en") : sc[`${sk}_h_ar`] || t(s.h, "ar");
+              const paragraph =
+                lang === "en" ? sc[`${sk}_p_en`] || t(s.p, "en") : sc[`${sk}_p_ar`] || t(s.p, "ar");
               return (
                 <Reveal key={i} delay={i * 80}>
                   <article>

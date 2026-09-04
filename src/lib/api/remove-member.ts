@@ -12,10 +12,12 @@ function getAdminSupabase() {
 }
 
 export const removeFamilyMember = createServerFn({ method: "POST" })
-  .inputValidator(z.object({
-    memberId: z.string(),
-    email: z.string().email().nullable().optional(),
-  }))
+  .inputValidator(
+    z.object({
+      memberId: z.string(),
+      email: z.string().email().nullable().optional(),
+    }),
+  )
   .handler(async ({ data }) => {
     const supabase = getAdminSupabase();
 

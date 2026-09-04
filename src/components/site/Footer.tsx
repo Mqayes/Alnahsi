@@ -7,10 +7,22 @@ export function Footer() {
   const { lang } = useLang();
   const sc = useSiteContent();
   const nameAr = sc["site_name_ar"] || t(translations.hero.nameAr, lang);
-  const line1 = lang === "en" ? (sc["footer_line1_en"] || t(translations.footer.line1, "en")) : (sc["footer_line1_ar"] || t(translations.footer.line1, "ar"));
-  const line2 = lang === "en" ? (sc["footer_line2_en"] || t(translations.footer.line2, "en")) : (sc["footer_line2_ar"] || t(translations.footer.line2, "ar"));
-  const quote = lang === "en" ? (sc["footer_quote_en"] || "“A family is the first country a child knows.”") : (sc["footer_quote_ar"] || "«العائلة هي أول وطنٍ يعرفه الطفل.»");
-  const rights = lang === "en" ? (sc["footer_rights_en"] || t(translations.footer.rights, "en")) : (sc["footer_rights_ar"] || t(translations.footer.rights, "ar"));
+  const line1 =
+    lang === "en"
+      ? sc["footer_line1_en"] || t(translations.footer.line1, "en")
+      : sc["footer_line1_ar"] || t(translations.footer.line1, "ar");
+  const line2 =
+    lang === "en"
+      ? sc["footer_line2_en"] || t(translations.footer.line2, "en")
+      : sc["footer_line2_ar"] || t(translations.footer.line2, "ar");
+  const quote =
+    lang === "en"
+      ? sc["footer_quote_en"] || "“A family is the first country a child knows.”"
+      : sc["footer_quote_ar"] || "«العائلة هي أول وطنٍ يعرفه الطفل.»";
+  const rights =
+    lang === "en"
+      ? sc["footer_rights_en"] || t(translations.footer.rights, "en")
+      : sc["footer_rights_ar"] || t(translations.footer.rights, "ar");
   return (
     <footer className="border-t border-gold/25 bg-cream text-navy">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-3">
@@ -19,15 +31,11 @@ export function Footer() {
           <div className="mt-2 font-serif-display text-sm uppercase tracking-[0.28em] text-navy/70">
             {line1}
           </div>
-          <p className="mt-4 italic text-navy/55">
-            {line2}
-          </p>
+          <p className="mt-4 italic text-navy/55">{line2}</p>
         </div>
         <div className="md:text-center">
           <div className="ornament mb-4" />
-          <p className="font-serif-display italic text-navy/60">
-            {quote}
-          </p>
+          <p className="font-serif-display italic text-navy/60">{quote}</p>
         </div>
         <div className="md:text-right rtl:md:text-left">
           <div className="space-y-2 font-serif-display text-sm uppercase tracking-[0.22em] text-navy/70">

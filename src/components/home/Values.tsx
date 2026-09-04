@@ -8,8 +8,14 @@ export function Values() {
   const { lang } = useLang();
   const sc = useSiteContent();
   const c = translations.values;
-  const eyebrow = lang === "en" ? (sc["values_eyebrow_en"] || t(c.eyebrow, "en")) : (sc["values_eyebrow_ar"] || t(c.eyebrow, "ar"));
-  const title = lang === "en" ? (sc["values_title_en"] || t(c.title, "en")) : (sc["values_title_ar"] || t(c.title, "ar"));
+  const eyebrow =
+    lang === "en"
+      ? sc["values_eyebrow_en"] || t(c.eyebrow, "en")
+      : sc["values_eyebrow_ar"] || t(c.eyebrow, "ar");
+  const title =
+    lang === "en"
+      ? sc["values_title_en"] || t(c.title, "en")
+      : sc["values_title_ar"] || t(c.title, "ar");
   return (
     <section className="relative bg-cream py-28 md:py-36">
       <div className="mx-auto max-w-7xl px-6">
@@ -24,8 +30,14 @@ export function Values() {
         <div className="mt-20 grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
           {c.items.map((item, i) => {
             const nameAr = sc[`values_card_${i}_ar`] || item.ar;
-            const nameEn = lang === "en" ? (sc[`values_card_${i}_name_en`] || t(item.en, "en")) : (sc[`values_card_${i}_name_ar`] || t(item.en, "ar"));
-            const desc = lang === "en" ? (sc[`values_card_${i}_desc_en`] || t(item.desc, "en")) : (sc[`values_card_${i}_desc_ar`] || t(item.desc, "ar"));
+            const nameEn =
+              lang === "en"
+                ? sc[`values_card_${i}_name_en`] || t(item.en, "en")
+                : sc[`values_card_${i}_name_ar`] || t(item.en, "ar");
+            const desc =
+              lang === "en"
+                ? sc[`values_card_${i}_desc_en`] || t(item.desc, "en")
+                : sc[`values_card_${i}_desc_ar`] || t(item.desc, "ar");
             return (
               <Reveal key={i} delay={i * 100}>
                 <div className="premium-card flex h-full flex-col items-center bg-white p-8 md:p-10 text-center transition-colors hover:bg-[#FAF0D0]">
@@ -33,9 +45,7 @@ export function Values() {
                   <h3 className="mt-6 font-serif-display text-lg uppercase tracking-[0.22em] text-navy">
                     {nameEn}
                   </h3>
-                  <p className="mt-4 text-sm italic leading-relaxed text-foreground/70">
-                    {desc}
-                  </p>
+                  <p className="mt-4 text-sm italic leading-relaxed text-foreground/70">{desc}</p>
                 </div>
               </Reveal>
             );

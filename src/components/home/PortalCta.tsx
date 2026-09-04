@@ -10,11 +10,26 @@ export function PortalCta() {
   const { lang } = useLang();
   const sc = useSiteContent();
   const c = translations.portalCta;
-  const eyebrow = lang === "en" ? (sc["portal_eyebrow_en"] || t(c.eyebrow, "en")) : (sc["portal_eyebrow_ar"] || t(c.eyebrow, "ar"));
-  const title   = lang === "en" ? (sc["portal_title_en"]   || t(c.title,   "en")) : (sc["portal_title_ar"]   || t(c.title,   "ar"));
-  const body    = lang === "en" ? (sc["portal_body_en"]    || t(c.body,    "en")) : (sc["portal_body_ar"]    || t(c.body,    "ar"));
-  const login   = lang === "en" ? (sc["portal_login_en"]   || t(c.login,   "en")) : (sc["portal_login_ar"]   || t(c.login,   "ar"));
-  const request = lang === "en" ? (sc["portal_request_en"] || t(c.request, "en")) : (sc["portal_request_ar"] || t(c.request, "ar"));
+  const eyebrow =
+    lang === "en"
+      ? sc["portal_eyebrow_en"] || t(c.eyebrow, "en")
+      : sc["portal_eyebrow_ar"] || t(c.eyebrow, "ar");
+  const title =
+    lang === "en"
+      ? sc["portal_title_en"] || t(c.title, "en")
+      : sc["portal_title_ar"] || t(c.title, "ar");
+  const body =
+    lang === "en"
+      ? sc["portal_body_en"] || t(c.body, "en")
+      : sc["portal_body_ar"] || t(c.body, "ar");
+  const login =
+    lang === "en"
+      ? sc["portal_login_en"] || t(c.login, "en")
+      : sc["portal_login_ar"] || t(c.login, "ar");
+  const request =
+    lang === "en"
+      ? sc["portal_request_en"] || t(c.request, "en")
+      : sc["portal_request_ar"] || t(c.request, "ar");
   return (
     <section className="relative isolate overflow-hidden bg-parchment py-32 text-navy md:py-44">
       <img

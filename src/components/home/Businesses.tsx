@@ -13,8 +13,14 @@ export function Businesses() {
   const sc = useSiteContent();
   const c = translations.businesses;
 
-  const title = lang === "en" ? (sc["legacy_title_en"] || t(c.title, "en")) : (sc["legacy_title_ar"] || t(c.title, "ar"));
-  const intro = lang === "en" ? (sc["legacy_intro_en"] || t(c.intro, "en")) : (sc["legacy_intro_ar"] || t(c.intro, "ar"));
+  const title =
+    lang === "en"
+      ? sc["legacy_title_en"] || t(c.title, "en")
+      : sc["legacy_title_ar"] || t(c.title, "ar");
+  const intro =
+    lang === "en"
+      ? sc["legacy_intro_en"] || t(c.intro, "en")
+      : sc["legacy_intro_ar"] || t(c.intro, "ar");
 
   return (
     <section className="py-28 md:py-36">
@@ -30,16 +36,22 @@ export function Businesses() {
 
         <div className="mt-16 grid gap-5 md:grid-cols-2 md:gap-7 lg:grid-cols-3">
           {c.cards.map((card, i) => {
-            const year  = sc[`legacy_card_${i}_year`]     || card.year;
-            const name  = lang === "en"
-              ? (sc[`legacy_card_${i}_name_en`]  || t(card.name,  "en"))
-              : (sc[`legacy_card_${i}_name_ar`]  || t(card.name,  "ar"));
-            const story = lang === "en"
-              ? (sc[`legacy_card_${i}_story_en`] || t(card.story, "en"))
-              : (sc[`legacy_card_${i}_story_ar`] || t(card.story, "ar"));
+            const year = sc[`legacy_card_${i}_year`] || card.year;
+            const name =
+              lang === "en"
+                ? sc[`legacy_card_${i}_name_en`] || t(card.name, "en")
+                : sc[`legacy_card_${i}_name_ar`] || t(card.name, "ar");
+            const story =
+              lang === "en"
+                ? sc[`legacy_card_${i}_story_en`] || t(card.story, "en")
+                : sc[`legacy_card_${i}_story_ar`] || t(card.story, "ar");
             return (
               <article key={i} className="premium-card group flex h-full flex-col">
-                <HeritagePlate year={lang === "ar" ? AR_YEARS[i] : year} motif={MOTIFS[i]} className="aspect-[5/4]" />
+                <HeritagePlate
+                  year={lang === "ar" ? AR_YEARS[i] : year}
+                  motif={MOTIFS[i]}
+                  className="aspect-[5/4]"
+                />
                 <div className="flex flex-1 flex-col p-7">
                   <h3 className="text-2xl">{name}</h3>
                   <p className="mt-4 flex-1 italic leading-relaxed text-foreground/75">{story}</p>

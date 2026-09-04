@@ -12,10 +12,12 @@ function getAdminSupabase() {
 }
 
 export const inviteFamilyMember = createServerFn({ method: "POST" })
-  .inputValidator(z.object({
-    email: z.string().email(),
-    fullName: z.string().optional(),
-  }))
+  .inputValidator(
+    z.object({
+      email: z.string().email(),
+      fullName: z.string().optional(),
+    }),
+  )
   .handler(async ({ data }) => {
     const supabase = getAdminSupabase();
     if (!supabase) return { success: true, skipped: true };

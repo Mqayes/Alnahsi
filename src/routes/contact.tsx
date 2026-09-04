@@ -11,8 +11,7 @@ export const Route = createFileRoute("/contact")({
       { title: "Reach the Family — Al Bukhuf Alnahsi" },
       {
         name: "description",
-        content:
-          "Correspondence and partnerships with the Al Bukhuf Alnahsi family office.",
+        content: "Correspondence and partnerships with the Al Bukhuf Alnahsi family office.",
       },
       { property: "og:title", content: "Reach the Family — Al Bukhuf Alnahsi" },
       { property: "og:description", content: "For correspondence and partnerships." },
@@ -66,9 +65,7 @@ function ContactPage() {
           {sent ? (
             <div className="py-16 text-center">
               <Ornament className="mb-6" />
-              <p className="font-serif-display text-2xl italic text-navy">
-                {t(c.sent, lang)}
-              </p>
+              <p className="font-serif-display text-2xl italic text-navy">{t(c.sent, lang)}</p>
             </div>
           ) : (
             <>

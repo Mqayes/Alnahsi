@@ -6,10 +6,7 @@ export function isSupabaseConfigured(): boolean {
   const url = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
   return Boolean(
-    url &&
-      key &&
-      url !== "https://your-project.supabase.co" &&
-      key !== "your-anon-key",
+    url && key && url !== "https://your-project.supabase.co" && key !== "your-anon-key",
   );
 }
 
@@ -48,10 +45,7 @@ export async function withTimeout<T>(
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
   const timeout = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(
-      () => reject(new Error(`${label} timed out after ${ms / 1000}s`)),
-      ms,
-    );
+    timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms);
   });
 
   try {
