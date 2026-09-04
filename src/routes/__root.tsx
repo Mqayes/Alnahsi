@@ -15,21 +15,42 @@ import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 
+// صفحتا 404 والخطأ قد تُصيَّران خارج LanguageProvider، لذا نقرأ اللغة مباشرة.
+function readLangSafe(): "ar" | "en" {
+  if (typeof window === "undefined") return "ar";
+  try {
+    const stored = localStorage.getItem("alnahsi.lang");
+    if (stored === "en" || stored === "ar") return stored;
+  } catch {
+    /* noop */
+  }
+  return "ar";
+}
+
 function NotFoundComponent() {
+  const ar = readLangSafe() === "ar";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div
+      dir={ar ? "rtl" : "ltr"}
+      className="flex min-h-screen items-center justify-center bg-background px-4"
+    >
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">
+          {ar ? "الصفحة غير موجودة" : "Page not found"}
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          {ar
+            ? "الصفحة التي تبحث عنها غير موجودة أو تم نقلها."
+            : "The page you're looking for doesn't exist or has been moved."}
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            {ar ? "العودة للرئيسية" : "Go home"}
           </Link>
         </div>
       </div>
@@ -44,14 +65,21 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
+  const ar = readLangSafe() === "ar";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div
+      dir={ar ? "rtl" : "ltr"}
+      className="flex min-h-screen items-center justify-center bg-background px-4"
+    >
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          {ar ? "تعذّر تحميل هذه الصفحة" : "This page didn't load"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          {ar
+            ? "حدث خلل من طرفنا. جرّب التحديث أو العودة إلى الصفحة الرئيسية."
+            : "Something went wrong on our end. You can try refreshing or head back home."}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -61,13 +89,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            {ar ? "إعادة المحاولة" : "Try again"}
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            {ar ? "الصفحة الرئيسية" : "Go home"}
           </a>
         </div>
       </div>
@@ -93,9 +121,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "A name built over generations.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://alnahsi.com/" },
+      { property: "og:image", content: "https://alnahsi.com/og-image.jpg" },
+      { property: "og:image:alt", content: "The House of Al Bukhuf Alnahsi" },
+      { property: "og:locale", content: "ar_SA" },
+      { property: "og:locale:alternate", content: "en_US" },
+      { property: "og:site_name", content: "Al Bukhuf Alnahsi" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://alnahsi.com/og-image.jpg" },
+      { name: "theme-color", content: "#14243A" },
     ],
     links: [
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "apple-touch-icon", href: "/favicon.svg" },
+      { rel: "canonical", href: "https://alnahsi.com/" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
         href: appCss,
@@ -112,11 +153,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+// يُنفَّذ قبل أول رسم للصفحة: يضبط اللغة والاتجاه من التخزين المحلي
+// فيمنع وميض الانقلاب من LTR إلى RTL الذي كان يظهر عند كل تحميل.
+const LANG_BOOTSTRAP = `(function(){try{
+var l=localStorage.getItem("alnahsi.lang");
+if(l!=="en"&&l!=="ar")l="ar";
+var d=document.documentElement;
+d.lang=l;d.dir=l==="ar"?"rtl":"ltr";
+d.setAttribute("data-lang",l);
+}catch(e){}})();`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: LANG_BOOTSTRAP }} />
       </head>
       <body>
         {children}
