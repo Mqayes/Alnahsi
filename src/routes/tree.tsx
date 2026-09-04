@@ -111,6 +111,34 @@ function pathTo(p: Person, q: string, path: string[] = []): string[] | null {
   return null;
 }
 
+
+/* ─── Build tree from database ────────────────────────────── */
+type Row = { id: string; full_name_ar: string | null; full_name_en: string; parent_id: string | null; generation: number | null; city: string | null; birth_year: number | null; death_year: number | null; is_deceased: boolean | null; notes: string | null; relation: string | null };
+function buildFromRows(rows: Row[]): Person | null {
+  if (!rows.length) return null;
+  const nodes: Record<string, Person> = {};
+  rows.forEach((r) => {
+    nodes[r.id] = {
+      id: r.id,
+      ar: r.full_name_ar || r.full_name_en,
+      en: r.full_name_en || r.full_name_ar || "",
+      year: r.birth_year ? `${r.birth_year} م${r.death_year ? " — " + r.death_year + " م" : ""}` : undefined,
+      place: [r.city, r.generation ? `الجيل ${r.generation}` : null, r.is_deceased ? "رحمه الله" : null].filter(Boolean).join(" · ") || undefined,
+      note: r.notes ? { ar: r.notes, en: r.notes } : r.relation ? { ar: r.relation, en: r.relation } : undefined,
+      children: [],
+    };
+  });
+  const roots: Person[] = [];
+  rows.forEach((r) => {
+    const n = nodes[r.id];
+    if (r.parent_id && nodes[r.parent_id]) nodes[r.parent_id].children!.push(n); else roots.push(n);
+  });
+  const sortRec = (p: Person) => { p.children?.sort((a, b) => (rows.find(x=>x.id===a.id)?.birth_year ?? 9999) - (rows.find(x=>x.id===b.id)?.birth_year ?? 9999)); p.children?.forEach(sortRec); };
+  roots.forEach(sortRec);
+  if (roots.length === 1) return roots[0];
+  return { id: "root", ar: "آل بوخف الناهسي", en: "Al Bukhuf Alnahsi", year: "571 م", place: "الحفائر · بلاد ناهس القاعة", children: roots };
+}
+
 /* ─── Node ───────────────────────────────────────────────────── */
 function TreeNode({
   p, level, open, toggle, select, selected, hit, ar,
@@ -176,22 +204,33 @@ function TreePage() {
   const [q, setQ] = useState("");
   const [zoom, setZoom] = useState(1);
   const [showAdd, setShowAdd] = useState(false);
+  const [data, setData] = useState<Person>(ROOT);
+  const [fromDb, setFromDb] = useState(false);
 
-  const total = useMemo(() => countAll(ROOT), []);
-  const gens = useMemo(() => depth(ROOT), []);
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    getSupabase().from("family_members").select("id, full_name_ar, full_name_en, parent_id, generation, city, birth_year, death_year, is_deceased, notes, relation")
+      .then(({ data: rows }) => {
+        const built = buildFromRows((rows ?? []) as Row[]);
+        if (built) { setData(built); setSelected(built); setFromDb(true); const s = new Set<string>(); collectIds(built, s); setOpen(s); }
+      });
+  }, []);
+
+  const total = useMemo(() => countAll(data), [data]);
+  const gens = useMemo(() => depth(data), [data]);
   const hit = (p: Person) => matches(p, q);
 
   // Expand path when searching
   useEffect(() => {
     if (!q.trim()) return;
-    const path = pathTo(ROOT, q);
+    const path = pathTo(data, q);
     if (path) setOpen((o) => new Set([...o, ...path]));
   }, [q]);
 
   const toggle = (id: string) =>
     setOpen((o) => { const n = new Set(o); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  const expandAll = () => { const s = new Set<string>(); collectIds(ROOT, s); setOpen(s); };
-  const collapseAll = () => setOpen(new Set(["root"]));
+  const expandAll = () => { const s = new Set<string>(); collectIds(data, s); setOpen(s); };
+  const collapseAll = () => setOpen(new Set([data.id]));
 
   return (
     <main className="min-h-screen bg-parchment" dir={ar ? "rtl" : "ltr"}>
@@ -249,7 +288,7 @@ function TreePage() {
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-10 lg:grid-cols-[1fr_320px]">
         <div className="premium-card overflow-auto p-6 md:p-8">
           <div className="min-w-max origin-top transition-transform" style={{ transform: `scale(${zoom})` }}>
-            <TreeNode p={ROOT} level={0} open={open} toggle={toggle} select={setSelected} selected={selected.id} hit={hit} ar={ar} />
+            <TreeNode p={data} level={0} open={open} toggle={toggle} select={setSelected} selected={selected.id} hit={hit} ar={ar} />
           </div>
         </div>
 
