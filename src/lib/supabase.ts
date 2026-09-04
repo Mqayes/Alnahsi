@@ -83,6 +83,8 @@ export type NewsPost = {
   title_ar: string;
   content_en: string;
   content_ar: string;
+  cover_image?: string | null;
+  is_private?: boolean;
   created_at: string;
 };
 
@@ -104,4 +106,9 @@ export type FamilyMember = {
   photo_url?: string | null;
   email?: string | null;
   created_at: string;
+  parent_id?: string | null;
+  generation?: number | null;
+  city?: string | null;
+  is_deceased?: boolean | null;
+  notes?: string | null;
 };

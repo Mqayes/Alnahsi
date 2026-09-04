@@ -80,8 +80,8 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
+  '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
-    '/portal': typeof PortalRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -92,8 +92,8 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
+  '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
-    '/portal': typeof PortalRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,8 +105,8 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
+  '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
-    '/portal': typeof PortalRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,6 +120,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/our-story'
     | '/portal'
+    | '/tree'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -131,6 +132,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/our-story'
     | '/portal'
+    | '/tree'
   id:
     | '__root__'
     | '/'
@@ -142,6 +144,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/our-story'
     | '/portal'
+    | '/tree'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -154,10 +157,18 @@ export interface RootRouteChildren {
   NewsRoute: typeof NewsRoute
   OurStoryRoute: typeof OurStoryRoute
   PortalRoute: typeof PortalRoute
+  TreeRoute: typeof TreeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tree': {
+      id: '/tree'
+      path: '/tree'
+      fullPath: '/tree'
+      preLoaderRoute: typeof TreeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/portal': {
       id: '/portal'
       path: '/portal'
@@ -233,8 +244,8 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   NewsRoute: NewsRoute,
   OurStoryRoute: OurStoryRoute,
-  PortalRoute: TreeRoute,
-    PortalRoute,
+  PortalRoute: PortalRoute,
+  TreeRoute: TreeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

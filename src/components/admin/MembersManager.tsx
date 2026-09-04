@@ -60,31 +60,60 @@ export function MembersManager() {
       </div>
 
       {loading ? <p className="text-navy/60">جارٍ التحميل…</p> : (
-        <div className="overflow-x-auto rounded-lg border border-gold/25 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-parchment text-navy/70">
-              <tr><th className="p-3 text-right">الاسم</th><th className="p-3 text-right">الأب</th><th className="p-3">الجيل</th><th className="p-3">المدينة</th><th className="p-3">الميلاد</th><th className="p-3">الحالة</th><th className="p-3"></th></tr>
-            </thead>
-            <tbody>
-              {filtered.map((m) => (
-                <tr key={m.id} className="border-t border-gold/15 hover:bg-parchment/60">
-                  <td className="p-3 font-arabic text-base text-navy">{name(m)}<div className="text-xs text-navy/40" dir="ltr">{m.full_name_en}</div></td>
-                  <td className="p-3 text-navy/70">{m.parent_id && byId[m.parent_id] ? name(byId[m.parent_id]) : "—"}</td>
-                  <td className="p-3 text-center">{m.generation ?? "—"}</td>
-                  <td className="p-3 text-center">{m.city ?? "—"}</td>
-                  <td className="p-3 text-center">{m.birth_year ?? "—"}</td>
-                  <td className="p-3 text-center">{m.is_deceased ? <span className="rounded-full bg-navy/10 px-2 py-0.5 text-xs">رحمه الله</span> : <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">على قيد الحياة</span>}</td>
-                  <td className="p-3 whitespace-nowrap">
-                    <button className="text-gold hover:underline" onClick={() => { setEditing(m); setCreating(false); }}>تعديل</button>
-                    <span className="mx-2 text-navy/20">|</span>
-                    <button className="text-red-600 hover:underline" onClick={() => void remove(m)}>حذف</button>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-navy/50">لا يوجد أفراد بعد</td></tr>}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Mobile cards */}
+          <div className="grid gap-3 md:hidden">
+            {filtered.map((m) => (
+              <div key={m.id} className="rounded-lg border border-gold/25 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-arabic text-lg text-navy">{name(m)}</div>
+                    {m.full_name_en && <div className="text-xs text-navy/40" dir="ltr">{m.full_name_en}</div>}
+                  </div>
+                  {m.is_deceased ? <span className="shrink-0 rounded-full bg-navy/10 px-2 py-0.5 text-[11px]">رحمه الله</span> : <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-[11px] text-green-700">حي</span>}
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-navy/70">
+                  <dt>الأب</dt><dd className="text-navy">{m.parent_id && byId[m.parent_id] ? name(byId[m.parent_id]) : "—"}</dd>
+                  <dt>الجيل</dt><dd className="text-navy">{m.generation ?? "—"}</dd>
+                  <dt>المدينة</dt><dd className="text-navy">{m.city ?? "—"}</dd>
+                  <dt>الميلاد</dt><dd className="text-navy">{m.birth_year ?? "—"}{m.death_year ? ` — ${m.death_year}` : ""}</dd>
+                </dl>
+                <div className="mt-3 flex gap-2">
+                  <Button size="sm" className="flex-1 bg-gold text-navy hover:bg-gold/90" onClick={() => { setEditing(m); setCreating(false); }}>تعديل</Button>
+                  <Button size="sm" variant="outline" className="text-red-600" onClick={() => void remove(m)}>حذف</Button>
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && <p className="p-6 text-center text-navy/50">لا يوجد أفراد بعد</p>}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden overflow-x-auto rounded-lg border border-gold/25 bg-white md:block">
+            <table className="w-full text-sm">
+              <thead className="bg-parchment text-navy/70">
+                <tr><th className="p-3 text-right">الاسم</th><th className="p-3 text-right">الأب</th><th className="p-3">الجيل</th><th className="p-3">المدينة</th><th className="p-3">الميلاد</th><th className="p-3">الحالة</th><th className="p-3"></th></tr>
+              </thead>
+              <tbody>
+                {filtered.map((m) => (
+                  <tr key={m.id} className="border-t border-gold/15 hover:bg-parchment/60">
+                    <td className="p-3 font-arabic text-base text-navy">{name(m)}<div className="text-xs text-navy/40" dir="ltr">{m.full_name_en}</div></td>
+                    <td className="p-3 text-navy/70">{m.parent_id && byId[m.parent_id] ? name(byId[m.parent_id]) : "—"}</td>
+                    <td className="p-3 text-center">{m.generation ?? "—"}</td>
+                    <td className="p-3 text-center">{m.city ?? "—"}</td>
+                    <td className="p-3 text-center">{m.birth_year ?? "—"}</td>
+                    <td className="p-3 text-center">{m.is_deceased ? <span className="rounded-full bg-navy/10 px-2 py-0.5 text-xs">رحمه الله</span> : <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">على قيد الحياة</span>}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      <button className="text-gold hover:underline" onClick={() => { setEditing(m); setCreating(false); }}>تعديل</button>
+                      <span className="mx-2 text-navy/20">|</span>
+                      <button className="text-red-600 hover:underline" onClick={() => void remove(m)}>حذف</button>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-navy/50">لا يوجد أفراد بعد</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {editing && (

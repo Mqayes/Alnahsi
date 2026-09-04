@@ -158,7 +158,7 @@ function AdminPage() {
           <p className="eyebrow text-gold">Admin</p>
           <h1 className="mt-2 font-serif-display text-4xl text-navy">Family Dashboard</h1>
           <p className="mt-2 text-sm text-navy/60">
-            Signed in as {auth.profile.full_name ?? auth.profile.email ?? auth.profile.id}
+            مسجّل الدخول: {auth.profile.full_name ?? auth.profile.email ?? auth.profile.id}
           </p>
         </div>
         <Button variant="outline" onClick={handleSignOut}>
@@ -168,11 +168,11 @@ function AdminPage() {
 
       <Tabs defaultValue="requests" className="mt-10">
         <TabsList className="h-auto flex-wrap gap-1 bg-navy/5 p-1">
-          <TabsTrigger value="requests">Join Requests</TabsTrigger>
-          <TabsTrigger value="news">News</TabsTrigger>
-          <TabsTrigger value="gallery">Gallery</TabsTrigger>
-          <TabsTrigger value="home">Home Content</TabsTrigger>
-          <TabsTrigger value="our-story">Our Story</TabsTrigger>
+          <TabsTrigger value="requests">طلبات الانضمام</TabsTrigger>
+          <TabsTrigger value="news">الأخبار</TabsTrigger>
+          <TabsTrigger value="gallery">الأرشيف</TabsTrigger>
+          <TabsTrigger value="home">محتوى الرئيسية</TabsTrigger>
+          <TabsTrigger value="our-story">قصتنا</TabsTrigger>
                     <TabsTrigger value="view-members">الأعضاء والشجرة</TabsTrigger>
           <TabsTrigger value="staff">المشرفون والصلاحيات</TabsTrigger>
         </TabsList>
@@ -1183,7 +1183,7 @@ function FamilyMembersTab() {
 
   const removeMember = async (id: string, _email?: string | null) => {
     if (!window.confirm("هل تريد حذف هذا الفرد من الشجرة؟")) return;
-    setError(null);
+    setError("");
     const { error: delErr } = await getSupabase().from("family_members").delete().eq("id", id);
     if (delErr) {
       setError("تعذّر الحذف: " + delErr.message);
@@ -1229,7 +1229,7 @@ function FamilyMembersTab() {
             <div className="flex items-center gap-1">
               {member.email && (
                 <Button variant="ghost" size="sm" className="text-gold hover:bg-gold/10"
-                  onClick={async () => { const r = await inviteByMagicLink(member.email!, member.full_name_en); setError(r.success ? null : r.error); if (r.success) window.alert("أُرسلت دعوة الدخول إلى " + member.email); }}>
+                  onClick={async () => { const r = await inviteByMagicLink(member.email!, member.full_name_en); setError(r.success ? "" : r.error); if (r.success) window.alert("أُرسلت دعوة الدخول إلى " + member.email); }}>
                   إرسال دعوة
                 </Button>
               )}

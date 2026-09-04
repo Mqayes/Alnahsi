@@ -135,8 +135,8 @@ function buildFromRows(rows: Row[]): Person | null {
   });
   const sortRec = (p: Person) => { p.children?.sort((a, b) => (rows.find(x=>x.id===a.id)?.birth_year ?? 9999) - (rows.find(x=>x.id===b.id)?.birth_year ?? 9999)); p.children?.forEach(sortRec); };
   roots.forEach(sortRec);
-  if (roots.length === 1) return roots[0];
-  return { id: "root", ar: "آل بوخف الناهسي", en: "Al Bukhuf Alnahsi", year: "571 م", place: "الحفائر · بلاد ناهس القاعة", children: roots };
+  return { id: "root", ar: "آل بوخف الناهسي", en: "Al Bukhuf Alnahsi", year: "571 م", place: "الحفائر · بلاد ناهس القاعة",
+    note: ROOT.note, children: roots };
 }
 
 /* ─── Node ───────────────────────────────────────────────────── */
@@ -209,11 +209,19 @@ function TreePage() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
-    getSupabase().from("family_members").select("id, full_name_ar, full_name_en, parent_id, generation, city, birth_year, death_year, is_deceased, notes, relation")
-      .then(({ data: rows }) => {
-        const built = buildFromRows((rows ?? []) as Row[]);
-        if (built) { setData(built); setSelected(built); setFromDb(true); const s = new Set<string>(); collectIds(built, s); setOpen(s); }
-      });
+    let cancelled = false;
+    const sb = getSupabase();
+    const load = async () => {
+      await sb.auth.getSession(); // انتظر استعادة الجلسة قبل القراءة (RLS)
+      const { data: rows, error } = await sb.from("family_members")
+        .select("id, full_name_ar, full_name_en, parent_id, generation, city, birth_year, death_year, is_deceased, notes, relation");
+      if (cancelled || error) return;
+      const built = buildFromRows((rows ?? []) as Row[]);
+      if (built) { setData(built); setSelected(built); setFromDb(true); const s = new Set<string>(); collectIds(built, s); setOpen(s); }
+    };
+    void load();
+    const { data: sub } = sb.auth.onAuthStateChange(() => { void load(); });
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, []);
 
   const total = useMemo(() => countAll(data), [data]);
