@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { useSiteContent } from "@/lib/site-content";
-import hero from "@/assets/hero-heritage.jpg";
+import hero from "@/assets/hero-heritage.webp";
 
 export function Hero() {
   const { lang } = useLang();

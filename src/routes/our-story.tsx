@@ -5,7 +5,7 @@ import { useSiteContent } from "@/lib/site-content";
 import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
 import { Timeline } from "@/components/home/Timeline";
-import patriarch from "@/assets/patriarch.jpg";
+import patriarch from "@/assets/patriarch.webp";
 
 export const Route = createFileRoute("/our-story")({
   head: () => ({

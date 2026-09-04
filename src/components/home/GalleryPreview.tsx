@@ -6,10 +6,10 @@ import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useSiteContent } from "@/lib/site-content";
-import g1 from "@/assets/gallery-1.jpg";
-import g2 from "@/assets/gallery-2.jpg";
-import g3 from "@/assets/gallery-3.jpg";
-import g4 from "@/assets/gallery-4.jpg";
+import g1 from "@/assets/gallery-1.webp";
+import g2 from "@/assets/gallery-2.webp";
+import g3 from "@/assets/gallery-3.webp";
+import g4 from "@/assets/gallery-4.webp";
 
 const staticPreview = [g1, g2, g4, g3];
 

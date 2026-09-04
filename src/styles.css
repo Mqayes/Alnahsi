@@ -653,6 +653,12 @@ html[dir="rtl"] .uppercase {
   text-transform: none !important;
   font-style: normal !important;
 }
+/* العربية لا تستخدم الخط المائل — المتصفح يُصطنعه صناعياً فيشوّه الحروف.
+   نلغيه في وضع RTL ونستعيض عنه بلون أهدأ للحفاظ على التمييز البصري. */
+html[dir="rtl"] .italic {
+  font-style: normal;
+}
+
 html[dir="rtl"] input,
 html[dir="rtl"] textarea,
 html[dir="rtl"] select,

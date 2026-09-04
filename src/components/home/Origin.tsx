@@ -3,7 +3,7 @@ import { translations, t } from "@/lib/i18n/translations";
 import { Reveal } from "@/components/site/Reveal";
 import { Ornament } from "@/components/site/Ornament";
 import { useSiteContent } from "@/lib/site-content";
-import album from "@/assets/story-album.jpg";
+import album from "@/assets/story-album.webp";
 
 export function Origin() {
   const { lang } = useLang();

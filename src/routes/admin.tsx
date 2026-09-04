@@ -22,12 +22,12 @@ import {
   type Profile,
 } from "@/lib/supabase";
 import { upsertSiteContent, deleteSiteContent, useSiteContent } from "@/lib/site-content";
-import heroDefault from "@/assets/hero-heritage.jpg";
-import originDefault from "@/assets/story-album.jpg";
-import b1Default from "@/assets/business-1.jpg";
-import b2Default from "@/assets/business-2.jpg";
-import b3Default from "@/assets/business-3.jpg";
-import patriarchDefault from "@/assets/patriarch.jpg";
+import heroDefault from "@/assets/hero-heritage.webp";
+import originDefault from "@/assets/story-album.webp";
+import b1Default from "@/assets/business-1.webp";
+import b2Default from "@/assets/business-2.webp";
+import b3Default from "@/assets/business-3.webp";
+import patriarchDefault from "@/assets/patriarch.webp";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
