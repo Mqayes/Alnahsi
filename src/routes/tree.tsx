@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { Ornament } from "@/components/site/Ornament";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
 
 export const Route = createFileRoute("/tree")({
   head: () => ({
@@ -150,6 +151,8 @@ type Row = {
   id: string;
   full_name_ar: string | null;
   full_name_en: string;
+  first_name?: string | null;
+  gender?: "m" | "f" | null;
   parent_id: string | null;
   generation: number | null;
   city: string | null;
@@ -312,6 +315,7 @@ function TreePage() {
   const [showAdd, setShowAdd] = useState(false);
   const [data, setData] = useState<Person>(ROOT);
   const [fromDb, setFromDb] = useState(false);
+  const [rowsById, setRowsById] = useState<Record<string, LineageRow>>({});
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -322,10 +326,13 @@ function TreePage() {
       const { data: rows, error } = await sb
         .from("family_members")
         .select(
-          "id, full_name_ar, full_name_en, parent_id, generation, city, birth_year, death_year, is_deceased, notes, relation",
+          "id, full_name_ar, full_name_en, first_name, gender, parent_id, generation, city, birth_year, death_year, is_deceased, notes, relation",
         );
       if (cancelled || error) return;
       const built = buildFromRows((rows ?? []) as Row[]);
+      setRowsById(
+        Object.fromEntries(((rows ?? []) as Row[]).map((r) => [r.id, r as unknown as LineageRow])),
+      );
       if (built) {
         setData(built);
         setSelected(built);
@@ -527,18 +534,33 @@ function TreePage() {
         </div>
       </section>
 
-      {showAdd && <AddModal ar={ar} parent={selected} onClose={() => setShowAdd(false)} />}
+      {showAdd && (
+        <AddModal ar={ar} parent={selected} byId={rowsById} onClose={() => setShowAdd(false)} />
+      )}
     </main>
   );
 }
 
 /* ─── Add member modal ───────────────────────────────────────── */
-function AddModal({ ar, parent, onClose }: { ar: boolean; parent: Person; onClose: () => void }) {
+function AddModal({
+  ar,
+  parent,
+  byId,
+  onClose,
+}: {
+  ar: boolean;
+  parent: Person;
+  byId: Record<string, LineageRow>;
+  onClose: () => void;
+}) {
+  const parentId = parent.id === "root" ? null : parent.id;
+  const isDbParent = parentId !== null && !!byId[parentId];
   const [f, setF] = useState({
-    name: "",
-    father: "",
-    grand: "",
-    year: "",
+    first: "",
+    gender: "m" as "m" | "f",
+    deceased: false,
+    birth: "",
+    death: "",
     city: "",
     email: "",
     phone: "",
@@ -546,21 +568,28 @@ function AddModal({ ar, parent, onClose }: { ar: boolean; parent: Person; onClos
     note: "",
   });
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [errMsg, setErrMsg] = useState("");
   const set =
-    (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setF({ ...f, [k]: e.target.value });
+    (k: keyof typeof f) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setF({
+        ...f,
+        [k]: e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value,
+      });
+
+  const fullName = f.first.trim()
+    ? composeFullName(f.first, f.gender, isDbParent ? parentId : null, byId)
+    : "";
+  const gen = nextGeneration(isDbParent ? parentId : null, byId);
+  const lineage = isDbParent ? chainLabel(parentId, byId) : ar ? parent.ar : parent.en;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!f.name || !f.father || !f.email) return;
+    if (!f.first.trim() || !f.email.trim()) return;
     setState("sending");
-    const fullAr = `${f.name} بن ${f.father}${f.grand ? " بن " + f.grand : ""} آل بوخف`;
+    setErrMsg("");
     const message = [
-      `الفرع: ${parent.ar}`,
-      `الاسم: ${fullAr}`,
-      f.year && `سنة الميلاد: ${f.year}`,
-      f.city && `المدينة: ${f.city}`,
-      f.phone && `الجوال: ${f.phone}`,
+      `الفرع: ${lineage}`,
       f.job && `المهنة: ${f.job}`,
       f.note && `ملاحظة: ${f.note}`,
     ]
@@ -570,122 +599,173 @@ function AddModal({ ar, parent, onClose }: { ar: boolean; parent: Person; onClos
       if (isSupabaseConfigured()) {
         const { error } = await getSupabase()
           .from("join_requests")
-          .insert({ full_name_en: fullAr, email: f.email, message, status: "pending" });
+          .insert({
+            full_name_en: fullName,
+            full_name_ar: fullName,
+            first_name: f.first.trim(),
+            email: f.email.trim(),
+            parent_id: isDbParent ? parentId : null,
+            gender: f.gender,
+            is_deceased: f.deceased,
+            birth_year: f.birth ? Number(f.birth) : null,
+            death_year: f.deceased && f.death ? Number(f.death) : null,
+            city: f.city.trim() || null,
+            phone: f.phone.trim() || null,
+            occupation: f.job.trim() || null,
+            message,
+            status: "pending",
+          });
         if (error) throw error;
       }
       setState("done");
-    } catch {
+    } catch (err) {
+      setErrMsg(err instanceof Error ? err.message : "error");
       setState("error");
     }
   };
 
   const I =
     "w-full rounded-md border border-gold/40 bg-parchment px-3 py-2 text-navy outline-none focus:border-gold";
+  const L = "block text-xs text-navy/60 mb-1";
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-navy/50 p-4"
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-xl bg-white p-7 shadow-2xl"
+        className="max-h-[92vh] w-full max-w-lg overflow-auto rounded-xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
         dir={ar ? "rtl" : "ltr"}
       >
-        <div className="mb-5 flex items-start justify-between">
+        <div className="mb-4 flex items-start justify-between">
           <div>
-            <div className="eyebrow">{ar ? "طلب إضافة" : "Add request"}</div>
+            <div className="eyebrow">{ar ? "طلب إضافة إلى الشجرة" : "Add to the tree"}</div>
             <h3 className="mt-1 font-arabic text-2xl text-navy">
-              {ar ? "أضف اسمك إلى الشجرة" : "Add your name"}
+              {ar ? "أضف فرداً تحت هذا الفرع" : "Add a person under this branch"}
             </h3>
-            <p className="mt-1 text-xs text-navy/50">
-              {ar ? "الفرع المختار:" : "Branch:"}{" "}
-              <span className="text-gold">{ar ? parent.ar : parent.en}</span>
-            </p>
           </div>
           <button onClick={onClose} className="text-2xl text-navy/40 hover:text-navy">
             ✕
           </button>
         </div>
 
+        {/* Lineage summary */}
+        <div className="mb-4 rounded-lg border border-gold/30 bg-parchment p-3 text-sm">
+          <div className="text-xs text-navy/50">
+            {ar ? "الأب والأجداد (يُحددون تلقائياً من الفرع)" : "Lineage (auto from branch)"}
+          </div>
+          <div className="mt-1 font-arabic text-base text-navy">{lineage}</div>
+          {gen && (
+            <div className="mt-1 text-xs text-gold">
+              {ar ? `سيكون في الجيل ${gen}` : `Generation ${gen}`}
+            </div>
+          )}
+          {fullName && (
+            <div className="mt-2 border-t border-gold/20 pt-2 font-arabic text-navy">
+              {ar ? "الاسم الكامل: " : "Full name: "}
+              <b>{fullName}</b>
+            </div>
+          )}
+        </div>
+
         {state === "done" ? (
           <div className="rounded-md border border-green-300 bg-green-50 p-5 text-center text-green-800">
             {ar
-              ? "🎉 تم استلام طلبك وسيُراجَع من مشرف العائلة قريباً."
-              : "🎉 Request received — the family admin will review it soon."}
+              ? "🎉 تم استلام الطلب وسيُراجَع من مشرف العائلة قبل إضافته للشجرة."
+              : "🎉 Request received — the family admin will review it."}
             <button onClick={onClose} className="btn-gold mt-5 w-full">
               {ar ? "إغلاق" : "Close"}
             </button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-3">
-            <div className="grid grid-cols-3 gap-2">
-              <input
-                className={I}
-                placeholder={ar ? "الاسم الأول *" : "First name *"}
-                value={f.name}
-                onChange={set("name")}
-                required
-              />
-              <input
-                className={I}
-                placeholder={ar ? "اسم الأب *" : "Father *"}
-                value={f.father}
-                onChange={set("father")}
-                required
-              />
-              <input
-                className={I}
-                placeholder={ar ? "اسم الجد" : "Grandfather"}
-                value={f.grand}
-                onChange={set("grand")}
-              />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={L}>{ar ? "الاسم الأول *" : "First name *"}</label>
+                <input
+                  className={I}
+                  value={f.first}
+                  onChange={set("first")}
+                  required
+                  placeholder={ar ? "مثال: محمد" : "e.g. Mohammed"}
+                />
+              </div>
+              <div>
+                <label className={L}>{ar ? "الجنس" : "Gender"}</label>
+                <select className={I} value={f.gender} onChange={set("gender")}>
+                  <option value="m">{ar ? "ذكر" : "Male"}</option>
+                  <option value="f">{ar ? "أنثى" : "Female"}</option>
+                </select>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <input
-                className={I}
-                placeholder={ar ? "سنة الميلاد" : "Birth year"}
-                value={f.year}
-                onChange={set("year")}
-              />
-              <input
-                className={I}
-                placeholder={ar ? "المدينة" : "City"}
-                value={f.city}
-                onChange={set("city")}
-              />
+              <div>
+                <label className={L}>{ar ? "سنة الميلاد" : "Birth year"}</label>
+                <input
+                  className={I}
+                  type="number"
+                  min={1700}
+                  max={2100}
+                  value={f.birth}
+                  onChange={set("birth")}
+                />
+              </div>
+              <div>
+                <label className={L}>{ar ? "المدينة" : "City"}</label>
+                <input className={I} value={f.city} onChange={set("city")} />
+              </div>
             </div>
+            <label className="flex items-center gap-2 text-sm text-navy">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[#CFA93A]"
+                checked={f.deceased}
+                onChange={set("deceased")}
+              />
+              {ar ? "متوفى (رحمه الله)" : "Deceased"}
+            </label>
+            {f.deceased && (
+              <div>
+                <label className={L}>{ar ? "سنة الوفاة" : "Death year"}</label>
+                <input
+                  className={I}
+                  type="number"
+                  min={1700}
+                  max={2100}
+                  value={f.death}
+                  onChange={set("death")}
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2">
-              <input
-                className={I}
-                type="email"
-                placeholder={ar ? "البريد الإلكتروني *" : "Email *"}
-                value={f.email}
-                onChange={set("email")}
-                required
-              />
-              <input
-                className={I}
-                placeholder={ar ? "الجوال" : "Phone"}
-                value={f.phone}
-                onChange={set("phone")}
-              />
+              <div>
+                <label className={L}>{ar ? "البريد الإلكتروني *" : "Email *"}</label>
+                <input
+                  className={I}
+                  type="email"
+                  dir="ltr"
+                  value={f.email}
+                  onChange={set("email")}
+                  required
+                />
+              </div>
+              <div>
+                <label className={L}>{ar ? "الجوال" : "Phone"}</label>
+                <input className={I} dir="ltr" value={f.phone} onChange={set("phone")} />
+              </div>
             </div>
-            <input
-              className={I}
-              placeholder={ar ? "المهنة" : "Occupation"}
-              value={f.job}
-              onChange={set("job")}
-            />
-            <textarea
-              className={I}
-              rows={3}
-              placeholder={ar ? "كلمة للعائلة (اختياري)" : "A note (optional)"}
-              value={f.note}
-              onChange={set("note")}
-            />
+            <div>
+              <label className={L}>{ar ? "المهنة" : "Occupation"}</label>
+              <input className={I} value={f.job} onChange={set("job")} />
+            </div>
+            <div>
+              <label className={L}>{ar ? "ملاحظة (اختياري)" : "Note (optional)"}</label>
+              <textarea className={I} rows={2} value={f.note} onChange={set("note")} />
+            </div>
             {state === "error" && (
               <p className="text-sm text-red-600">
-                {ar ? "تعذّر الإرسال، حاول لاحقاً." : "Could not send. Try again."}
+                {ar ? "تعذّر الإرسال: " : "Could not send: "}
+                {errMsg}
               </p>
             )}
             <button type="submit" disabled={state === "sending"} className="btn-gold w-full">
@@ -699,8 +779,8 @@ function AddModal({ ar, parent, onClose }: { ar: boolean; parent: Person; onClos
             </button>
             <p className="text-center text-xs text-navy/40">
               {ar
-                ? "بياناتك خاصة ولا تُنشر إلا بعد اعتماد المشرف."
-                : "Your data stays private until approved."}
+                ? "الأب والجد يُؤخذان من الفرع المختار. تُراجَع البيانات قبل النشر."
+                : "Father and grandfather come from the selected branch."}
             </p>
           </form>
         )}

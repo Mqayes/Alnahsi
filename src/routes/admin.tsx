@@ -270,7 +270,7 @@ function JoinRequestsTab() {
 
     const { data, error: fetchError } = await getSupabase()
       .from("join_requests")
-      .select("id, full_name_en, email, message, status, created_at")
+      .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
 
@@ -295,29 +295,57 @@ function JoinRequestsTab() {
     const request = requests.find((r) => r.id === id);
 
     if (status === "approved" && request) {
-      let relationship: string | null = null;
-      if (request.message?.startsWith("Relation: ")) {
-        relationship = request.message.split("\n")[0].replace("Relation: ", "").trim() || null;
+      const r = request as JoinRequest & {
+        first_name?: string | null;
+        full_name_ar?: string | null;
+        parent_id?: string | null;
+        gender?: string | null;
+        birth_year?: number | null;
+        death_year?: number | null;
+        is_deceased?: boolean | null;
+        city?: string | null;
+        phone?: string | null;
+        occupation?: string | null;
+      };
+      let generation: number | null = 1;
+      if (r.parent_id) {
+        const { data: par } = await getSupabase()
+          .from("family_members")
+          .select("generation")
+          .eq("id", r.parent_id)
+          .maybeSingle();
+        generation = par?.generation ? par.generation + 1 : null;
       }
-
-      const { error: memberError } = await getSupabase().from("family_members").insert({
-        full_name_en: request.full_name_en,
-        relation: relationship,
-        email: request.email,
-      });
+      const { error: memberError } = await getSupabase()
+        .from("family_members")
+        .insert({
+          full_name_en: r.full_name_en,
+          full_name_ar: r.full_name_ar ?? r.full_name_en,
+          first_name: r.first_name ?? null,
+          parent_id: r.parent_id ?? null,
+          generation,
+          gender: r.gender ?? null,
+          birth_year: r.birth_year ?? null,
+          death_year: r.death_year ?? null,
+          is_deceased: r.is_deceased ?? false,
+          city: r.city ?? null,
+          phone: r.phone ?? null,
+          occupation: r.occupation ?? null,
+          email: r.email,
+          relation: r.message?.split("\n")[0] ?? null,
+        });
 
       if (memberError) {
-        setError(`Could not add to family members: ${memberError.message}`);
+        setError(`تعذّر إضافة الفرد للشجرة: ${memberError.message}`);
         setActionId(null);
         return;
       }
 
-      // Send invite email so they can actually log in
-      const invite = await inviteByMagicLink(request.email, request.full_name_en);
-      if (!invite.success) {
-        setError(`تمت الإضافة لكن تعذّر إرسال الدعوة: ${invite.error}`);
-        setActionId(null);
-        return;
+      if (!r.is_deceased) {
+        const invite = await inviteByMagicLink(r.email, r.full_name_en);
+        if (!invite.success) {
+          setError(`تمت الإضافة لكن تعذّر إرسال الدعوة: ${invite.error}`);
+        }
       }
     }
 

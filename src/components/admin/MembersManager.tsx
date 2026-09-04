@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
 
 export type Member = {
   id: string;
@@ -17,6 +18,10 @@ export type Member = {
   city: string | null;
   is_deceased: boolean | null;
   notes: string | null;
+  first_name: string | null;
+  gender: "m" | "f" | null;
+  phone: string | null;
+  occupation: string | null;
 };
 const EMPTY: Omit<Member, "id"> = {
   full_name_ar: "",
@@ -31,6 +36,10 @@ const EMPTY: Omit<Member, "id"> = {
   city: "",
   is_deceased: false,
   notes: "",
+  first_name: "",
+  gender: "m",
+  phone: "",
+  occupation: "",
 };
 const I =
   "w-full rounded-md border border-gold/40 bg-parchment px-3 py-2 text-navy outline-none focus:border-gold";
@@ -61,6 +70,16 @@ export function MembersManager() {
   }, []);
 
   const byId = useMemo(() => Object.fromEntries(rows.map((r) => [r.id, r])), [rows]);
+  const lineageById = byId as unknown as Record<string, LineageRow>;
+  const applyLineage = (e: Member): Member => {
+    const first = (e.first_name ?? "").trim();
+    if (!first) return e;
+    return {
+      ...e,
+      full_name_ar: composeFullName(first, e.gender ?? "m", e.parent_id, lineageById),
+      generation: nextGeneration(e.parent_id, lineageById) ?? e.generation,
+    };
+  };
   const name = (m: Member) => m.full_name_ar || m.full_name_en;
 
   const save = async (m: Partial<Member> & { id?: string }) => {
@@ -144,7 +163,10 @@ export function MembersManager() {
               <div key={m.id} className="rounded-lg border border-gold/25 bg-white p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="font-arabic text-lg text-navy">{name(m)}</div>
+                    <div className="font-arabic text-lg text-navy">
+                      {m.gender === "f" ? "♀ " : ""}
+                      {name(m)}
+                    </div>
                     {m.full_name_en && (
                       <div className="text-xs text-navy/40" dir="ltr">
                         {m.full_name_en}
@@ -292,49 +314,68 @@ export function MembersManager() {
             <h3 className="font-arabic text-2xl text-navy">
               {creating ? "إضافة فرد جديد" : "تعديل بيانات الفرد"}
             </h3>
+            <div className="rounded-lg border border-gold/30 bg-parchment p-3 text-sm">
+              <div className="text-xs text-navy/50">الأب والأجداد</div>
+              <div className="mt-1 font-arabic text-navy">
+                {chainLabel(editing.parent_id, lineageById)}
+              </div>
+              {editing.full_name_ar && (
+                <div className="mt-2 border-t border-gold/20 pt-2 font-arabic text-navy">
+                  الاسم الكامل: <b>{editing.full_name_ar}</b>
+                </div>
+              )}
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm text-navy/70">
-                الاسم بالعربي *
+                الاسم الأول *
                 <input
                   className={I}
                   required
-                  value={editing.full_name_ar ?? ""}
-                  onChange={(e) => setEditing({ ...editing, full_name_ar: e.target.value })}
-                  placeholder="مثال: محمد بن سعود آل بوخف"
+                  value={editing.first_name ?? ""}
+                  onChange={(e) =>
+                    setEditing(applyLineage({ ...editing, first_name: e.target.value }))
+                  }
+                  placeholder="مثال: محمد"
                 />
               </label>
               <label className="text-sm text-navy/70">
-                الاسم بالإنجليزي
-                <input
+                الجنس
+                <select
                   className={I}
-                  dir="ltr"
-                  value={editing.full_name_en ?? ""}
-                  onChange={(e) => setEditing({ ...editing, full_name_en: e.target.value })}
-                  placeholder="Mohammed Saud Al Bukhuf"
-                />
+                  value={editing.gender ?? "m"}
+                  onChange={(e) =>
+                    setEditing(applyLineage({ ...editing, gender: e.target.value as "m" | "f" }))
+                  }
+                >
+                  <option value="m">ذكر</option>
+                  <option value="f">أنثى</option>
+                </select>
               </label>
-              <label className="text-sm text-navy/70">
+              <label className="text-sm text-navy/70 sm:col-span-2">
                 الأب (الفرع في الشجرة)
                 <select
                   className={I}
                   value={editing.parent_id ?? ""}
-                  onChange={(e) => setEditing({ ...editing, parent_id: e.target.value || null })}
+                  onChange={(e) =>
+                    setEditing(applyLineage({ ...editing, parent_id: e.target.value || null }))
+                  }
                 >
-                  <option value="">— جذر / بدون أب مسجّل —</option>
+                  <option value="">— الجذر / بدون أب مسجّل —</option>
                   {rows
-                    .filter((r) => r.id !== editing.id)
+                    .filter((r) => r.id !== editing.id && r.gender !== "f")
                     .map((r) => (
                       <option key={r.id} value={r.id}>
                         {name(r)}
-                        {r.generation ? ` (ج${r.generation})` : ""}
+                        {r.generation ? ` (الجيل ${r.generation})` : ""}
                       </option>
                     ))}
                 </select>
               </label>
               <label className="text-sm text-navy/70">
-                الجيل
-                <select
+                الجيل (يُحسب تلقائياً)
+                <input
                   className={I}
+                  type="number"
                   value={editing.generation ?? ""}
                   onChange={(e) =>
                     setEditing({
@@ -342,14 +383,7 @@ export function MembersManager() {
                       generation: e.target.value ? Number(e.target.value) : null,
                     })
                   }
-                >
-                  <option value="">—</option>
-                  {[1, 2, 3, 4, 5, 6, 7].map((g) => (
-                    <option key={g} value={g}>
-                      الجيل {g}
-                    </option>
-                  ))}
-                </select>
+                />
               </label>
               <label className="text-sm text-navy/70">
                 المدينة
@@ -358,15 +392,6 @@ export function MembersManager() {
                   value={editing.city ?? ""}
                   onChange={(e) => setEditing({ ...editing, city: e.target.value })}
                   placeholder="الرياض"
-                />
-              </label>
-              <label className="text-sm text-navy/70">
-                الصفة / العلاقة
-                <input
-                  className={I}
-                  value={editing.relation ?? ""}
-                  onChange={(e) => setEditing({ ...editing, relation: e.target.value })}
-                  placeholder="مثال: الجيل الرابع — الرياض"
                 />
               </label>
               <label className="text-sm text-navy/70">
@@ -399,6 +424,23 @@ export function MembersManager() {
                 />
               </label>
               <label className="text-sm text-navy/70">
+                المهنة
+                <input
+                  className={I}
+                  value={editing.occupation ?? ""}
+                  onChange={(e) => setEditing({ ...editing, occupation: e.target.value })}
+                />
+              </label>
+              <label className="text-sm text-navy/70">
+                الجوال
+                <input
+                  className={I}
+                  dir="ltr"
+                  value={editing.phone ?? ""}
+                  onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
+                />
+              </label>
+              <label className="text-sm text-navy/70">
                 البريد الإلكتروني
                 <input
                   className={I}
@@ -409,6 +451,15 @@ export function MembersManager() {
                 />
               </label>
               <label className="text-sm text-navy/70">
+                الاسم بالإنجليزي (اختياري)
+                <input
+                  className={I}
+                  dir="ltr"
+                  value={editing.full_name_en ?? ""}
+                  onChange={(e) => setEditing({ ...editing, full_name_en: e.target.value })}
+                />
+              </label>
+              <label className="text-sm text-navy/70 sm:col-span-2">
                 رابط الصورة
                 <input
                   className={I}

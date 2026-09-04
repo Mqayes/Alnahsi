@@ -19,4 +19,28 @@ create policy "members read auth" on public.family_members for select
   using (auth.role() = 'authenticated' or exists (select 1 from public.site_content where key='tree_public' and value='true'));
 `,
   },
+  {
+    id: "2026-09-04b-structured-requests",
+    title: "طلبات الانضمام المهيكلة (الأب، الجنس، الميلاد، الوفاة…)",
+    sql: `
+alter table public.family_members add column if not exists first_name text;
+alter table public.family_members add column if not exists gender text;
+alter table public.family_members add column if not exists phone text;
+alter table public.family_members add column if not exists occupation text;
+alter table public.join_requests add column if not exists first_name text;
+alter table public.join_requests add column if not exists parent_id uuid references public.family_members(id) on delete set null;
+alter table public.join_requests add column if not exists gender text;
+alter table public.join_requests add column if not exists birth_year int;
+alter table public.join_requests add column if not exists death_year int;
+alter table public.join_requests add column if not exists is_deceased boolean default false;
+alter table public.join_requests add column if not exists city text;
+alter table public.join_requests add column if not exists phone text;
+alter table public.join_requests add column if not exists occupation text;
+alter table public.join_requests add column if not exists full_name_ar text;
+drop policy if exists "join insert public" on public.join_requests;
+create policy "join insert public" on public.join_requests for insert with check (
+  exists (select 1 from public.site_content where key='join_open' and value='true') or auth.role() = 'authenticated'
+);
+`,
+  },
 ];
