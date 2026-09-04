@@ -1,4 +1,5 @@
 import { StaffTab } from "@/components/admin/StaffTab";
+import { MembersManager } from "@/components/admin/MembersManager";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteByMagicLink } from "@/lib/api/invite-client";
@@ -172,8 +173,7 @@ function AdminPage() {
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="home">Home Content</TabsTrigger>
           <TabsTrigger value="our-story">Our Story</TabsTrigger>
-          <TabsTrigger value="members">Add Member</TabsTrigger>
-          <TabsTrigger value="view-members">Family Members</TabsTrigger>
+                    <TabsTrigger value="view-members">الأعضاء والشجرة</TabsTrigger>
           <TabsTrigger value="staff">المشرفون والصلاحيات</TabsTrigger>
         </TabsList>
 
@@ -192,11 +192,9 @@ function AdminPage() {
         <TabsContent value="our-story" className="mt-6">
           <OurStoryTab />
         </TabsContent>
-        <TabsContent value="members" className="mt-6">
-          <AddMemberTab />
-        </TabsContent>
+        
         <TabsContent value="view-members" className="mt-6">
-          <FamilyMembersTab />
+          <MembersManager />
         </TabsContent>
         <TabsContent value="staff" className="mt-6">
           <StaffTab me={{ id: auth.profile.id, role: auth.profile.role }} />
