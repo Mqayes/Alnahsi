@@ -1228,14 +1228,17 @@ function FamilyMembersTab() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-500 hover:bg-red-50 hover:text-red-700"
-              onClick={() => removeMember(member.id, member.email)}
-            >
-              Remove
-            </Button>
+            <div className="flex items-center gap-1">
+              {member.email && (
+                <Button variant="ghost" size="sm" className="text-gold hover:bg-gold/10"
+                  onClick={async () => { const r = await inviteByMagicLink(member.email!, member.full_name_en); setError(r.success ? null : r.error); if (r.success) window.alert("أُرسلت دعوة الدخول إلى " + member.email); }}>
+                  إرسال دعوة
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => removeMember(member.id, member.email)}>
+                حذف
+              </Button>
+            </div>
           </li>
         ))}
       </ul>
