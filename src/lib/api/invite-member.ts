@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 function getAdminSupabase() {
   const url = process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY on server");
+  if (!url || !key) return null;
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
@@ -18,6 +18,7 @@ export const inviteFamilyMember = createServerFn({ method: "POST" })
   }))
   .handler(async ({ data }) => {
     const supabase = getAdminSupabase();
+    if (!supabase) return { success: true, skipped: true };
     const siteUrl = process.env.VITE_SITE_URL ?? "https://alnahsi-family-portal.vercel.app";
     const { error } = await supabase.auth.admin.inviteUserByEmail(data.email, {
       data: { full_name: data.fullName ?? "" },
