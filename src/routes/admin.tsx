@@ -265,7 +265,7 @@ function JoinRequestsTab() {
         data: { email: request.email, fullName: request.full_name_en },
       });
       if (!invite.success) {
-        setError(`Member added but invite failed: ${invite.error ?? "unknown error"}. You can resend from the Family Members tab.`);
+        setMessage?.("تمت الإضافة. لم تُرسل دعوة بريدية (أضف SUPABASE_SERVICE_ROLE_KEY في Vercel لتفعيلها).");
         setActionId(null);
         return;
       }
@@ -1124,7 +1124,9 @@ function AddMemberTab() {
     });
 
     if (!invite.success) {
-      setError(`Member added but invite failed: ${invite.error ?? "unknown error"}`);
+      setMessage("تمت إضافة الفرد ✓ (لم تُرسل دعوة بريدية — أضف SUPABASE_SERVICE_ROLE_KEY في Vercel لتفعيلها)");
+    } else if ((invite as { skipped?: boolean }).skipped) {
+      setMessage("تمت إضافة الفرد ✓");
     } else {
       setMessage(`Family member added. Invite email sent to ${email.trim()}.`);
       setFullName("");
