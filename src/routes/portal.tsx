@@ -157,11 +157,22 @@ function PortalPage() {
 
       const { data: profile } = await getSupabase()
         .from("profiles")
-        .select("role, status")
+        .select("role")
         .eq("id", data.session.user.id)
         .maybeSingle();
 
-      if ((profile as { status?: string } | null)?.status === "suspended") {
+      let st: string | undefined;
+      try {
+        const { data: ex } = await getSupabase()
+          .from("profiles")
+          .select("status")
+          .eq("id", data.session.user.id)
+          .maybeSingle();
+        st = (ex as { status?: string } | null)?.status;
+      } catch {
+        /* pre-migration */
+      }
+      if (st === "suspended") {
         await getSupabase().auth.signOut();
         setLoginError("تم إيقاف هذا الحساب. تواصل مع إدارة العائلة.");
         setLoginLoading(false);

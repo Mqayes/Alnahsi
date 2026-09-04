@@ -78,7 +78,7 @@ function AdminPage() {
         const { data: profile, error: profileError } = await withTimeout(
           supabase
             .from("profiles")
-            .select("id, role, email, full_name, status, permissions")
+            .select("id, role, email, full_name")
             .eq("id", session.user.id)
             .maybeSingle(),
           10_000,
@@ -95,10 +95,23 @@ function AdminPage() {
           return;
         }
 
-        if (profile && (profile as { status?: string }).status === "suspended") {
+        // أعمدة اختيارية قد لا تكون موجودة قبل الترقية
+        let extra: { status?: string; permissions?: string[] } = {};
+        try {
+          const { data: ex } = await supabase
+            .from("profiles")
+            .select("status, permissions")
+            .eq("id", session.user.id)
+            .maybeSingle();
+          if (ex) extra = ex as typeof extra;
+        } catch {
+          /* pre-migration */
+        }
+        if (extra.status === "suspended") {
           setAuth({ status: "denied", message: "تم إيقاف هذا الحساب. تواصل مع إدارة العائلة." });
           return;
         }
+        if (profile) Object.assign(profile, extra);
         if (!profile || !["owner", "admin", "moderator"].includes(profile.role)) {
           setAuth({
             status: "denied",
@@ -230,7 +243,7 @@ function AdminPage() {
         </aside>
 
         <main className="min-w-0">
-          {tab === "dashboard" && <Dashboard go={setTab} />}
+          {tab === "dashboard" && <Dashboard go={setTab} isOwner={role === "owner"} />}
           {tab === "members" && <MembersManager />}
           {tab === "requests" && <JoinRequestsTab />}
           {tab === "users" && <UsersManager me={{ id: auth.profile.id, role }} />}

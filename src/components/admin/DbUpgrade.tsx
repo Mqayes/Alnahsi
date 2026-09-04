@@ -3,7 +3,7 @@ import { getSupabase } from "@/lib/supabase";
 import { MIGRATIONS } from "@/lib/migrations";
 import { Button } from "@/components/ui/button";
 
-export function DbUpgrade() {
+export function DbUpgrade({ autoRun = false }: { autoRun?: boolean }) {
   const [applied, setApplied] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
@@ -42,6 +42,11 @@ export function DbUpgrade() {
     await load();
     setBusy(false);
   };
+
+  useEffect(() => {
+    if (autoRun && applied && !needsBootstrap && pending.length > 0 && !busy) void run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applied, needsBootstrap]);
 
   if (applied === null) return null;
   return (
