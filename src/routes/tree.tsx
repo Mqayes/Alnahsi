@@ -525,7 +525,7 @@ function AddModal({
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!f.first.trim() || !f.email.trim()) return;
+    if (!f.first.trim() || !f.birth) return;
     setState("sending");
     setErrMsg("");
     const message = [
@@ -640,7 +640,7 @@ function AddModal({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className={L}>{ar ? "سنة الميلاد" : "Birth year"}</label>
+                <label className={L}>{ar ? "سنة الميلاد *" : "Birth year *"}</label>
                 <input
                   className={I}
                   type="number"
@@ -648,6 +648,7 @@ function AddModal({
                   max={2100}
                   value={f.birth}
                   onChange={set("birth")}
+                  required
                 />
               </div>
               <div>
@@ -679,14 +680,15 @@ function AddModal({
             )}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className={L}>{ar ? "البريد الإلكتروني *" : "Email *"}</label>
+                <label className={L}>
+                  {ar ? "البريد الإلكتروني (اختياري)" : "Email (optional)"}
+                </label>
                 <input
                   className={I}
                   type="email"
                   dir="ltr"
                   value={f.email}
                   onChange={set("email")}
-                  required
                 />
               </div>
               <div>

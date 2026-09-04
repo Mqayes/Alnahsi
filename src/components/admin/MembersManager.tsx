@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,16 @@ export function MembersManager() {
   const [editing, setEditing] = useState<Member | null>(null);
   const [creating, setCreating] = useState(false);
   const [q, setQ] = useState("");
+  const [qa, setQa] = useState({
+    first: "",
+    gender: "m" as "m" | "f",
+    birth: "",
+    parent: "",
+    deceased: false,
+    death: "",
+  });
+  const [qaBusy, setQaBusy] = useState(false);
+  const qaFirstRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -120,6 +130,39 @@ export function MembersManager() {
     }
   };
 
+  const quickAdd = async () => {
+    const first = qa.first.trim();
+    if (!first || !qa.birth) {
+      setErr("الاسم الأول وسنة الميلاد مطلوبان");
+      return;
+    }
+    setQaBusy(true);
+    setErr(null);
+    setMsg(null);
+    const parent_id = qa.parent || null;
+    const payload = {
+      first_name: first,
+      gender: qa.gender,
+      parent_id,
+      generation: nextGeneration(parent_id, lineageById),
+      full_name_ar: composeFullName(first, qa.gender, parent_id, lineageById),
+      full_name_en: composeFullName(first, qa.gender, parent_id, lineageById),
+      birth_year: Number(qa.birth),
+      death_year: qa.deceased && qa.death ? Number(qa.death) : null,
+      is_deceased: qa.deceased,
+    };
+    const { error } = await getSupabase().from("family_members").insert(payload);
+    setQaBusy(false);
+    if (error) {
+      setErr("تعذّرت الإضافة: " + error.message);
+      return;
+    }
+    setMsg(`أُضيف: ${payload.full_name_ar} ✓`);
+    setQa((s) => ({ ...s, first: "", birth: "", death: "", deceased: false })); // يبقي الأب والجنس للإدخال المتتالي
+    await load();
+    qaFirstRef.current?.focus();
+  };
+
   const filtered = rows.filter(
     (r) =>
       !q ||
@@ -130,6 +173,89 @@ export function MembersManager() {
 
   return (
     <div dir="rtl" className="space-y-5">
+      <div className="premium-card p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="font-arabic text-lg text-navy">إضافة سريعة</h3>
+          <span className="text-xs text-navy/50">
+            اختر الأب مرة واحدة ثم أدخل الأبناء تباعاً — Enter للإضافة
+          </span>
+        </div>
+        <form
+          className="grid gap-2 md:grid-cols-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void quickAdd();
+          }}
+        >
+          <select
+            className={I + " md:col-span-2"}
+            value={qa.parent}
+            onChange={(e) => setQa({ ...qa, parent: e.target.value })}
+          >
+            <option value="">الأب: — الجذر —</option>
+            {rows
+              .filter((r) => r.gender !== "f")
+              .map((r) => (
+                <option key={r.id} value={r.id}>
+                  الأب: {name(r)}
+                </option>
+              ))}
+          </select>
+          <input
+            ref={qaFirstRef}
+            className={I}
+            placeholder="الاسم الأول *"
+            value={qa.first}
+            onChange={(e) => setQa({ ...qa, first: e.target.value })}
+          />
+          <select
+            className={I}
+            value={qa.gender}
+            onChange={(e) => setQa({ ...qa, gender: e.target.value as "m" | "f" })}
+          >
+            <option value="m">ذكر</option>
+            <option value="f">أنثى</option>
+          </select>
+          <input
+            className={I}
+            type="number"
+            placeholder="سنة الميلاد *"
+            value={qa.birth}
+            onChange={(e) => setQa({ ...qa, birth: e.target.value })}
+          />
+          <Button type="submit" disabled={qaBusy} className="bg-gold text-navy hover:bg-gold/90">
+            {qaBusy ? "…" : "＋ إضافة"}
+          </Button>
+          <label className="flex items-center gap-2 text-sm text-navy md:col-span-2">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-[#CFA93A]"
+              checked={qa.deceased}
+              onChange={(e) => setQa({ ...qa, deceased: e.target.checked })}
+            />
+            متوفى
+          </label>
+          {qa.deceased && (
+            <input
+              className={I}
+              type="number"
+              placeholder="سنة الوفاة"
+              value={qa.death}
+              onChange={(e) => setQa({ ...qa, death: e.target.value })}
+            />
+          )}
+          {qa.first.trim() && (
+            <div className="text-sm text-navy/70 md:col-span-3">
+              الاسم الكامل:{" "}
+              <b className="font-arabic text-navy">
+                {composeFullName(qa.first, qa.gender, qa.parent || null, lineageById)}
+              </b>{" "}
+              · الجيل {nextGeneration(qa.parent || null, lineageById)}
+            </div>
+          )}
+        </form>
+      </div>
+
       <div className="flex flex-wrap items-center gap-3">
         <Input
           placeholder="بحث بالاسم أو المدينة…"

@@ -341,7 +341,7 @@ function JoinRequestsTab() {
         return;
       }
 
-      if (!r.is_deceased) {
+      if (!r.is_deceased && r.email) {
         const invite = await inviteByMagicLink(r.email, r.full_name_en);
         if (!invite.success) {
           setError(`تمت الإضافة لكن تعذّر إرسال الدعوة: ${invite.error}`);

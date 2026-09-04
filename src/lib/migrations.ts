@@ -43,4 +43,9 @@ create policy "join insert public" on public.join_requests for insert with check
 );
 `,
   },
+  {
+    id: "2026-09-04c-optional-email",
+    title: "البريد اختياري في الطلبات",
+    sql: `alter table public.join_requests alter column email drop not null;`,
+  },
 ];
