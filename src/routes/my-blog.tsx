@@ -3,14 +3,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
+import { RichEditor } from "@/components/blog/RichEditor";
 import {
   deletePost,
   excerpt,
   fetchPostsByAuthor,
   savePost,
   uploadBlogImage,
+  verifyImageUrl,
   type BlogDraft,
   type BlogPost,
 } from "@/lib/blog";
@@ -40,7 +41,7 @@ function MyBlogPage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const inlineInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -123,28 +124,39 @@ function MyBlogPage() {
   const handleUpload = async (file: File, asCover: boolean) => {
     setBusy(true);
     setError("");
+    flash("جارٍ ضغط الصورة ورفعها…");
+
     const res = await uploadBlogImage(file, me.id);
-    setBusy(false);
 
     if (res.error || !res.url) {
+      setBusy(false);
       setError(res.error ?? "تعذّر رفع الصورة.");
       return;
     }
 
-    if (asCover) {
-      setDraft((d) => ({ ...d, cover_image: res.url! }));
-      flash("رُفعت صورة الغلاف.");
+    // لا نكتفي بنجاح الرفع: نتأكد أن الرابط يفتح فعلاً قبل إدراجه.
+    const reachable = await verifyImageUrl(res.url);
+    setBusy(false);
+
+    if (!reachable) {
+      setError(
+        "رُفعت الصورة لكن رابطها لا يفتح — مخزن الصور غير معلن للعموم. " +
+          "على المالك تطبيق ترقية «المدونات الشخصية» من لوحة التحكم.",
+      );
       return;
     }
 
-    // إدراج الصورة عند موضع المؤشر داخل النص
-    const el = bodyRef.current;
-    const marker = `\n\n![](${res.url})\n\n`;
-    setDraft((d) => {
-      const pos = el?.selectionStart ?? d.body.length;
-      return { ...d, body: d.body.slice(0, pos) + marker + d.body.slice(pos) };
-    });
-    flash("أُدرجت الصورة في النص.");
+    const saved = res.savedBytes ?? 0;
+    const savedNote = saved > 100_000 ? ` (وُفّر ${Math.round(saved / 1024)} كيلوبايت بالضغط)` : "";
+
+    if (asCover) {
+      setDraft((d) => ({ ...d, cover_image: res.url! }));
+      flash(`رُفعت صورة الغلاف${savedNote}.`);
+      return;
+    }
+
+    setDraft((d) => ({ ...d, body: `${d.body}<img src="${res.url}" alt="" />` }));
+    flash(`أُدرجت الصورة${savedNote}.`);
   };
 
   const handleSave = async () => {
@@ -243,35 +255,31 @@ function MyBlogPage() {
 
           <div>
             <Label htmlFor="blog-body">النص</Label>
-            <Textarea
-              id="blog-body"
-              ref={bodyRef}
-              value={draft.body}
-              onChange={(e) => setDraft((d) => ({ ...d, body: e.target.value }))}
-              rows={14}
-              placeholder="اكتب هنا… اترك سطراً فارغاً بين الفقرات."
-              className="mt-1.5 leading-loose"
+            <div className="mt-1.5">
+              <RichEditor
+                value={draft.body}
+                onChange={(html) => setDraft((d) => ({ ...d, body: html }))}
+                onRequestImage={() => inlineInputRef.current?.click()}
+                placeholder="اكتب هنا… استخدم شريط الأدوات للعناوين والقوائم والصور."
+              />
+            </div>
+            <input
+              ref={inlineInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleUpload(f, false);
+                e.target.value = "";
+              }}
             />
             <p className="mt-1.5 text-xs text-navy/50">
-              لإدراج صورة داخل النص: ضع المؤشر في الموضع المطلوب ثم اضغط «إدراج صورة».
+              الصور تُضغط تلقائياً في متصفحك قبل الرفع، فتفتح الصفحة أسرع لمن يقرؤها.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <label className="cursor-pointer rounded-lg border border-gold/40 bg-white px-4 py-2 text-sm text-navy hover:bg-parchment">
-              إدراج صورة في النص
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void handleUpload(f, false);
-                  e.target.value = "";
-                }}
-              />
-            </label>
-
             <label className="cursor-pointer rounded-lg border border-gold/40 bg-white px-4 py-2 text-sm text-navy hover:bg-parchment">
               {draft.cover_image ? "تغيير صورة الغلاف" : "صورة الغلاف"}
               <input

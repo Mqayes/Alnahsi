@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useSiteContent } from "@/lib/site-content";
 import { fetchNews } from "@/lib/news";
@@ -45,6 +45,9 @@ export function NewsTicker() {
   const label = ar ? "أخبار العائلة" : "Family news";
   const titleOf = (n: NewsItem) => (ar ? n.title_ar || n.title_en : n.title_en || n.title_ar);
 
+  // نحو ٣٫٢ ثانية لكل خبر: سريع بما يكفي ليبدو حياً، بطيء بما يكفي ليُقرأ.
+  const duration = Math.max(12, items.length * 3.2);
+
   const strip = (
     <>
       {items.map((n) => (
@@ -77,7 +80,10 @@ export function NewsTicker() {
           <div className="flex min-w-0 flex-1 items-center overflow-x-auto py-1.5">{strip}</div>
         ) : (
           <div className="ticker-viewport group min-w-0 flex-1 py-1.5">
-            <div className={`ticker-track ${ar ? "ticker-rtl" : "ticker-ltr"}`}>
+            <div
+              className={`ticker-track ${ar ? "ticker-rtl" : "ticker-ltr"}`}
+              style={{ "--ticker-duration": `${duration}s` } as CSSProperties}
+            >
               {strip}
               {/* نسخة ثانية تجعل الدوران متصلاً بلا قفزة */}
               <span aria-hidden="true">{strip}</span>

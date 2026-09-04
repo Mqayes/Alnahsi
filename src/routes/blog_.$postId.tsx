@@ -2,46 +2,18 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { fetchPost, type BlogPost } from "@/lib/blog";
+import { renderBody } from "@/lib/sanitize-html";
 
 export const Route = createFileRoute("/blog_/$postId")({
   component: BlogPostPage,
 });
 
 /**
- * يعرض النص فقرةً فقرة، ويحوّل أسطر الصور بصيغة ![](url) إلى صور.
- * لا يُستخدم dangerouslySetInnerHTML إطلاقاً — النص من مستخدمين، فيبقى نصاً.
+ * المحتوى يمر على منقّي قائمة السماح قبل العرض — على الخادم والمتصفح معاً.
+ * ما يصل هنا وسوم تنسيق فقط: لا سكربتات، لا معالجات أحداث، لا روابط javascript:.
  */
 function PostBody({ body }: { body: string }) {
-  const blocks = body.split(/\n{2,}/).filter((b) => b.trim());
-
-  return (
-    <>
-      {blocks.map((block, i) => {
-        const image = block.trim().match(/^!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)$/);
-        if (image) {
-          return (
-            <img
-              key={i}
-              src={image[1]}
-              alt=""
-              loading="lazy"
-              className="my-8 w-full rounded-lg border border-gold/20 object-cover"
-            />
-          );
-        }
-        return (
-          <p key={i} className="mt-5 leading-loose text-navy/80">
-            {block.split("\n").map((line, j) => (
-              <span key={j}>
-                {line}
-                {j < block.split("\n").length - 1 && <br />}
-              </span>
-            ))}
-          </p>
-        );
-      })}
-    </>
-  );
+  return <div className="prose-blog" dangerouslySetInnerHTML={{ __html: renderBody(body) }} />;
 }
 
 function BlogPostPage() {
@@ -138,7 +110,7 @@ function BlogPostPage() {
         />
       )}
 
-      <div className="mt-8 text-lg">
+      <div className="mt-8 text-lg text-navy/80">
         <PostBody body={post.body} />
       </div>
     </article>

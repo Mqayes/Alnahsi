@@ -685,11 +685,17 @@ html[dir="rtl"] label {
   will-change: transform;
 }
 /* العربية تُقرأ من اليمين، فيسير الشريط في الاتجاه المعاكس للإنجليزية */
+.ticker-track {
+  /* تُحسب من عدد الأخبار حتى تبقى سرعة القراءة ثابتة مهما زادت */
+  animation-duration: var(--ticker-duration, 20s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
 .ticker-rtl {
-  animation: ticker-move-rtl 42s linear infinite;
+  animation-name: ticker-move-rtl;
 }
 .ticker-ltr {
-  animation: ticker-move-ltr 42s linear infinite;
+  animation-name: ticker-move-ltr;
 }
 .ticker-viewport:hover .ticker-track,
 .ticker-viewport:focus-within .ticker-track {
@@ -715,4 +721,88 @@ html[dir="rtl"] label {
   .ticker-track {
     animation: none !important;
   }
+}
+
+/* ===== المحرّر المرئي ونص التدوينة ===== */
+.rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: color-mix(in oklab, var(--navy) 40%, transparent);
+  pointer-events: none;
+}
+.rich-editor h2,
+.prose-blog h2 {
+  font-family: var(--font-arabic-display);
+  font-size: 1.6rem;
+  line-height: 1.5;
+  margin-top: 1.8rem;
+  color: var(--navy);
+}
+.rich-editor h3,
+.prose-blog h3 {
+  font-family: var(--font-arabic-kufi);
+  font-size: 1.25rem;
+  margin-top: 1.4rem;
+  color: var(--navy);
+}
+.rich-editor p,
+.prose-blog p {
+  margin-top: 1rem;
+  line-height: 2;
+}
+.rich-editor ul,
+.prose-blog ul,
+.rich-editor ol,
+.prose-blog ol {
+  margin: 1rem 1.5rem 0 0;
+  padding-inline-start: 1.25rem;
+  list-style-position: outside;
+}
+.rich-editor ul,
+.prose-blog ul {
+  list-style-type: disc;
+}
+.rich-editor ol,
+.prose-blog ol {
+  list-style-type: decimal;
+}
+.rich-editor li,
+.prose-blog li {
+  margin-top: 0.4rem;
+  line-height: 1.9;
+}
+.rich-editor blockquote,
+.prose-blog blockquote {
+  margin-top: 1.25rem;
+  border-inline-start: 3px solid var(--gold);
+  padding-inline-start: 1rem;
+  color: color-mix(in oklab, var(--navy) 75%, transparent);
+}
+.rich-editor img,
+.prose-blog img {
+  margin: 1.75rem 0;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in oklab, var(--gold) 25%, transparent);
+}
+.rich-editor a,
+.prose-blog a {
+  color: var(--navy);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 3px;
+}
+.prose-blog hr {
+  margin: 2rem 0;
+  border-color: color-mix(in oklab, var(--gold) 30%, transparent);
+}
+.prose-blog table {
+  width: 100%;
+  margin-top: 1.25rem;
+  border-collapse: collapse;
+}
+.prose-blog th,
+.prose-blog td {
+  border: 1px solid color-mix(in oklab, var(--gold) 25%, transparent);
+  padding: 0.5rem 0.75rem;
+  text-align: start;
 }

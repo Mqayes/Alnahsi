@@ -1,4 +1,6 @@
 import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
+import { compressImage } from "@/lib/image-compress";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 export type BlogPost = {
   id: string;
@@ -147,7 +149,7 @@ export async function savePost(
     author_id: author.id,
     author_name: author.name,
     title: draft.title.trim(),
-    body: draft.body,
+    body: sanitizeHtml(draft.body),
     cover_image: draft.cover_image,
     status: draft.status,
     visibility: draft.visibility,
@@ -168,27 +170,71 @@ export async function deletePost(id: string): Promise<string | null> {
   return error ? error.message : null;
 }
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+/** الحد بعد الضغط — الصور الكبيرة تُصغَّر تلقائياً بدل رفضها */
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
-/** يرفع صورة داخل مجلد المستخدم — السياسات تمنع الرفع في مجلد غيره */
+/**
+ * يضغط الصورة في المتصفح ثم يرفعها داخل مجلد المستخدم.
+ * السياسات تمنع الرفع في مجلد غيره.
+ */
 export async function uploadBlogImage(
   file: File,
   userId: string,
-): Promise<{ url?: string; error?: string }> {
+): Promise<{ url?: string; error?: string; savedBytes?: number }> {
   if (!file.type.startsWith("image/")) return { error: "الملف المختار ليس صورة." };
-  if (file.size > MAX_IMAGE_BYTES) return { error: "حجم الصورة يتجاوز ٥ ميجابايت." };
 
-  const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const { file: ready, originalBytes, finalBytes } = await compressImage(file);
+
+  if (ready.size > MAX_IMAGE_BYTES) {
+    return { error: "الصورة كبيرة جداً حتى بعد الضغط. جرّب صورة أصغر." };
+  }
+
+  const ext = (ready.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext || "jpg"}`;
 
   const { error } = await getSupabase()
     .storage.from("blog-images")
-    .upload(path, file, { upsert: false, contentType: file.type });
+    .upload(path, ready, { upsert: false, contentType: ready.type });
 
-  if (error) return { error: error.message };
+  if (error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("bucket") && msg.includes("not found")) {
+      return { error: "مخزن الصور غير مهيّأ — على المالك تطبيق ترقية «المدونات الشخصية»." };
+    }
+    if (
+      msg.includes("row-level security") ||
+      msg.includes("unauthorized") ||
+      msg.includes("policy")
+    ) {
+      return { error: "لا تملك صلاحية الرفع. سجّل خروجك ثم ادخل مرة أخرى." };
+    }
+    return { error: error.message };
+  }
 
   const { data } = getSupabase().storage.from("blog-images").getPublicUrl(path);
-  return { url: data.publicUrl };
+  return { url: data.publicUrl, savedBytes: Math.max(0, originalBytes - finalBytes) };
+}
+
+/** يتأكد أن الرابط يُحمّل فعلاً — يكشف خطأ الصلاحيات فوراً بدل صورة مكسورة لاحقاً */
+export function verifyImageUrl(url: string, timeoutMs = 12_000): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const img = new Image();
+    const done = (ok: boolean) => {
+      img.onload = img.onerror = null;
+      resolve(ok);
+    };
+    const timer = setTimeout(() => done(false), timeoutMs);
+    img.onload = () => {
+      clearTimeout(timer);
+      done(true);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      done(false);
+    };
+    img.src = url;
+  });
 }
 
 /** ملخّص قصير للعرض في البطاقات */
