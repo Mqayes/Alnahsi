@@ -665,3 +665,54 @@ html[dir="rtl"] select,
 html[dir="rtl"] label {
   font-family: var(--font-arabic-body);
 }
+
+/* ===== شريط الأخبار الدوّار ===== */
+.ticker-viewport {
+  overflow: hidden;
+  position: relative;
+  -webkit-mask-image: linear-gradient(
+    to left,
+    transparent,
+    #000 3rem,
+    #000 calc(100% - 3rem),
+    transparent
+  );
+  mask-image: linear-gradient(to left, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+/* العربية تُقرأ من اليمين، فيسير الشريط في الاتجاه المعاكس للإنجليزية */
+.ticker-rtl {
+  animation: ticker-move-rtl 42s linear infinite;
+}
+.ticker-ltr {
+  animation: ticker-move-ltr 42s linear infinite;
+}
+.ticker-viewport:hover .ticker-track,
+.ticker-viewport:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+@keyframes ticker-move-rtl {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes ticker-move-ltr {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none !important;
+  }
+}

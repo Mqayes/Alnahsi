@@ -13,12 +13,15 @@ import { Route as TreeRouteImport } from './routes/tree'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as OurStoryRouteImport } from './routes/our-story'
 import { Route as NewsRouteImport } from './routes/news'
+import { Route as MyBlogRouteImport } from './routes/my-blog'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as FamilyRouteImport } from './routes/family'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BusinessesRouteImport } from './routes/businesses'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogPostIdRouteImport } from './routes/blog_.$postId'
 
 const TreeRoute = TreeRouteImport.update({
   id: '/tree',
@@ -38,6 +41,11 @@ const OurStoryRoute = OurStoryRouteImport.update({
 const NewsRoute = NewsRouteImport.update({
   id: '/news',
   path: '/news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyBlogRoute = MyBlogRouteImport.update({
+  id: '/my-blog',
+  path: '/my-blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -60,6 +68,11 @@ const BusinessesRoute = BusinessesRouteImport.update({
   path: '/businesses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -70,94 +83,120 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogPostIdRoute = BlogPostIdRouteImport.update({
+  id: '/blog_/$postId',
+  path: '/blog/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/blog': typeof BlogRoute
   '/businesses': typeof BusinessesRoute
   '/contact': typeof ContactRoute
   '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
+  '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
   '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
+  '/blog/$postId': typeof BlogPostIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/blog': typeof BlogRoute
   '/businesses': typeof BusinessesRoute
   '/contact': typeof ContactRoute
   '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
+  '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
   '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
+  '/blog/$postId': typeof BlogPostIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/blog': typeof BlogRoute
   '/businesses': typeof BusinessesRoute
   '/contact': typeof ContactRoute
   '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
+  '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
   '/our-story': typeof OurStoryRoute
   '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
+  '/blog_/$postId': typeof BlogPostIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/blog'
     | '/businesses'
     | '/contact'
     | '/family'
     | '/gallery'
+    | '/my-blog'
     | '/news'
     | '/our-story'
     | '/portal'
     | '/tree'
+    | '/blog/$postId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/blog'
     | '/businesses'
     | '/contact'
     | '/family'
     | '/gallery'
+    | '/my-blog'
     | '/news'
     | '/our-story'
     | '/portal'
     | '/tree'
+    | '/blog/$postId'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/blog'
     | '/businesses'
     | '/contact'
     | '/family'
     | '/gallery'
+    | '/my-blog'
     | '/news'
     | '/our-story'
     | '/portal'
     | '/tree'
+    | '/blog_/$postId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  BlogRoute: typeof BlogRoute
   BusinessesRoute: typeof BusinessesRoute
   ContactRoute: typeof ContactRoute
   FamilyRoute: typeof FamilyRoute
   GalleryRoute: typeof GalleryRoute
+  MyBlogRoute: typeof MyBlogRoute
   NewsRoute: typeof NewsRoute
   OurStoryRoute: typeof OurStoryRoute
   PortalRoute: typeof PortalRoute
   TreeRoute: typeof TreeRoute
+  BlogPostIdRoute: typeof BlogPostIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -190,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-blog': {
+      id: '/my-blog'
+      path: '/my-blog'
+      fullPath: '/my-blog'
+      preLoaderRoute: typeof MyBlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/gallery': {
       id: '/gallery'
       path: '/gallery'
@@ -218,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -232,20 +285,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog_/$postId': {
+      id: '/blog_/$postId'
+      path: '/blog/$postId'
+      fullPath: '/blog/$postId'
+      preLoaderRoute: typeof BlogPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  BlogRoute: BlogRoute,
   BusinessesRoute: BusinessesRoute,
   ContactRoute: ContactRoute,
   FamilyRoute: FamilyRoute,
   GalleryRoute: GalleryRoute,
+  MyBlogRoute: MyBlogRoute,
   NewsRoute: NewsRoute,
   OurStoryRoute: OurStoryRoute,
   PortalRoute: PortalRoute,
   TreeRoute: TreeRoute,
+  BlogPostIdRoute: BlogPostIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

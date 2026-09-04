@@ -61,4 +61,65 @@ alter table public.news_posts add column if not exists event_date date;
 alter table public.join_requests add column if not exists death_cause text;
 `,
   },
+  {
+    id: "2026-09-05-personal-blogs",
+    title: "المدونات الشخصية (كتابة + رفع صور لكل عضو)",
+    sql: `
+create table if not exists public.blog_posts (
+  id uuid primary key default gen_random_uuid(),
+  author_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  author_name text,
+  member_id uuid references public.family_members(id) on delete set null,
+  title text not null,
+  body text not null default '',
+  cover_image text,
+  status text not null default 'published',
+  visibility text not null default 'family',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists blog_posts_author_idx on public.blog_posts (author_id, created_at desc);
+create index if not exists blog_posts_feed_idx on public.blog_posts (status, created_at desc);
+alter table public.blog_posts enable row level security;
+
+drop policy if exists "blog read" on public.blog_posts;
+create policy "blog read" on public.blog_posts for select using (
+  (status = 'published' and visibility = 'public')
+  or (status = 'published' and auth.role() = 'authenticated')
+  or author_id = auth.uid()
+  or public.is_admin()
+);
+
+drop policy if exists "blog insert own" on public.blog_posts;
+create policy "blog insert own" on public.blog_posts for insert to authenticated
+  with check (author_id = auth.uid());
+
+drop policy if exists "blog update own" on public.blog_posts;
+create policy "blog update own" on public.blog_posts for update to authenticated
+  using (author_id = auth.uid() or public.is_admin())
+  with check (author_id = auth.uid() or public.is_admin());
+
+drop policy if exists "blog delete own" on public.blog_posts;
+create policy "blog delete own" on public.blog_posts for delete to authenticated
+  using (author_id = auth.uid() or public.is_admin());
+
+insert into storage.buckets (id, name, public) values ('blog-images', 'blog-images', true)
+  on conflict (id) do nothing;
+
+drop policy if exists "blog images read" on storage.objects;
+create policy "blog images read" on storage.objects for select
+  using (bucket_id = 'blog-images');
+
+drop policy if exists "blog images write own" on storage.objects;
+create policy "blog images write own" on storage.objects for insert to authenticated
+  with check (bucket_id = 'blog-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "blog images delete own" on storage.objects;
+create policy "blog images delete own" on storage.objects for delete to authenticated
+  using (bucket_id = 'blog-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
+insert into public.site_content (key, value) values ('blogs_open','true'),('ticker_enabled','true')
+  on conflict (key) do nothing;
+`,
+  },
 ];

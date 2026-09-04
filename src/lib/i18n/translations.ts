@@ -8,6 +8,7 @@ export const translations = {
     gallery: { en: "Archive", ar: "الأرشيف" },
     tree: { en: "Family Tree", ar: "شجرة العائلة" },
     news: { en: "News", ar: "الأخبار" },
+    blog: { en: "Blogs", ar: "المدونات" },
     contact: { en: "Contact", ar: "تواصل" },
     portal: { en: "Family Portal", ar: "بوابة العائلة" },
   },

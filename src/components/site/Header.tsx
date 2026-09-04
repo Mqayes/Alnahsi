@@ -4,6 +4,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { useSiteContent } from "@/lib/site-content";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { NewsTicker } from "@/components/site/NewsTicker";
 
 const navItems = [
   { to: "/", key: "home" as const },
@@ -12,6 +13,7 @@ const navItems = [
   { to: "/gallery", key: "gallery" as const },
   { to: "/tree", key: "tree" as const },
   { to: "/news", key: "news" as const },
+  { to: "/blog", key: "blog" as const },
   { to: "/contact", key: "contact" as const },
 ];
 
@@ -75,6 +77,7 @@ export function Header() {
           : "bg-transparent"
       }`}
     >
+      <NewsTicker />
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:py-5">
         <Link to="/" className="group flex items-center gap-3">
           <span className="hero-kufi text-[1.35rem] text-gold transition-colors group-hover:text-navy md:text-2xl">
