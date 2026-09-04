@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { useSiteContent } from "@/lib/site-content";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 
 const navItems = [
   { to: "/", key: "home" as const },
@@ -22,6 +23,32 @@ export function Header() {
   const nameEn = sc["site_name_en"] || t(translations.hero.nameEn, "en");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const sb = getSupabase();
+    const check = async () => {
+      const {
+        data: { session },
+      } = await sb.auth.getSession();
+      if (!session) {
+        setIsStaff(false);
+        return;
+      }
+      const { data } = await sb
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      setIsStaff(["owner", "admin", "moderator"].includes(data?.role ?? ""));
+    };
+    void check();
+    const { data: sub } = sb.auth.onAuthStateChange(() => {
+      void check();
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -54,7 +81,9 @@ export function Header() {
             {nameAr}
           </span>
           <span className="hidden h-6 w-px bg-gold/40 md:block" />
-          <span className={`hidden font-cinzel text-sm uppercase tracking-[0.28em] ${textOnDark} md:block`}>
+          <span
+            className={`hidden font-cinzel text-sm uppercase tracking-[0.28em] ${textOnDark} md:block`}
+          >
             {nameEn}
           </span>
         </Link>
@@ -62,17 +91,13 @@ export function Header() {
         <nav className="hidden items-center gap-8 lg:flex">
           {navItems.map((item) => {
             const isActive =
-              item.to === "/"
-                ? location.pathname === "/"
-                : location.pathname.startsWith(item.to);
+              item.to === "/" ? location.pathname === "/" : location.pathname.startsWith(item.to);
             return (
               <Link
                 key={item.to}
                 to={item.to}
                 className={`relative font-cinzel text-[13px] uppercase tracking-[0.22em] transition-colors ${
-                  isActive
-                    ? "text-gold"
-                    : `${textOnDark} hover:text-gold`
+                  isActive ? "text-gold" : `${textOnDark} hover:text-gold`
                 }`}
               >
                 {t(translations.nav[item.key], lang)}
@@ -98,10 +123,14 @@ export function Header() {
             {lang === "en" ? "عربي" : "EN"}
           </button>
           <Link
-            to="/portal"
+            to={isStaff ? "/admin" : "/portal"}
             className="hidden rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-4 py-2 text-xs font-bold text-navy shadow-[0_6px_18px_rgba(207,169,58,.4)] transition-all hover:brightness-105 md:inline-block"
           >
-            {t(translations.nav.portal, lang)}
+            {isStaff
+              ? lang === "en"
+                ? "Dashboard"
+                : "لوحة التحكم"
+              : t(translations.nav.portal, lang)}
           </Link>
           <button
             type="button"
@@ -130,11 +159,12 @@ export function Header() {
                 {t(translations.nav[item.key], lang)}
               </Link>
             ))}
-            <Link
-              to="/portal"
-              className="btn-gold mt-4"
-            >
-              {t(translations.nav.portal, lang)}
+            <Link to={isStaff ? "/admin" : "/portal"} className="btn-gold mt-4">
+              {isStaff
+                ? lang === "en"
+                  ? "Dashboard"
+                  : "لوحة التحكم"
+                : t(translations.nav.portal, lang)}
             </Link>
           </nav>
         </div>

@@ -1,16 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { getSupabase, isSupabaseConfigured, type FamilyMember, type NewsPost } from "@/lib/supabase";
+import {
+  getSupabase,
+  isSupabaseConfigured,
+  type FamilyMember,
+  type NewsPost,
+} from "@/lib/supabase";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Ornament } from "@/components/site/Ornament";
 
 export const Route = createFileRoute("/family")({
   head: () => ({
-    meta: [
-      { title: "Family Portal — Al Bukhuf Alnahsi" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Family Portal — Al Bukhuf Alnahsi" }, { name: "robots", content: "noindex" }],
   }),
   component: FamilyPortal,
 });
@@ -22,30 +24,54 @@ function FamilyPortal() {
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) { void navigate({ to: "/portal" }); return; }
+    if (!isSupabaseConfigured()) {
+      void navigate({ to: "/portal" });
+      return;
+    }
 
     async function init(session: import("@supabase/supabase-js").Session | null) {
-      if (!session) { void navigate({ to: "/portal" }); return; }
+      if (!session) {
+        void navigate({ to: "/portal" });
+        return;
+      }
       const { data: profile } = await getSupabase()
-        .from("profiles").select("full_name, email, role")
-        .eq("id", session.user.id).maybeSingle();
-      if (profile?.role === "admin") { void navigate({ to: "/admin" }); return; }
+        .from("profiles")
+        .select("full_name, email, role")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (["owner", "admin", "moderator"].includes(profile?.role ?? "")) {
+        void navigate({ to: "/admin" });
+        return;
+      }
       setUserName(profile?.full_name || session.user.email || "");
       setLoading(false);
     }
 
     // First check existing session
-    getSupabase().auth.getSession().then(({ data: { session } }) => {
-      if (session) { void init(session); return; }
-      // No session yet — wait for token from URL (invite/magic link)
-      const { data: { subscription } } = getSupabase().auth.onAuthStateChange((_event, session) => {
-        subscription.unsubscribe();
-        void init(session);
+    getSupabase()
+      .auth.getSession()
+      .then(({ data: { session } }) => {
+        if (session) {
+          void init(session);
+          return;
+        }
+        // No session yet — wait for token from URL (invite/magic link)
+        const {
+          data: { subscription },
+        } = getSupabase().auth.onAuthStateChange((_event, session) => {
+          subscription.unsubscribe();
+          void init(session);
+        });
+        // Timeout: if no auth event in 3s, redirect to portal
+        const t = setTimeout(() => {
+          subscription.unsubscribe();
+          void navigate({ to: "/portal" });
+        }, 3000);
+        return () => {
+          clearTimeout(t);
+          subscription.unsubscribe();
+        };
       });
-      // Timeout: if no auth event in 3s, redirect to portal
-      const t = setTimeout(() => { subscription.unsubscribe(); void navigate({ to: "/portal" }); }, 3000);
-      return () => { clearTimeout(t); subscription.unsubscribe(); };
-    });
   }, [navigate]);
 
   const signOut = async () => {
@@ -69,18 +95,20 @@ function FamilyPortal() {
         {/* Welcome header */}
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4 border-b border-gold/20 pb-8">
           <div>
-            <p className="eyebrow text-gold">
-              {lang === "en" ? "Welcome back" : "مرحباً بعودتك"}
-            </p>
-            <h1 className="mt-2 font-serif-display text-3xl text-navy md:text-4xl">
-              {userName}
-            </h1>
+            <p className="eyebrow text-gold">{lang === "en" ? "Welcome back" : "مرحباً بعودتك"}</p>
+            <h1 className="mt-2 font-serif-display text-3xl text-navy md:text-4xl">{userName}</h1>
           </div>
           <div className="flex gap-3">
-            <Link to="/" className="border border-gold/40 px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.18em] text-navy/60 hover:text-navy transition-colors">
+            <Link
+              to="/"
+              className="border border-gold/40 px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.18em] text-navy/60 hover:text-navy transition-colors"
+            >
               {lang === "en" ? "← Home" : "الرئيسية →"}
             </Link>
-            <button onClick={signOut} className="border border-navy/30 px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.18em] text-navy/60 hover:border-navy hover:text-navy transition-colors">
+            <button
+              onClick={signOut}
+              className="border border-navy/30 px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.18em] text-navy/60 hover:border-navy hover:text-navy transition-colors"
+            >
               {lang === "en" ? "Sign Out" : "تسجيل الخروج"}
             </button>
           </div>
@@ -88,12 +116,8 @@ function FamilyPortal() {
 
         <Tabs defaultValue="news">
           <TabsList className="h-auto flex-wrap gap-1 bg-navy/5 p-1">
-            <TabsTrigger value="news">
-              {lang === "en" ? "News" : "الأخبار"}
-            </TabsTrigger>
-            <TabsTrigger value="gallery">
-              {lang === "en" ? "Gallery" : "المعرض"}
-            </TabsTrigger>
+            <TabsTrigger value="news">{lang === "en" ? "News" : "الأخبار"}</TabsTrigger>
+            <TabsTrigger value="gallery">{lang === "en" ? "Gallery" : "المعرض"}</TabsTrigger>
             <TabsTrigger value="directory">
               {lang === "en" ? "Family Directory" : "دليل العائلة"}
             </TabsTrigger>
@@ -133,25 +157,24 @@ function FamilyNewsTab({ lang }: { lang: string }) {
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString(lang === "en" ? "en-US" : "ar-SA", {
-      year: "numeric", month: "long", day: "numeric",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
 
   if (loading) return <LoadingState lang={lang} />;
 
   if (posts.length === 0) {
-    return (
-      <EmptyState
-        lang={lang}
-        en="No announcements yet."
-        ar="لا توجد إعلانات بعد."
-      />
-    );
+    return <EmptyState lang={lang} en="No announcements yet." ar="لا توجد إعلانات بعد." />;
   }
 
   return (
     <div className="space-y-8">
       {posts.map((post) => (
-        <article key={post.id} className="border border-gold/20 bg-cream hover:shadow-md transition-shadow">
+        <article
+          key={post.id}
+          className="border border-gold/20 bg-cream hover:shadow-md transition-shadow"
+        >
           {post.cover_image && (
             <img src={post.cover_image} alt="" className="h-56 w-full object-cover" />
           )}
@@ -192,7 +215,11 @@ function FamilyGalleryTab({ lang }: { lang: string }) {
       .then(({ data }) => {
         const urls = (data ?? [])
           .filter((f) => f.name !== ".emptyFolderPlaceholder")
-          .map((f) => getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data.publicUrl);
+          .map(
+            (f) =>
+              getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data
+                .publicUrl,
+          );
         setImages(urls);
         setLoading(false);
       });
@@ -202,11 +229,7 @@ function FamilyGalleryTab({ lang }: { lang: string }) {
 
   if (images.length === 0) {
     return (
-      <EmptyState
-        lang={lang}
-        en="No photos in the archive yet."
-        ar="لا توجد صور في الأرشيف بعد."
-      />
+      <EmptyState lang={lang} en="No photos in the archive yet." ar="لا توجد صور في الأرشيف بعد." />
     );
   }
 
@@ -309,9 +332,16 @@ function FamilyDirectoryTab({ lang }: { lang: string }) {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((member) => (
-            <div key={member.id} className="flex items-start gap-4 border border-gold/20 bg-cream p-5">
+            <div
+              key={member.id}
+              className="flex items-start gap-4 border border-gold/20 bg-cream p-5"
+            >
               {member.photo_url ? (
-                <img src={member.photo_url} alt="" className="h-16 w-16 shrink-0 rounded-full object-cover border border-gold/20" />
+                <img
+                  src={member.photo_url}
+                  alt=""
+                  className="h-16 w-16 shrink-0 rounded-full object-cover border border-gold/20"
+                />
               ) : (
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-gold/30 bg-navy/5">
                   <span className="font-serif-display text-xl text-gold">
@@ -327,7 +357,9 @@ function FamilyDirectoryTab({ lang }: { lang: string }) {
                   <p className="font-arabic text-sm text-navy/60">{member.full_name_ar}</p>
                 )}
                 {member.relation && (
-                  <p className="mt-1 text-xs uppercase tracking-wider text-gold">{member.relation}</p>
+                  <p className="mt-1 text-xs uppercase tracking-wider text-gold">
+                    {member.relation}
+                  </p>
                 )}
                 {(member.birth_year || member.death_year) && (
                   <p className="mt-1 text-xs text-navy/40">
