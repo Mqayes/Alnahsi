@@ -425,6 +425,8 @@ function NewsTab() {
       .eq("id", id);
     if (!deleteError) {
       setPosts((prev) => prev.filter((p) => p.id !== id));
+    } else {
+      setError("تعذّر الحذف: " + deleteError.message);
     }
     setDeletingId(null);
   };
@@ -1185,10 +1187,12 @@ function FamilyMembersTab() {
 
   useEffect(() => { void loadMembers(); }, [loadMembers]);
 
-  const removeMember = async (id: string, email?: string | null) => {
-    const result = await removeFamilyMember({ data: { memberId: id, email } });
-    if (!result.success) {
-      setError(result.error ?? "Failed to remove member.");
+  const removeMember = async (id: string, _email?: string | null) => {
+    if (!window.confirm("هل تريد حذف هذا الفرد من الشجرة؟")) return;
+    setError(null);
+    const { error: delErr } = await getSupabase().from("family_members").delete().eq("id", id);
+    if (delErr) {
+      setError("تعذّر الحذف: " + delErr.message);
     } else {
       setMembers((prev) => prev.filter((m) => m.id !== id));
     }
