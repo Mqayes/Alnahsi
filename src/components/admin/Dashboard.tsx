@@ -132,6 +132,7 @@ export function Dashboard({
           <div className="mt-3 grid grid-cols-2 gap-2">
             {[
               ["members", "＋ إضافة فرد للشجرة"],
+              ["events", "🎉 تسجيل مناسبة (مولود/زواج/وفاة)"],
               ["news", "＋ نشر خبر"],
               ["gallery", "＋ رفع صور"],
               ["users", "إدارة الحسابات"],

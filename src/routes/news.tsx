@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { EVENT_TYPES, type EventType } from "@/lib/events";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { Reveal } from "@/components/site/Reveal";
@@ -120,9 +121,21 @@ function NewsPage() {
                     />
                   )}
                   <div className="p-8 md:p-10">
-                    <time className="text-sm text-navy/60 font-body">
-                      {formatDate(item.created_at)}
-                    </time>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {item.category && EVENT_TYPES[item.category as EventType] && (
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${EVENT_TYPES[item.category as EventType].color}`}
+                        >
+                          {EVENT_TYPES[item.category as EventType].icon}{" "}
+                          {lang === "en"
+                            ? EVENT_TYPES[item.category as EventType].en
+                            : EVENT_TYPES[item.category as EventType].ar}
+                        </span>
+                      )}
+                      <time className="text-sm text-navy/60 font-body">
+                        {formatDate(item.created_at)}
+                      </time>
+                    </div>
                     <h2 className="text-2xl md:text-3xl font-serif-display mb-4 mt-2">
                       {lang === "en" ? item.title_en : item.title_ar}
                     </h2>

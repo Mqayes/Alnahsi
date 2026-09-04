@@ -2,6 +2,7 @@ import { MembersManager } from "@/components/admin/MembersManager";
 import { UsersManager } from "@/components/admin/UsersManager";
 import { Dashboard } from "@/components/admin/Dashboard";
 import { SettingsTab } from "@/components/admin/SettingsTab";
+import { EventsTab } from "@/components/admin/EventsTab";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteByMagicLink } from "@/lib/api/invite-client";
@@ -174,7 +175,8 @@ function AdminPage() {
     { id: "members", label: "الأعضاء والشجرة", icon: "🌳", perm: "manage_members" },
     { id: "requests", label: "طلبات الانضمام", icon: "✉", perm: "approve_requests" },
     { id: "users", label: "الحسابات والصلاحيات", icon: "👥" },
-    { id: "news", label: "الأخبار والمناسبات", icon: "📰", perm: "manage_news" },
+    { id: "events", label: "مناسبات العائلة", icon: "🎉", perm: "manage_news" },
+    { id: "news", label: "الأخبار", icon: "📰", perm: "manage_news" },
     { id: "gallery", label: "الأرشيف والصور", icon: "🖼", perm: "manage_gallery" },
     { id: "content", label: "محتوى الرئيسية", icon: "✎", perm: "manage_content" },
     { id: "story", label: "صفحة قصتنا", icon: "📜", perm: "manage_content" },
@@ -247,6 +249,7 @@ function AdminPage() {
           {tab === "members" && <MembersManager />}
           {tab === "requests" && <JoinRequestsTab />}
           {tab === "users" && <UsersManager me={{ id: auth.profile.id, role }} />}
+          {tab === "events" && <EventsTab />}
           {tab === "news" && <NewsTab />}
           {tab === "gallery" && <GalleryTab />}
           {tab === "content" && <HomeContentTab />}

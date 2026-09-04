@@ -6,6 +6,7 @@ export type NewsItem = {
   content_en: string;
   content_ar: string;
   cover_image?: string | null;
+  category?: string | null;
 };
 
 /** Shown when Supabase has no rows or is not connected yet */

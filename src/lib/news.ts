@@ -16,11 +16,7 @@ function pickString(row: RawNewsRow, keys: string[]): string {
 
 function normalizeRow(row: RawNewsRow): NewsItem | null {
   const id =
-    typeof row.id === "string"
-      ? row.id
-      : row.id != null
-        ? String(row.id)
-        : `news-${Date.now()}`;
+    typeof row.id === "string" ? row.id : row.id != null ? String(row.id) : `news-${Date.now()}`;
   const created_at =
     typeof row.created_at === "string"
       ? row.created_at
@@ -40,19 +36,12 @@ function normalizeRow(row: RawNewsRow): NewsItem | null {
     "excerpt_en",
     "excerpt",
   ]);
-  const content_ar = pickString(row, [
-    "content_ar",
-    "body_ar",
-    "contentAr",
-    "description_ar",
-  ]);
+  const content_ar = pickString(row, ["content_ar", "body_ar", "contentAr", "description_ar"]);
 
   if (!title_en && !title_ar && !content_en && !content_ar) return null;
 
   const cover_image =
-    typeof row.cover_image === "string" && row.cover_image.trim()
-      ? row.cover_image.trim()
-      : null;
+    typeof row.cover_image === "string" && row.cover_image.trim() ? row.cover_image.trim() : null;
 
   return {
     id,
@@ -62,6 +51,7 @@ function normalizeRow(row: RawNewsRow): NewsItem | null {
     content_en: content_en || content_ar || "",
     content_ar: content_ar || content_en || "",
     cover_image,
+    category: typeof row.category === "string" ? row.category : null,
   };
 }
 

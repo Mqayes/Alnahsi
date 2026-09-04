@@ -22,6 +22,9 @@ export type Member = {
   gender: "m" | "f" | null;
   phone: string | null;
   occupation: string | null;
+  death_cause: string | null;
+  spouse_name: string | null;
+  marriage_year: number | null;
 };
 const EMPTY: Omit<Member, "id"> = {
   full_name_ar: "",
@@ -40,6 +43,9 @@ const EMPTY: Omit<Member, "id"> = {
   gender: "m",
   phone: "",
   occupation: "",
+  death_cause: "",
+  spouse_name: "",
+  marriage_year: null,
 };
 const I =
   "w-full rounded-md border border-gold/40 bg-parchment px-3 py-2 text-navy outline-none focus:border-gold";
@@ -59,6 +65,7 @@ export function MembersManager() {
     parent: "",
     deceased: false,
     death: "",
+    cause: "",
   });
   const [qaBusy, setQaBusy] = useState(false);
   const qaFirstRef = useRef<HTMLInputElement>(null);
@@ -150,6 +157,7 @@ export function MembersManager() {
       birth_year: Number(qa.birth),
       death_year: qa.deceased && qa.death ? Number(qa.death) : null,
       is_deceased: qa.deceased,
+      death_cause: qa.deceased && qa.cause.trim() ? qa.cause.trim() : null,
     };
     const { error } = await getSupabase().from("family_members").insert(payload);
     setQaBusy(false);
@@ -158,7 +166,7 @@ export function MembersManager() {
       return;
     }
     setMsg(`أُضيف: ${payload.full_name_ar} ✓`);
-    setQa((s) => ({ ...s, first: "", birth: "", death: "", deceased: false })); // يبقي الأب والجنس للإدخال المتتالي
+    setQa((s) => ({ ...s, first: "", birth: "", death: "", cause: "", deceased: false })); // يبقي الأب والجنس للإدخال المتتالي
     await load();
     qaFirstRef.current?.focus();
   };
@@ -242,6 +250,14 @@ export function MembersManager() {
               placeholder="سنة الوفاة"
               value={qa.death}
               onChange={(e) => setQa({ ...qa, death: e.target.value })}
+            />
+          )}
+          {qa.deceased && (
+            <input
+              className={I + " md:col-span-2"}
+              placeholder="سبب الوفاة (اختياري)"
+              value={qa.cause}
+              onChange={(e) => setQa({ ...qa, cause: e.target.value })}
             />
           )}
           {qa.first.trim() && (
@@ -462,6 +478,39 @@ export function MembersManager() {
                     setEditing(applyLineage({ ...editing, first_name: e.target.value }))
                   }
                   placeholder="مثال: محمد"
+                />
+              </label>
+              {editing.is_deceased && (
+                <label className="text-sm text-navy/70 sm:col-span-2">
+                  سبب الوفاة
+                  <input
+                    className={I}
+                    value={editing.death_cause ?? ""}
+                    onChange={(e) => setEditing({ ...editing, death_cause: e.target.value })}
+                    placeholder="مثال: بعد مرض، حادث"
+                  />
+                </label>
+              )}
+              <label className="text-sm text-navy/70">
+                الزوج/الزوجة
+                <input
+                  className={I}
+                  value={editing.spouse_name ?? ""}
+                  onChange={(e) => setEditing({ ...editing, spouse_name: e.target.value })}
+                />
+              </label>
+              <label className="text-sm text-navy/70">
+                سنة الزواج
+                <input
+                  className={I}
+                  type="number"
+                  value={editing.marriage_year ?? ""}
+                  onChange={(e) =>
+                    setEditing({
+                      ...editing,
+                      marriage_year: e.target.value ? Number(e.target.value) : null,
+                    })
+                  }
                 />
               </label>
               <label className="text-sm text-navy/70">

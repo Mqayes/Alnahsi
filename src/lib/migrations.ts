@@ -48,4 +48,17 @@ create policy "join insert public" on public.join_requests for insert with check
     title: "البريد اختياري في الطلبات",
     sql: `alter table public.join_requests alter column email drop not null;`,
   },
+  {
+    id: "2026-09-04d-events",
+    title: "مناسبات العائلة (مواليد، زواج، وفيات، إنجازات) + سبب الوفاة والزوجة",
+    sql: `
+alter table public.family_members add column if not exists death_cause text;
+alter table public.family_members add column if not exists spouse_name text;
+alter table public.family_members add column if not exists marriage_year int;
+alter table public.news_posts add column if not exists category text default 'general';
+alter table public.news_posts add column if not exists member_id uuid references public.family_members(id) on delete set null;
+alter table public.news_posts add column if not exists event_date date;
+alter table public.join_requests add column if not exists death_cause text;
+`,
+  },
 ];
