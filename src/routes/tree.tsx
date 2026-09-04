@@ -61,60 +61,6 @@ const ROOT: Person = {
             ar: "أسّس مزارع في القصيم وتبوك، ثم نواة أول استقرار للعائلة في الرياض — نقطة التحوّل في مسار آل بوخف.",
             en: "Founded farms in Qassim and Tabuk, then the family's first settlement in Riyadh — the turning point.",
           },
-          children: [
-            {
-              id: "g4a",
-              ar: "فهد",
-              en: "Fahd",
-              year: "الجيل الرابع",
-              place: "الرياض",
-              children: [
-                { id: "g5a", ar: "محمد", en: "Mohammed", place: "الرياض" },
-                {
-                  id: "g5b",
-                  ar: "سلطان",
-                  en: "Sultan",
-                  place: "الرياض",
-                  note: {
-                    ar: "الرئيس التنفيذي لمصنع مقاييس الدقة للمعدات.",
-                    en: "CEO, Mqayes Factory Equipment.",
-                  },
-                },
-                { id: "g5c", ar: "مفلح", en: "Muflih", place: "الرياض" },
-              ],
-            },
-            {
-              id: "g4b",
-              ar: "سعود",
-              en: "Saud",
-              year: "الجيل الرابع",
-              place: "الرياض",
-              children: [
-                { id: "g5d", ar: "عبدالرحمن", en: "Abdulrahman", place: "الرياض" },
-                { id: "g5e", ar: "أحمد", en: "Ahmad", place: "الرياض" },
-              ],
-            },
-            {
-              id: "g4c",
-              ar: "خالد",
-              en: "Khalid",
-              year: "الجيل الرابع",
-              place: "الرياض",
-              children: [{ id: "g5f", ar: "عبدالعزيز", en: "Abdulaziz", place: "الرياض" }],
-            },
-            {
-              id: "g4d",
-              ar: "عبدالله",
-              en: "Abdullah",
-              year: "الجيل الرابع",
-              place: "الرياض",
-              children: [
-                { id: "g5g", ar: "يوسف", en: "Yusuf", place: "الرياض" },
-                { id: "g5h", ar: "إبراهيم", en: "Ibrahim", place: "الرياض" },
-              ],
-            },
-            { id: "g4e", ar: "مفلح", en: "Muflih", year: "الجيل الرابع", place: "الرياض" },
-          ],
         },
       ],
     },
@@ -323,11 +269,7 @@ function TreePage() {
     const sb = getSupabase();
     const load = async () => {
       await sb.auth.getSession(); // انتظر استعادة الجلسة قبل القراءة (RLS)
-      const { data: rows, error } = await sb
-        .from("family_members")
-        .select(
-          "id, full_name_ar, full_name_en, first_name, gender, parent_id, generation, city, birth_year, death_year, is_deceased, notes, relation",
-        );
+      const { data: rows, error } = await sb.from("family_members").select("*");
       if (cancelled || error) return;
       const built = buildFromRows((rows ?? []) as Row[]);
       setRowsById(
