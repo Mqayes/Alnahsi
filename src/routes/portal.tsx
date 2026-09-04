@@ -152,7 +152,7 @@ function PortalPage() {
         .eq("id", data.session.user.id)
         .maybeSingle();
 
-      await navigate({ to: profile?.["owner","admin","moderator"].includes(role) ? "/admin" : "/family" });
+      await navigate({ to: ["owner","admin","moderator"].includes(profile?.role ?? "") ? "/admin" : "/family" });
     } catch (err) {
       setLoginError(
         err instanceof Error
