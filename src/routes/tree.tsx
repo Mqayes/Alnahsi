@@ -4,6 +4,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { Ornament } from "@/components/site/Ornament";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
+import { PanZoom } from "@/components/tree/PanZoom";
 
 export const Route = createFileRoute("/tree")({
   head: () => ({
@@ -374,14 +375,14 @@ function TreePage() {
           </button>
           <div className="flex items-center rounded-md border border-gold/40 bg-white">
             <button
-              onClick={() => setZoom((z) => Math.max(0.5, z - 0.1))}
+              onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}
               className="px-3 py-2 text-navy"
             >
               −
             </button>
             <span className="px-2 text-xs text-navy/60">{Math.round(zoom * 100)}%</span>
             <button
-              onClick={() => setZoom((z) => Math.min(1.6, z + 0.1))}
+              onClick={() => setZoom((z) => Math.min(2.5, z + 0.1))}
               className="px-3 py-2 text-navy"
             >
               +
@@ -395,11 +396,8 @@ function TreePage() {
 
       {/* Tree + Detail */}
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-10 lg:grid-cols-[1fr_320px]">
-        <div className="premium-card overflow-auto p-6 md:p-8">
-          <div
-            className="min-w-max origin-top transition-transform"
-            style={{ transform: `scale(${zoom})` }}
-          >
+        <PanZoom zoom={zoom} onZoom={setZoom} fitKey={data.id + ":" + open.size} ar={ar}>
+          <div className="p-6">
             <TreeNode
               p={data}
               level={0}
@@ -411,7 +409,7 @@ function TreePage() {
               ar={ar}
             />
           </div>
-        </div>
+        </PanZoom>
 
         <aside className="premium-card h-fit p-6 lg:sticky lg:top-36">
           <div className="eyebrow">{ar ? "بطاقة الفرد" : "Profile"}</div>
