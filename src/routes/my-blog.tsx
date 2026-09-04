@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
 import { RichEditor } from "@/components/blog/RichEditor";
+import { GalleryContribTab } from "@/components/blog/GalleryContribTab";
+import { NewsContribTab } from "@/components/blog/NewsContribTab";
 import {
   deletePost,
   excerpt,
@@ -17,7 +19,7 @@ import {
 } from "@/lib/blog";
 
 export const Route = createFileRoute("/my-blog")({
-  head: () => ({ meta: [{ title: "مدونتي — بيت آل بوخف الناهسي" }] }),
+  head: () => ({ meta: [{ title: "مساحتي — بيت آل بوخف الناهسي" }] }),
   component: MyBlogPage,
 });
 
@@ -34,6 +36,7 @@ const EMPTY: BlogDraft = {
 
 function MyBlogPage() {
   const [auth, setAuth] = useState<Auth>({ status: "loading" });
+  const [section, setSection] = useState<"blog" | "gallery" | "news">("blog");
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [needsMigration, setNeedsMigration] = useState(false);
   const [draft, setDraft] = useState<BlogDraft>(EMPTY);
@@ -104,8 +107,10 @@ function MyBlogPage() {
     return (
       <section dir="rtl" className="flex min-h-[60vh] items-center justify-center px-6 py-32">
         <div className="max-w-md text-center">
-          <h1 className="font-arabic text-3xl text-navy">مدونتك الشخصية</h1>
-          <p className="mt-4 text-navy/70">سجّل دخولك لتكتب وتنشر صورك.</p>
+          <h1 className="font-arabic text-3xl text-navy">مساحتك في الموقع</h1>
+          <p className="mt-4 text-navy/70">
+            سجّل دخولك لتكتب في مدونتك، وتنشر أخبارك، وتضيف صوراً لسجل العائلة.
+          </p>
           <Link to="/portal" className="btn-gold mt-8 inline-flex">
             تسجيل الدخول
           </Link>
@@ -195,30 +200,41 @@ function MyBlogPage() {
     <section dir="rtl" className="mx-auto max-w-4xl px-6 pb-24 pt-32">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="eyebrow-pill">مدونتي</span>
+          <span className="eyebrow-pill">مساحتي</span>
           <h1 className="mt-2 font-arabic text-3xl text-navy md:text-4xl">
-            {me.name ?? "مدونتي الشخصية"}
+            {me.name ?? "مساحتي في الموقع"}
           </h1>
         </div>
-        <div className="flex gap-2">
-          <Link
-            to="/blog"
-            className="rounded-lg border border-gold/40 bg-white px-4 py-2 text-sm text-navy hover:bg-parchment"
-          >
-            مدونات العائلة
-          </Link>
-          {!editing && (
-            <Button
-              onClick={() => {
-                setDraft(EMPTY);
-                setEditing(true);
-              }}
-            >
-              ✎ تدوينة جديدة
-            </Button>
-          )}
-        </div>
+        <Link
+          to="/blog"
+          className="rounded-lg border border-gold/40 bg-white px-4 py-2 text-sm text-navy hover:bg-parchment"
+        >
+          مدونات العائلة
+        </Link>
       </header>
+
+      <nav className="mt-8 flex flex-wrap gap-2 border-b border-gold/20 pb-3">
+        {(
+          [
+            { id: "blog", label: "✎ مدونتي" },
+            { id: "news", label: "📰 أخباري" },
+            { id: "gallery", label: "🖼 صور العائلة" },
+          ] as const
+        ).map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => setSection(s.id)}
+            className={`rounded-full border px-4 py-2 text-sm transition ${
+              section === s.id
+                ? "border-gold bg-gold font-semibold text-navy"
+                : "border-gold/30 bg-white text-navy/70 hover:bg-parchment"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </nav>
 
       {needsMigration && (
         <div className="premium-card mt-8 border-amber-400 p-5">
@@ -240,7 +256,32 @@ function MyBlogPage() {
         </p>
       )}
 
-      {editing && (
+      {section === "gallery" && (
+        <div className="mt-8">
+          <GalleryContribTab me={me} onNotice={flash} onError={setError} />
+        </div>
+      )}
+
+      {section === "news" && (
+        <div className="mt-8">
+          <NewsContribTab me={me} onNotice={flash} onError={setError} />
+        </div>
+      )}
+
+      {section === "blog" && !editing && (
+        <div className="mt-8">
+          <Button
+            onClick={() => {
+              setDraft(EMPTY);
+              setEditing(true);
+            }}
+          >
+            ✎ تدوينة جديدة
+          </Button>
+        </div>
+      )}
+
+      {section === "blog" && editing && (
         <div className="premium-card mt-8 space-y-5 p-6">
           <div>
             <Label htmlFor="blog-title">العنوان</Label>
@@ -361,76 +402,78 @@ function MyBlogPage() {
         </div>
       )}
 
-      <div className="mt-12 space-y-4">
-        <h2 className="font-arabic text-xl text-navy">تدويناتي ({posts.length})</h2>
+      {section === "blog" && (
+        <div className="mt-12 space-y-4">
+          <h2 className="font-arabic text-xl text-navy">تدويناتي ({posts.length})</h2>
 
-        {posts.length === 0 && !needsMigration && (
-          <p className="text-sm text-navy/60">لم تكتب شيئاً بعد.</p>
-        )}
+          {posts.length === 0 && !needsMigration && (
+            <p className="text-sm text-navy/60">لم تكتب شيئاً بعد.</p>
+          )}
 
-        {posts.map((post) => (
-          <div key={post.id} className="premium-card flex flex-wrap items-start gap-4 p-5">
-            {post.cover_image && (
-              <img
-                src={post.cover_image}
-                alt=""
-                className="h-20 w-28 shrink-0 rounded border border-gold/20 object-cover"
-              />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-arabic text-lg text-navy">{post.title}</h3>
-                {post.status === "draft" && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
-                    مسودة
-                  </span>
-                )}
-                {post.visibility === "public" && (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">
-                    عامة
-                  </span>
-                )}
-              </div>
-              <p className="mt-1.5 text-sm text-navy/65">{excerpt(post.body, 120)}</p>
-              <div className="mt-3 flex gap-3 text-sm">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDraft({
-                      id: post.id,
-                      title: post.title,
-                      body: post.body,
-                      cover_image: post.cover_image,
-                      status: post.status,
-                      visibility: post.visibility,
-                    });
-                    setEditing(true);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className="text-navy hover:text-gold"
-                >
-                  تعديل
-                </button>
-                <Link
-                  to="/blog/$postId"
-                  params={{ postId: post.id }}
-                  className="text-navy hover:text-gold"
-                >
-                  عرض
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => void handleDelete(post.id)}
-                  className="text-destructive hover:underline"
-                  disabled={busy}
-                >
-                  حذف
-                </button>
+          {posts.map((post) => (
+            <div key={post.id} className="premium-card flex flex-wrap items-start gap-4 p-5">
+              {post.cover_image && (
+                <img
+                  src={post.cover_image}
+                  alt=""
+                  className="h-20 w-28 shrink-0 rounded border border-gold/20 object-cover"
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-arabic text-lg text-navy">{post.title}</h3>
+                  {post.status === "draft" && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">
+                      مسودة
+                    </span>
+                  )}
+                  {post.visibility === "public" && (
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">
+                      عامة
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1.5 text-sm text-navy/65">{excerpt(post.body, 120)}</p>
+                <div className="mt-3 flex gap-3 text-sm">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraft({
+                        id: post.id,
+                        title: post.title,
+                        body: post.body,
+                        cover_image: post.cover_image,
+                        status: post.status,
+                        visibility: post.visibility,
+                      });
+                      setEditing(true);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="text-navy hover:text-gold"
+                  >
+                    تعديل
+                  </button>
+                  <Link
+                    to="/blog/$postId"
+                    params={{ postId: post.id }}
+                    className="text-navy hover:text-gold"
+                  >
+                    عرض
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete(post.id)}
+                    className="text-destructive hover:underline"
+                    disabled={busy}
+                  >
+                    حذف
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

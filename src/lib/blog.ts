@@ -1,5 +1,5 @@
 import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
-import { compressImage } from "@/lib/image-compress";
+import { uploadImage } from "@/lib/contributions";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 
 export type BlogPost = {
@@ -170,72 +170,15 @@ export async function deletePost(id: string): Promise<string | null> {
   return error ? error.message : null;
 }
 
-/** الحد بعد الضغط — الصور الكبيرة تُصغَّر تلقائياً بدل رفضها */
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-
-/**
- * يضغط الصورة في المتصفح ثم يرفعها داخل مجلد المستخدم.
- * السياسات تمنع الرفع في مجلد غيره.
- */
+/** الرفع موحّد في contributions.ts — نُصدّره هنا حفاظاً على نقاط الاستدعاء */
 export async function uploadBlogImage(
   file: File,
   userId: string,
 ): Promise<{ url?: string; error?: string; savedBytes?: number }> {
-  if (!file.type.startsWith("image/")) return { error: "الملف المختار ليس صورة." };
-
-  const { file: ready, originalBytes, finalBytes } = await compressImage(file);
-
-  if (ready.size > MAX_IMAGE_BYTES) {
-    return { error: "الصورة كبيرة جداً حتى بعد الضغط. جرّب صورة أصغر." };
-  }
-
-  const ext = (ready.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext || "jpg"}`;
-
-  const { error } = await getSupabase()
-    .storage.from("blog-images")
-    .upload(path, ready, { upsert: false, contentType: ready.type });
-
-  if (error) {
-    const msg = error.message.toLowerCase();
-    if (msg.includes("bucket") && msg.includes("not found")) {
-      return { error: "مخزن الصور غير مهيّأ — على المالك تطبيق ترقية «المدونات الشخصية»." };
-    }
-    if (
-      msg.includes("row-level security") ||
-      msg.includes("unauthorized") ||
-      msg.includes("policy")
-    ) {
-      return { error: "لا تملك صلاحية الرفع. سجّل خروجك ثم ادخل مرة أخرى." };
-    }
-    return { error: error.message };
-  }
-
-  const { data } = getSupabase().storage.from("blog-images").getPublicUrl(path);
-  return { url: data.publicUrl, savedBytes: Math.max(0, originalBytes - finalBytes) };
+  return uploadImage(file, userId, "blog-images");
 }
 
-/** يتأكد أن الرابط يُحمّل فعلاً — يكشف خطأ الصلاحيات فوراً بدل صورة مكسورة لاحقاً */
-export function verifyImageUrl(url: string, timeoutMs = 12_000): Promise<boolean> {
-  if (typeof window === "undefined") return Promise.resolve(true);
-  return new Promise((resolve) => {
-    const img = new Image();
-    const done = (ok: boolean) => {
-      img.onload = img.onerror = null;
-      resolve(ok);
-    };
-    const timer = setTimeout(() => done(false), timeoutMs);
-    img.onload = () => {
-      clearTimeout(timer);
-      done(true);
-    };
-    img.onerror = () => {
-      clearTimeout(timer);
-      done(false);
-    };
-    img.src = url;
-  });
-}
+export { verifyImageUrl } from "@/lib/contributions";
 
 /** ملخّص قصير للعرض في البطاقات */
 export function excerpt(body: string, max = 160): string {

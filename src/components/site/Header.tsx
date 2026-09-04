@@ -26,6 +26,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -34,6 +35,7 @@ export function Header() {
       const {
         data: { session },
       } = await sb.auth.getSession();
+      setSignedIn(Boolean(session));
       if (!session) {
         setIsStaff(false);
         return;
@@ -113,6 +115,18 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {signedIn && (
+            <Link
+              to="/my-blog"
+              className={`hidden rounded-sm border border-gold/40 px-3 py-1.5 text-xs transition-all lg:inline-block ${
+                headerScrolled
+                  ? "text-navy hover:bg-gold"
+                  : "text-cream bg-navy/10 hover:bg-navy hover:text-cream"
+              }`}
+            >
+              {lang === "en" ? "My space" : "مساحتي"}
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => toggle()}
@@ -162,6 +176,14 @@ export function Header() {
                 {t(translations.nav[item.key], lang)}
               </Link>
             ))}
+            {signedIn && (
+              <Link
+                to="/my-blog"
+                className="border-b border-gold/20 py-3.5 font-arabic-body text-base font-semibold text-navy"
+              >
+                {lang === "en" ? "My space" : "مساحتي"}
+              </Link>
+            )}
             <Link to={isStaff ? "/admin" : "/portal"} className="btn-gold mt-4">
               {isStaff
                 ? lang === "en"

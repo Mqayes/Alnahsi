@@ -122,4 +122,95 @@ insert into public.site_content (key, value) values ('blogs_open','true'),('tick
   on conflict (key) do nothing;
 `,
   },
+  {
+    id: "2026-09-06-member-contributions",
+    title: "مشاركات الأعضاء (أخبار + صور الأرشيف + خصوصية لكل عنصر)",
+    sql: `
+-- ١) سجل صور العائلة: جدول يحمل خصوصية ومالكاً لكل صورة
+create table if not exists public.gallery_items (
+  id uuid primary key default gen_random_uuid(),
+  uploader_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  uploader_name text,
+  path text not null,
+  url text not null,
+  caption text,
+  visibility text not null default 'family',
+  created_at timestamptz not null default now()
+);
+create index if not exists gallery_items_feed_idx on public.gallery_items (visibility, created_at desc);
+create index if not exists gallery_items_owner_idx on public.gallery_items (uploader_id, created_at desc);
+alter table public.gallery_items enable row level security;
+
+drop policy if exists "gallery read" on public.gallery_items;
+create policy "gallery read" on public.gallery_items for select using (
+  visibility = 'public'
+  or auth.role() = 'authenticated'
+);
+
+drop policy if exists "gallery insert member" on public.gallery_items;
+create policy "gallery insert member" on public.gallery_items for insert to authenticated
+  with check (uploader_id = auth.uid());
+
+drop policy if exists "gallery update own" on public.gallery_items;
+create policy "gallery update own" on public.gallery_items for update to authenticated
+  using (uploader_id = auth.uid() or public.is_admin())
+  with check (uploader_id = auth.uid() or public.is_admin());
+
+drop policy if exists "gallery delete own" on public.gallery_items;
+create policy "gallery delete own" on public.gallery_items for delete to authenticated
+  using (uploader_id = auth.uid() or public.is_admin());
+
+-- ٢) الأخبار: يكتبها أي عضو، ولكل خبر خصوصية وصاحب
+alter table public.news_posts add column if not exists author_id uuid references auth.users(id) on delete set null;
+alter table public.news_posts add column if not exists author_name text;
+alter table public.news_posts add column if not exists visibility text not null default 'family';
+
+drop policy if exists "news read" on public.news_posts;
+create policy "news read" on public.news_posts for select using (
+  visibility = 'public'
+  or auth.role() = 'authenticated'
+);
+
+drop policy if exists "news insert member" on public.news_posts;
+create policy "news insert member" on public.news_posts for insert to authenticated
+  with check (author_id = auth.uid() or public.is_admin());
+
+drop policy if exists "news update own" on public.news_posts;
+create policy "news update own" on public.news_posts for update to authenticated
+  using (author_id = auth.uid() or public.is_admin())
+  with check (author_id = auth.uid() or public.is_admin());
+
+drop policy if exists "news delete own" on public.news_posts;
+create policy "news delete own" on public.news_posts for delete to authenticated
+  using (author_id = auth.uid() or public.is_admin());
+
+-- ٣) مخزن صور الأرشيف: يرفع كل عضو داخل مجلده فقط
+insert into storage.buckets (id, name, public) values ('gallery-images', 'gallery-images', true)
+  on conflict (id) do nothing;
+
+drop policy if exists "gallery images read" on storage.objects;
+create policy "gallery images read" on storage.objects for select
+  using (bucket_id = 'gallery-images');
+
+drop policy if exists "gallery images write member" on storage.objects;
+create policy "gallery images write member" on storage.objects for insert to authenticated
+  with check (
+    bucket_id = 'gallery-images'
+    and ((storage.foldername(name))[1] = 'members' and (storage.foldername(name))[2] = auth.uid()::text
+         or public.is_admin())
+  );
+
+drop policy if exists "gallery images delete own" on storage.objects;
+create policy "gallery images delete own" on storage.objects for delete to authenticated
+  using (
+    bucket_id = 'gallery-images'
+    and ((storage.foldername(name))[1] = 'members' and (storage.foldername(name))[2] = auth.uid()::text
+         or public.is_admin())
+  );
+
+insert into public.site_content (key, value)
+  values ('members_can_post_news','true'),('members_can_upload_gallery','true')
+  on conflict (key) do nothing;
+`,
+  },
 ];
