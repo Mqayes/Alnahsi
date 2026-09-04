@@ -1,10 +1,11 @@
-import { StaffTab } from "@/components/admin/StaffTab";
 import { MembersManager } from "@/components/admin/MembersManager";
+import { UsersManager } from "@/components/admin/UsersManager";
+import { Dashboard } from "@/components/admin/Dashboard";
+import { SettingsTab } from "@/components/admin/SettingsTab";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteByMagicLink } from "@/lib/api/invite-client";
 import { removeFamilyMember } from "@/lib/api/remove-member";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,7 @@ type AuthState =
 
 function AdminPage() {
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
+  const [tab, setTab] = useState<string>("dashboard");
 
   useEffect(() => {
     let cancelled = false;
@@ -68,7 +70,7 @@ function AdminPage() {
         if (sessionError || !session) {
           setAuth({
             status: "denied",
-            message: "You must sign in to access the admin dashboard.",
+            message: "سجّل دخولك أولاً للوصول إلى لوحة التحكم.",
           });
           return;
         }
@@ -76,7 +78,7 @@ function AdminPage() {
         const { data: profile, error: profileError } = await withTimeout(
           supabase
             .from("profiles")
-            .select("id, role, email, full_name")
+            .select("id, role, email, full_name, status, permissions")
             .eq("id", session.user.id)
             .maybeSingle(),
           10_000,
@@ -93,11 +95,14 @@ function AdminPage() {
           return;
         }
 
-        if (!profile || !["owner","admin","moderator"].includes(profile.role)) {
+        if (profile && (profile as { status?: string }).status === "suspended") {
+          setAuth({ status: "denied", message: "تم إيقاف هذا الحساب. تواصل مع إدارة العائلة." });
+          return;
+        }
+        if (!profile || !["owner", "admin", "moderator"].includes(profile.role)) {
           setAuth({
             status: "denied",
-            message:
-              "Your account does not have admin access. Make sure your user has role = 'admin' in the profiles table.",
+            message: "حسابك لا يملك صلاحية الدخول إلى لوحة التحكم.",
           });
           return;
         }
@@ -132,7 +137,7 @@ function AdminPage() {
   if (auth.status === "loading") {
     return (
       <section className="flex min-h-[60vh] items-center justify-center px-6 py-32">
-        <p className="font-serif-display text-lg text-navy/70">Checking access...</p>
+        <p className="font-serif-display text-lg text-navy/70">جارٍ التحقق من الصلاحية…</p>
       </section>
     );
   }
@@ -141,65 +146,101 @@ function AdminPage() {
     return (
       <section className="flex min-h-[60vh] items-center justify-center px-6 py-32">
         <div className="max-w-md text-center">
-          <h1 className="font-serif-display text-3xl text-navy">Access denied</h1>
+          <h1 className="font-serif-display text-3xl text-navy">غير مصرّح</h1>
           <p className="mt-4 text-navy/70">{auth.message}</p>
           <Link to="/portal" className="btn-gold mt-8 inline-flex">
-            Go to sign in
+            الذهاب لتسجيل الدخول
           </Link>
         </div>
       </section>
     );
   }
 
+  const NAV: { id: string; label: string; icon: string; perm?: string }[] = [
+    { id: "dashboard", label: "لوحة القيادة", icon: "▦" },
+    { id: "members", label: "الأعضاء والشجرة", icon: "🌳", perm: "manage_members" },
+    { id: "requests", label: "طلبات الانضمام", icon: "✉", perm: "approve_requests" },
+    { id: "users", label: "الحسابات والصلاحيات", icon: "👥" },
+    { id: "news", label: "الأخبار والمناسبات", icon: "📰", perm: "manage_news" },
+    { id: "gallery", label: "الأرشيف والصور", icon: "🖼", perm: "manage_gallery" },
+    { id: "content", label: "محتوى الرئيسية", icon: "✎", perm: "manage_content" },
+    { id: "story", label: "صفحة قصتنا", icon: "📜", perm: "manage_content" },
+    { id: "settings", label: "الإعدادات", icon: "⚙" },
+  ];
+  const role = auth.profile.role;
+  const perms = (auth.profile as { permissions?: string[] }).permissions ?? [];
+  const allowed = (n: (typeof NAV)[number]) =>
+    role === "owner" || role === "admin" || !n.perm || perms.includes(n.perm);
+  const visible = NAV.filter((n) => (n.id === "users" ? role !== "moderator" : allowed(n)));
+
   return (
-    <section className="mx-auto max-w-5xl px-6 py-32">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section dir="rtl" className="mx-auto max-w-7xl px-4 pb-20 pt-28 md:px-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="eyebrow text-gold">Admin</p>
-          <h1 className="mt-2 font-serif-display text-4xl text-navy">Family Dashboard</h1>
-          <p className="mt-2 text-sm text-navy/60">
-            مسجّل الدخول: {auth.profile.full_name ?? auth.profile.email ?? auth.profile.id}
+          <span className="eyebrow-pill">لوحة التحكم</span>
+          <h1 className="mt-2 font-arabic text-3xl text-navy md:text-4xl">بيت آل بوخف الناهسي</h1>
+          <p className="mt-1 text-sm text-navy/60">
+            مسجّل الدخول:{" "}
+            <b className="text-navy">{auth.profile.full_name ?? auth.profile.email}</b> ·{" "}
+            <span className="text-gold">
+              {role === "owner" ? "المالك" : role === "admin" ? "أدمن" : "مشرف"}
+            </span>
           </p>
         </div>
-        <Button variant="outline" onClick={handleSignOut}>
-          Sign out
-        </Button>
+        <div className="flex gap-2">
+          <Link
+            to="/"
+            className="rounded-lg border border-gold/40 bg-white px-4 py-2 text-sm text-navy hover:bg-parchment"
+          >
+            عرض الموقع
+          </Link>
+          <Button variant="outline" onClick={handleSignOut}>
+            تسجيل الخروج
+          </Button>
+        </div>
       </div>
 
-      <Tabs defaultValue="requests" className="mt-10">
-        <TabsList className="h-auto flex-wrap gap-1 bg-navy/5 p-1">
-          <TabsTrigger value="requests">طلبات الانضمام</TabsTrigger>
-          <TabsTrigger value="news">الأخبار</TabsTrigger>
-          <TabsTrigger value="gallery">الأرشيف</TabsTrigger>
-          <TabsTrigger value="home">محتوى الرئيسية</TabsTrigger>
-          <TabsTrigger value="our-story">قصتنا</TabsTrigger>
-                    <TabsTrigger value="view-members">الأعضاء والشجرة</TabsTrigger>
-          <TabsTrigger value="staff">المشرفون والصلاحيات</TabsTrigger>
-        </TabsList>
+      {/* Mobile nav */}
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 md:hidden">
+        {visible.map((n) => (
+          <button
+            key={n.id}
+            onClick={() => setTab(n.id)}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-sm ${tab === n.id ? "border-gold bg-gold text-navy" : "border-gold/30 bg-white text-navy/70"}`}
+          >
+            {n.icon} {n.label}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="requests" className="mt-6">
-          <JoinRequestsTab />
-        </TabsContent>
-        <TabsContent value="news" className="mt-6">
-          <NewsTab />
-        </TabsContent>
-        <TabsContent value="gallery" className="mt-6">
-          <GalleryTab />
-        </TabsContent>
-        <TabsContent value="home" className="mt-6">
-          <HomeContentTab />
-        </TabsContent>
-        <TabsContent value="our-story" className="mt-6">
-          <OurStoryTab />
-        </TabsContent>
-        
-        <TabsContent value="view-members" className="mt-6">
-          <MembersManager />
-        </TabsContent>
-        <TabsContent value="staff" className="mt-6">
-          <StaffTab me={{ id: auth.profile.id, role: auth.profile.role }} />
-        </TabsContent>
-      </Tabs>
+      <div className="grid gap-6 md:grid-cols-[240px_1fr]">
+        <aside className="hidden md:block">
+          <nav className="premium-card sticky top-24 p-2">
+            {visible.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => setTab(n.id)}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-right text-sm transition ${tab === n.id ? "bg-gold text-navy font-semibold" : "text-navy/70 hover:bg-parchment"}`}
+              >
+                <span className="w-5 text-center">{n.icon}</span>
+                {n.label}
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        <main className="min-w-0">
+          {tab === "dashboard" && <Dashboard go={setTab} />}
+          {tab === "members" && <MembersManager />}
+          {tab === "requests" && <JoinRequestsTab />}
+          {tab === "users" && <UsersManager me={{ id: auth.profile.id, role }} />}
+          {tab === "news" && <NewsTab />}
+          {tab === "gallery" && <GalleryTab />}
+          {tab === "content" && <HomeContentTab />}
+          {tab === "story" && <OurStoryTab />}
+          {tab === "settings" && <SettingsTab />}
+        </main>
+      </div>
     </section>
   );
 }
@@ -298,10 +339,7 @@ function JoinRequestsTab() {
 
       <ul className="mt-6 space-y-4">
         {requests.map((request) => (
-          <li
-            key={request.id}
-            className="rounded-lg border border-gold/15 bg-white/60 p-4"
-          >
+          <li key={request.id} className="rounded-lg border border-gold/15 bg-white/60 p-4">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="font-medium text-navy">{request.full_name_en}</p>
@@ -366,7 +404,9 @@ function NewsTab() {
     setPostsLoading(false);
   }, []);
 
-  useEffect(() => { void loadPosts(); }, [loadPosts]);
+  useEffect(() => {
+    void loadPosts();
+  }, [loadPosts]);
 
   const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -394,20 +434,27 @@ function NewsTab() {
     setLoading(true);
     setMessage("");
     setError("");
-    const { error: insertError } = await getSupabase().from("news_posts").insert({
-      title_en: titleEn.trim(),
-      title_ar: titleAr.trim(),
-      content_en: contentEn.trim(),
-      content_ar: contentAr.trim(),
-      cover_image: coverImage || null,
-      is_private: isPrivate,
-    });
+    const { error: insertError } = await getSupabase()
+      .from("news_posts")
+      .insert({
+        title_en: titleEn.trim(),
+        title_ar: titleAr.trim(),
+        content_en: contentEn.trim(),
+        content_ar: contentAr.trim(),
+        cover_image: coverImage || null,
+        is_private: isPrivate,
+      });
     if (insertError) {
       setError(insertError.message);
     } else {
       setMessage("News post published.");
-      setTitleEn(""); setTitleAr(""); setContentEn(""); setContentAr("");
-      setCoverImage(""); setImagePreview(""); setIsPrivate(false);
+      setTitleEn("");
+      setTitleAr("");
+      setContentEn("");
+      setContentAr("");
+      setCoverImage("");
+      setImagePreview("");
+      setIsPrivate(false);
       void loadPosts();
     }
     setLoading(false);
@@ -415,10 +462,7 @@ function NewsTab() {
 
   const deletePost = async (id: string) => {
     setDeletingId(id);
-    const { error: deleteError } = await getSupabase()
-      .from("news_posts")
-      .delete()
-      .eq("id", id);
+    const { error: deleteError } = await getSupabase().from("news_posts").delete().eq("id", id);
     if (!deleteError) {
       setPosts((prev) => prev.filter((p) => p.id !== id));
     } else {
@@ -439,59 +483,117 @@ function NewsTab() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="title-ar">Title (Arabic)</Label>
-              <Input id="title-ar" required value={titleAr} onChange={(e) => setTitleAr(e.target.value)} className="font-arabic" />
+              <Input
+                id="title-ar"
+                required
+                value={titleAr}
+                onChange={(e) => setTitleAr(e.target.value)}
+                className="font-arabic"
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="content-en">Content (English)</Label>
-            <Textarea id="content-en" rows={5} value={contentEn} onChange={(e) => setContentEn(e.target.value)} />
+            <Textarea
+              id="content-en"
+              rows={5}
+              value={contentEn}
+              onChange={(e) => setContentEn(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="content-ar">Content (Arabic)</Label>
-            <Textarea id="content-ar" required rows={5} value={contentAr} onChange={(e) => setContentAr(e.target.value)} className="font-arabic" />
+            <Textarea
+              id="content-ar"
+              required
+              rows={5}
+              value={contentAr}
+              onChange={(e) => setContentAr(e.target.value)}
+              className="font-arabic"
+            />
           </div>
           <div className="space-y-2">
             <Label>Cover Image (optional)</Label>
             <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
-              <input type="file" accept="image/*" className="hidden" onChange={handleImagePick} disabled={uploadLoading} />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImagePick}
+                disabled={uploadLoading}
+              />
               {uploadLoading ? "Uploading..." : "Choose image from device"}
             </label>
             {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
             {imagePreview && (
               <div className="relative mt-2 inline-block">
-                <img src={imagePreview} alt="Preview" className="max-h-40 rounded border border-gold/20 object-cover" />
-                <button type="button" onClick={() => { setCoverImage(""); setImagePreview(""); }} className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600">×</button>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-h-40 rounded border border-gold/20 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoverImage("");
+                    setImagePreview("");
+                  }}
+                  className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-600"
+                >
+                  ×
+                </button>
               </div>
             )}
           </div>
           <label className="flex cursor-pointer items-center gap-3">
-            <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="h-4 w-4 accent-gold" />
+            <input
+              type="checkbox"
+              checked={isPrivate}
+              onChange={(e) => setIsPrivate(e.target.checked)}
+              className="h-4 w-4 accent-gold"
+            />
             <span className="text-sm text-navy/70">
-              <span className="font-medium text-navy">Family only</span> — hidden from the public News page, visible only in the Family Portal
+              <span className="font-medium text-navy">Family only</span> — hidden from the public
+              News page, visible only in the Family Portal
             </span>
           </label>
-          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
+          {error && (
+            <p className="text-sm text-red-600" role="alert">
+              {error}
+            </p>
+          )}
           {message && <p className="text-sm text-green-700">{message}</p>}
-          <Button type="submit" disabled={loading}>{loading ? "Publishing..." : "Publish"}</Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? "Publishing..." : "Publish"}
+          </Button>
         </form>
       </div>
 
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Published posts</h2>
         {postsLoading && <p className="mt-4 text-navy/60">Loading...</p>}
-        {!postsLoading && posts.length === 0 && <p className="mt-4 text-navy/60">No news posts yet.</p>}
+        {!postsLoading && posts.length === 0 && (
+          <p className="mt-4 text-navy/60">No news posts yet.</p>
+        )}
         <ul className="mt-4 space-y-3">
           {posts.map((post) => (
-            <li key={post.id} className="flex items-start justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3">
+            <li
+              key={post.id}
+              className="flex items-start justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3"
+            >
               <div>
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-navy">{post.title_en}</p>
                   {(post as NewsPost & { is_private?: boolean }).is_private && (
-                    <span className="rounded bg-gold/20 px-1.5 py-0.5 text-xs text-gold">Family Only</span>
+                    <span className="rounded bg-gold/20 px-1.5 py-0.5 text-xs text-gold">
+                      Family Only
+                    </span>
                   )}
                 </div>
                 <p className="font-arabic text-sm text-navy/60">{post.title_ar}</p>
-                <p className="mt-1 text-xs text-navy/40">{new Date(post.created_at).toLocaleDateString()}</p>
+                <p className="mt-1 text-xs text-navy/40">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </p>
               </div>
               <Button
                 size="sm"
@@ -512,15 +614,15 @@ function NewsTab() {
 
 const STORY_SECTIONS = [
   { label: "Before the Name", key: "story_s0" },
-  { label: "The First House",  key: "story_s1" },
+  { label: "The First House", key: "story_s1" },
   { label: "Across Generations", key: "story_s2" },
-  { label: "What Remains",    key: "story_s3" },
+  { label: "What Remains", key: "story_s3" },
 ];
 
 function OurStoryTab() {
   const sc = useSiteContent();
   const [saving, setSaving] = useState<string | null>(null);
-  const [saved, setSaved]   = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   type FieldKey = string;
@@ -528,13 +630,15 @@ function OurStoryTab() {
     "story_patriarch_caption_en",
     "story_patriarch_caption_ar",
     ...STORY_SECTIONS.flatMap((s) => [
-      `${s.key}_h_en`, `${s.key}_h_ar`,
-      `${s.key}_p_en`, `${s.key}_p_ar`,
+      `${s.key}_h_en`,
+      `${s.key}_h_ar`,
+      `${s.key}_p_en`,
+      `${s.key}_p_ar`,
     ]),
   ];
 
   const [fields, setFields] = useState<Record<string, string>>(
-    Object.fromEntries(allKeys.map((k) => [k, ""]))
+    Object.fromEntries(allKeys.map((k) => [k, ""])),
   );
 
   useEffect(() => {
@@ -545,7 +649,7 @@ function OurStoryTab() {
       }
       return next;
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sc]);
 
   const save = async (key: string) => {
@@ -553,7 +657,10 @@ function OurStoryTab() {
     setErrors((p) => ({ ...p, [key]: "" }));
     const err = await upsertSiteContent(key, fields[key]);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
-    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    else {
+      setSaved(key);
+      setTimeout(() => setSaved(null), 2000);
+    }
     setSaving(null);
   };
 
@@ -563,12 +670,21 @@ function OurStoryTab() {
     setErrors((p) => ({ ...p, [key]: "" }));
     const ext = file.name.split(".").pop();
     const path = `site/${key}-${Date.now()}.${ext}`;
-    const { error: upErr } = await getSupabase().storage.from("site-images").upload(path, file, { upsert: true });
-    if (upErr) { setErrors((p) => ({ ...p, [key]: upErr.message })); setSaving(null); return; }
+    const { error: upErr } = await getSupabase()
+      .storage.from("site-images")
+      .upload(path, file, { upsert: true });
+    if (upErr) {
+      setErrors((p) => ({ ...p, [key]: upErr.message }));
+      setSaving(null);
+      return;
+    }
     const { data } = getSupabase().storage.from("site-images").getPublicUrl(path);
     const err = await upsertSiteContent(key, data.publicUrl);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
-    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    else {
+      setSaved(key);
+      setTimeout(() => setSaved(null), 2000);
+    }
     setSaving(null);
   };
 
@@ -577,7 +693,10 @@ function OurStoryTab() {
     setSaving(key);
     const err = await deleteSiteContent(key);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
-    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    else {
+      setSaved(key);
+      setTimeout(() => setSaved(null), 2000);
+    }
     setSaving(null);
   };
 
@@ -593,20 +712,39 @@ function OurStoryTab() {
         <p className="mt-1 text-sm text-navy/60">The portrait shown beside the story text.</p>
         <div className="mt-4 max-w-xs space-y-2">
           <div className="relative">
-            <img src={patriarchSrc} alt="" className="h-48 w-full rounded border border-gold/20 object-cover object-top" />
-            <span className={`absolute left-2 top-2 rounded px-2 py-0.5 text-xs font-medium ${isCustomPatriarch ? "bg-gold text-navy" : "bg-navy/60 text-cream"}`}>
+            <img
+              src={patriarchSrc}
+              alt=""
+              className="h-48 w-full rounded border border-gold/20 object-cover object-top"
+            />
+            <span
+              className={`absolute left-2 top-2 rounded px-2 py-0.5 text-xs font-medium ${isCustomPatriarch ? "bg-gold text-navy" : "bg-navy/60 text-cream"}`}
+            >
               {isCustomPatriarch ? "Custom" : "Default"}
             </span>
           </div>
           <div className="flex gap-2">
             <label className="flex flex-1 cursor-pointer items-center gap-2 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-2.5 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
-              <input type="file" accept="image/*" className="hidden" disabled={saving === patriarchKey}
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadPatriarch(f); }} />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={saving === patriarchKey}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void uploadPatriarch(f);
+                }}
+              />
               {saving === patriarchKey ? "Uploading..." : isCustomPatriarch ? "Replace" : "Upload"}
             </label>
             {isCustomPatriarch && (
-              <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-50 hover:text-red-700"
-                disabled={saving === patriarchKey} onClick={() => void resetPatriarch()}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-red-500 hover:bg-red-50 hover:text-red-700"
+                disabled={saving === patriarchKey}
+                onClick={() => void resetPatriarch()}
+              >
                 Reset
               </Button>
             )}
@@ -616,12 +754,16 @@ function OurStoryTab() {
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {[
               { label: "Photo Caption (English)", fk: "story_patriarch_caption_en", dir: "ltr" },
-              { label: "Photo Caption (Arabic)",  fk: "story_patriarch_caption_ar", dir: "rtl" },
+              { label: "Photo Caption (Arabic)", fk: "story_patriarch_caption_ar", dir: "rtl" },
             ].map(({ label, fk, dir }) => (
               <div key={fk} className="space-y-2">
                 <Label>{label}</Label>
-                <Input dir={dir} value={fields[fk] ?? ""} className={dir === "rtl" ? "font-arabic" : ""}
-                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))} />
+                <Input
+                  dir={dir}
+                  value={fields[fk] ?? ""}
+                  className={dir === "rtl" ? "font-arabic" : ""}
+                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))}
+                />
                 <Button size="sm" disabled={saving === fk} onClick={() => void save(fk)}>
                   {saving === fk ? "Saving..." : saved === fk ? "Saved!" : "Save"}
                 </Button>
@@ -640,14 +782,17 @@ function OurStoryTab() {
             {/* Headings */}
             {[
               { label: "Heading (English)", fk: `${section.key}_h_en`, dir: "ltr" },
-              { label: "Heading (Arabic)",  fk: `${section.key}_h_ar`, dir: "rtl" },
+              { label: "Heading (Arabic)", fk: `${section.key}_h_ar`, dir: "rtl" },
             ].map(({ label, fk, dir }) => (
               <div key={fk} className="space-y-2">
                 <Label>{label}</Label>
-                <Input dir={dir} value={fields[fk] ?? ""} className={dir === "rtl" ? "font-arabic" : ""}
-                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))} />
-                <Button size="sm" disabled={saving === fk}
-                  onClick={() => void save(fk)}>
+                <Input
+                  dir={dir}
+                  value={fields[fk] ?? ""}
+                  className={dir === "rtl" ? "font-arabic" : ""}
+                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))}
+                />
+                <Button size="sm" disabled={saving === fk} onClick={() => void save(fk)}>
                   {saving === fk ? "Saving..." : saved === fk ? "Saved!" : "Save"}
                 </Button>
                 {errors[fk] && <p className="text-xs text-red-600">{errors[fk]}</p>}
@@ -656,14 +801,18 @@ function OurStoryTab() {
             {/* Paragraphs */}
             {[
               { label: "Paragraph (English)", fk: `${section.key}_p_en`, dir: "ltr" },
-              { label: "Paragraph (Arabic)",  fk: `${section.key}_p_ar`, dir: "rtl" },
+              { label: "Paragraph (Arabic)", fk: `${section.key}_p_ar`, dir: "rtl" },
             ].map(({ label, fk, dir }) => (
               <div key={fk} className="space-y-2">
                 <Label>{label}</Label>
-                <Textarea rows={5} dir={dir} value={fields[fk] ?? ""} className={dir === "rtl" ? "font-arabic" : ""}
-                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))} />
-                <Button size="sm" disabled={saving === fk}
-                  onClick={() => void save(fk)}>
+                <Textarea
+                  rows={5}
+                  dir={dir}
+                  value={fields[fk] ?? ""}
+                  className={dir === "rtl" ? "font-arabic" : ""}
+                  onChange={(e) => setFields((p) => ({ ...p, [fk]: e.target.value }))}
+                />
+                <Button size="sm" disabled={saving === fk} onClick={() => void save(fk)}>
                   {saving === fk ? "Saving..." : saved === fk ? "Saved!" : "Save"}
                 </Button>
                 {errors[fk] && <p className="text-xs text-red-600">{errors[fk]}</p>}
@@ -678,21 +827,49 @@ function OurStoryTab() {
 
 // Module-level so React never sees a new component type on re-render — fixes focus loss on keystroke
 function HCTextField({
-  label, contentKey, rows = 1, dir, initialValue, saving, saved, error, onSave,
+  label,
+  contentKey,
+  rows = 1,
+  dir,
+  initialValue,
+  saving,
+  saved,
+  error,
+  onSave,
 }: {
-  label: string; contentKey: string; rows?: number; dir?: string;
-  initialValue: string; saving: string | null; saved: string | null;
-  error?: string; onSave: (key: string, value: string) => void;
+  label: string;
+  contentKey: string;
+  rows?: number;
+  dir?: string;
+  initialValue: string;
+  saving: string | null;
+  saved: string | null;
+  error?: string;
+  onSave: (key: string, value: string) => void;
 }) {
   const [value, setValue] = useState(initialValue);
-  useEffect(() => { if (initialValue) setValue(initialValue); }, [initialValue]);
+  useEffect(() => {
+    if (initialValue) setValue(initialValue);
+  }, [initialValue]);
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      {rows > 1
-        ? <Textarea rows={rows} dir={dir} value={value} onChange={(e) => setValue(e.target.value)} className={dir === "rtl" ? "font-arabic" : ""} />
-        : <Input dir={dir} value={value} onChange={(e) => setValue(e.target.value)} className={dir === "rtl" ? "font-arabic" : ""} />
-      }
+      {rows > 1 ? (
+        <Textarea
+          rows={rows}
+          dir={dir}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className={dir === "rtl" ? "font-arabic" : ""}
+        />
+      ) : (
+        <Input
+          dir={dir}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className={dir === "rtl" ? "font-arabic" : ""}
+        />
+      )}
       <Button size="sm" disabled={saving === contentKey} onClick={() => onSave(contentKey, value)}>
         {saving === contentKey ? "Saving..." : saved === contentKey ? "Saved!" : "Save"}
       </Button>
@@ -702,11 +879,25 @@ function HCTextField({
 }
 
 function HCImageField({
-  label, contentKey, defaultSrc, customSrc, saving, saved, error, onUpload, onReset,
+  label,
+  contentKey,
+  defaultSrc,
+  customSrc,
+  saving,
+  saved,
+  error,
+  onUpload,
+  onReset,
 }: {
-  label: string; contentKey: string; defaultSrc?: string; customSrc?: string;
-  saving: string | null; saved: string | null; error?: string;
-  onUpload: (key: string, file: File) => void; onReset: (key: string) => void;
+  label: string;
+  contentKey: string;
+  defaultSrc?: string;
+  customSrc?: string;
+  saving: string | null;
+  saved: string | null;
+  error?: string;
+  onUpload: (key: string, file: File) => void;
+  onReset: (key: string) => void;
 }) {
   const previewSrc = customSrc || defaultSrc;
   const isCustom = Boolean(customSrc);
@@ -715,26 +906,54 @@ function HCImageField({
       <Label>{label}</Label>
       {previewSrc && (
         <div className="relative">
-          <img src={previewSrc} alt="" className="h-28 w-full rounded border border-gold/20 object-cover" />
-          {isCustom && <span className="absolute left-2 top-2 rounded bg-gold px-2 py-0.5 text-xs font-medium text-navy">Custom</span>}
-          {!isCustom && defaultSrc && <span className="absolute left-2 top-2 rounded bg-navy/60 px-2 py-0.5 text-xs text-cream">Default</span>}
+          <img
+            src={previewSrc}
+            alt=""
+            className="h-28 w-full rounded border border-gold/20 object-cover"
+          />
+          {isCustom && (
+            <span className="absolute left-2 top-2 rounded bg-gold px-2 py-0.5 text-xs font-medium text-navy">
+              Custom
+            </span>
+          )}
+          {!isCustom && defaultSrc && (
+            <span className="absolute left-2 top-2 rounded bg-navy/60 px-2 py-0.5 text-xs text-cream">
+              Default
+            </span>
+          )}
         </div>
       )}
       <div className="flex gap-2">
         <label className="flex flex-1 cursor-pointer items-center gap-2 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-2.5 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
-          <input type="file" accept="image/*" className="hidden" disabled={saving === contentKey}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(contentKey, f); }} />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={saving === contentKey}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onUpload(contentKey, f);
+            }}
+          />
           {saving === contentKey ? "Uploading..." : isCustom ? "Replace" : "Upload"}
         </label>
         {isCustom && (
-          <Button type="button" size="sm" variant="ghost" className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
-            disabled={saving === contentKey} onClick={() => onReset(contentKey)}>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
+            disabled={saving === contentKey}
+            onClick={() => onReset(contentKey)}
+          >
             Reset
           </Button>
         )}
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
-      {saved === contentKey && <p className="text-xs text-green-700">{isCustom ? "Reset to default!" : "Saved!"}</p>}
+      {saved === contentKey && (
+        <p className="text-xs text-green-700">{isCustom ? "Reset to default!" : "Saved!"}</p>
+      )}
     </div>
   );
 }
@@ -742,7 +961,7 @@ function HCImageField({
 function HomeContentTab() {
   const sc = useSiteContent();
   const [saving, setSaving] = useState<string | null>(null);
-  const [saved,  setSaved]  = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const save = useCallback(async (key: string, value: string) => {
@@ -750,7 +969,10 @@ function HomeContentTab() {
     setErrors((p) => ({ ...p, [key]: "" }));
     const err = await upsertSiteContent(key, value);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
-    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    else {
+      setSaved(key);
+      setTimeout(() => setSaved(null), 2000);
+    }
     setSaving(null);
   }, []);
 
@@ -759,12 +981,21 @@ function HomeContentTab() {
     setErrors((p) => ({ ...p, [key]: "" }));
     const ext = file.name.split(".").pop();
     const path = `site/${key}-${Date.now()}.${ext}`;
-    const { error: uploadErr } = await getSupabase().storage.from("site-images").upload(path, file, { upsert: true });
-    if (uploadErr) { setErrors((p) => ({ ...p, [key]: uploadErr.message })); setSaving(null); return; }
+    const { error: uploadErr } = await getSupabase()
+      .storage.from("site-images")
+      .upload(path, file, { upsert: true });
+    if (uploadErr) {
+      setErrors((p) => ({ ...p, [key]: uploadErr.message }));
+      setSaving(null);
+      return;
+    }
     const { data } = getSupabase().storage.from("site-images").getPublicUrl(path);
     const err = await upsertSiteContent(key, data.publicUrl);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
-    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    else {
+      setSaved(key);
+      setTimeout(() => setSaved(null), 2000);
+    }
     setSaving(null);
   }, []);
 
@@ -772,20 +1003,41 @@ function HomeContentTab() {
     setSaving(key);
     const err = await deleteSiteContent(key);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
-    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    else {
+      setSaved(key);
+      setTimeout(() => setSaved(null), 2000);
+    }
     setSaving(null);
   }, []);
 
   const tf = (label: string, contentKey: string, rows = 1, dir?: string) => (
-    <HCTextField key={contentKey} label={label} contentKey={contentKey} rows={rows} dir={dir}
-      initialValue={sc[contentKey] ?? ""} saving={saving} saved={saved}
-      error={errors[contentKey]} onSave={save} />
+    <HCTextField
+      key={contentKey}
+      label={label}
+      contentKey={contentKey}
+      rows={rows}
+      dir={dir}
+      initialValue={sc[contentKey] ?? ""}
+      saving={saving}
+      saved={saved}
+      error={errors[contentKey]}
+      onSave={save}
+    />
   );
 
   const imgf = (label: string, contentKey: string, defaultSrc?: string) => (
-    <HCImageField key={contentKey} label={label} contentKey={contentKey} defaultSrc={defaultSrc}
-      customSrc={sc[contentKey]} saving={saving} saved={saved}
-      error={errors[contentKey]} onUpload={uploadImage} onReset={resetImage} />
+    <HCImageField
+      key={contentKey}
+      label={label}
+      contentKey={contentKey}
+      defaultSrc={defaultSrc}
+      customSrc={sc[contentKey]}
+      saving={saving}
+      saved={saved}
+      error={errors[contentKey]}
+      onUpload={uploadImage}
+      onReset={resetImage}
+    />
   );
 
   const businessDefaults = [b1Default, b2Default, b3Default, b1Default, b2Default, b3Default];
@@ -795,7 +1047,9 @@ function HomeContentTab() {
       {/* Site Name */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Family Name</h2>
-        <p className="mt-1 text-sm text-navy/60">Shown in the navbar and hero. Leave blank to use the default.</p>
+        <p className="mt-1 text-sm text-navy/60">
+          Shown in the navbar and hero. Leave blank to use the default.
+        </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {tf("Name (English)", "site_name_en")}
           {tf("Name (Arabic)", "site_name_ar", 1, "rtl")}
@@ -806,7 +1060,9 @@ function HomeContentTab() {
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Hero Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="md:col-span-2">{imgf("Background Image", "hero_image_url", heroDefault)}</div>
+          <div className="md:col-span-2">
+            {imgf("Background Image", "hero_image_url", heroDefault)}
+          </div>
           {tf("Eyebrow (English)", "hero_eyebrow_en")}
           {tf("Eyebrow (Arabic)", "hero_eyebrow_ar", 1, "rtl")}
           {tf("Tagline (English)", "hero_tagline_en")}
@@ -818,7 +1074,9 @@ function HomeContentTab() {
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Origin Section</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <div className="md:col-span-2">{imgf("Section Photo", "origin_image_url", originDefault)}</div>
+          <div className="md:col-span-2">
+            {imgf("Section Photo", "origin_image_url", originDefault)}
+          </div>
           {tf("Title (English)", "origin_title_en")}
           {tf("Title (Arabic)", "origin_title_ar", 1, "rtl")}
           {tf("Paragraph 1 (English)", "origin_p1_en", 4)}
@@ -837,23 +1095,27 @@ function HomeContentTab() {
         <h2 className="font-serif-display text-2xl text-navy">Business Card Images</h2>
         <p className="mt-1 text-sm text-navy/60">One image per card (6 cards total).</p>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[0,1,2,3,4,5].map((i) => imgf(`Card ${i+1}`, `business_image_${i}`, businessDefaults[i]))}
+          {[0, 1, 2, 3, 4, 5].map((i) =>
+            imgf(`Card ${i + 1}`, `business_image_${i}`, businessDefaults[i]),
+          )}
         </div>
       </div>
 
       {/* Legacy text */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Legacy Section Text</h2>
-        <p className="mt-1 text-sm text-navy/60">Section title, intro, and each card's name, story and year. Images are above.</p>
+        <p className="mt-1 text-sm text-navy/60">
+          Section title, intro, and each card's name, story and year. Images are above.
+        </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {tf("Title (English)", "legacy_title_en")}
           {tf("Title (Arabic)", "legacy_title_ar", 1, "rtl")}
           {tf("Intro (English)", "legacy_intro_en", 3)}
           {tf("Intro (Arabic)", "legacy_intro_ar", 3, "rtl")}
         </div>
-        {[0,1,2,3,4,5].map((i) => (
+        {[0, 1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="mt-6 border-t border-gold/15 pt-6">
-            <p className="mb-4 font-medium text-navy">Card {i+1}</p>
+            <p className="mb-4 font-medium text-navy">Card {i + 1}</p>
             <div className="grid gap-4 md:grid-cols-2">
               {tf("Year", `legacy_card_${i}_year`)}
               <div />
@@ -897,7 +1159,9 @@ function HomeContentTab() {
       {/* Portal CTA */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Portal CTA Section</h2>
-        <p className="mt-1 text-sm text-navy/60">The "For the Family" section with sign-in and request access buttons.</p>
+        <p className="mt-1 text-sm text-navy/60">
+          The "For the Family" section with sign-in and request access buttons.
+        </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {tf("Eyebrow (English)", "portal_eyebrow_en")}
           {tf("Eyebrow (Arabic)", "portal_eyebrow_ar", 1, "rtl")}
@@ -915,7 +1179,9 @@ function HomeContentTab() {
       {/* Values */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Values Section</h2>
-        <p className="mt-1 text-sm text-navy/60">The "What We Inherit" section with 5 value cards.</p>
+        <p className="mt-1 text-sm text-navy/60">
+          The "What We Inherit" section with 5 value cards.
+        </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {tf("Eyebrow (English)", "values_eyebrow_en")}
           {tf("Eyebrow (Arabic)", "values_eyebrow_ar", 1, "rtl")}
@@ -923,11 +1189,11 @@ function HomeContentTab() {
           {tf("Title (Arabic)", "values_title_ar", 1, "rtl")}
         </div>
         {[
-          { label: "Card 1 — Trust / الأمانة",    i: 0 },
+          { label: "Card 1 — Trust / الأمانة", i: 0 },
           { label: "Card 2 — Generosity / الكرم", i: 1 },
-          { label: "Card 3 — Loyalty / الوفاء",   i: 2 },
-          { label: "Card 4 — Knowledge / العلم",  i: 3 },
-          { label: "Card 5 — Patience / الصبر",   i: 4 },
+          { label: "Card 3 — Loyalty / الوفاء", i: 2 },
+          { label: "Card 4 — Knowledge / العلم", i: 3 },
+          { label: "Card 5 — Patience / الصبر", i: 4 },
         ].map(({ label, i }) => (
           <div key={i} className="mt-6 border-t border-gold/15 pt-6">
             <p className="mb-4 font-medium text-navy">{label}</p>
@@ -946,7 +1212,9 @@ function HomeContentTab() {
       {/* Footer */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Footer</h2>
-        <p className="mt-1 text-sm text-navy/60">Text shown in the footer (links are not editable here).</p>
+        <p className="mt-1 text-sm text-navy/60">
+          Text shown in the footer (links are not editable here).
+        </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {tf("Subtitle (English)", "footer_line1_en")}
           {tf("Subtitle (Arabic)", "footer_line1_ar", 1, "rtl")}
@@ -978,27 +1246,42 @@ function GalleryTab() {
     setErrors((p) => ({ ...p, [key]: "" }));
     const err = await upsertSiteContent(key, value);
     if (err) setErrors((p) => ({ ...p, [key]: err }));
-    else { setSaved(key); setTimeout(() => setSaved(null), 2000); }
+    else {
+      setSaved(key);
+      setTimeout(() => setSaved(null), 2000);
+    }
     setSaving(null);
   }, []);
 
   const tf = (label: string, contentKey: string, rows = 1, dir?: string) => (
-    <HCTextField key={contentKey} label={label} contentKey={contentKey} rows={rows} dir={dir}
-      initialValue={sc[contentKey] ?? ""} saving={saving} saved={saved}
-      error={errors[contentKey]} onSave={save} />
+    <HCTextField
+      key={contentKey}
+      label={label}
+      contentKey={contentKey}
+      rows={rows}
+      dir={dir}
+      initialValue={sc[contentKey] ?? ""}
+      saving={saving}
+      saved={saved}
+      error={errors[contentKey]}
+      onSave={save}
+    />
   );
 
   const loadImages = useCallback(async () => {
     setLoading(true);
-    const { data } = await getSupabase().storage.from("gallery-images").list("gallery", {
-      sortBy: { column: "created_at", order: "desc" },
-    });
+    const { data } = await getSupabase()
+      .storage.from("gallery-images")
+      .list("gallery", {
+        sortBy: { column: "created_at", order: "desc" },
+      });
     if (data) {
       const imgs = data
         .filter((f) => f.name !== ".emptyFolderPlaceholder")
         .map((f) => ({
           name: f.name,
-          url: getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data.publicUrl,
+          url: getSupabase().storage.from("gallery-images").getPublicUrl(`gallery/${f.name}`).data
+            .publicUrl,
           created_at: f.created_at ?? "",
         }));
       setImages(imgs);
@@ -1006,7 +1289,9 @@ function GalleryTab() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { void loadImages(); }, [loadImages]);
+  useEffect(() => {
+    void loadImages();
+  }, [loadImages]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -1016,8 +1301,13 @@ function GalleryTab() {
     for (const file of files) {
       const ext = file.name.split(".").pop();
       const path = `gallery/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await getSupabase().storage.from("gallery-images").upload(path, file, { upsert: true });
-      if (error) { setUploadError(`Upload failed: ${error.message}`); break; }
+      const { error } = await getSupabase()
+        .storage.from("gallery-images")
+        .upload(path, file, { upsert: true });
+      if (error) {
+        setUploadError(`Upload failed: ${error.message}`);
+        break;
+      }
     }
     setUploading(false);
     e.target.value = "";
@@ -1026,7 +1316,9 @@ function GalleryTab() {
 
   const deleteImage = async (name: string) => {
     setDeletingName(name);
-    await getSupabase().storage.from("gallery-images").remove([`gallery/${name}`]);
+    await getSupabase()
+      .storage.from("gallery-images")
+      .remove([`gallery/${name}`]);
     setImages((prev) => prev.filter((img) => img.name !== name));
     setDeletingName(null);
   };
@@ -1036,7 +1328,9 @@ function GalleryTab() {
       {/* Page text */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
         <h2 className="font-serif-display text-2xl text-navy">Archive Page Text</h2>
-        <p className="mt-1 text-sm text-navy/60">Headings and paragraphs shown on the Archive page.</p>
+        <p className="mt-1 text-sm text-navy/60">
+          Headings and paragraphs shown on the Archive page.
+        </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           {tf("Eyebrow (English)", "gallery_eyebrow_en")}
           {tf("Eyebrow (Arabic)", "gallery_eyebrow_ar", 1, "rtl")}
@@ -1053,193 +1347,51 @@ function GalleryTab() {
 
       {/* Images */}
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
-      <h2 className="font-serif-display text-2xl text-navy">Archive Gallery</h2>
-      <p className="mt-1 text-sm text-navy/60">Images uploaded here appear on the public Archive page.</p>
+        <h2 className="font-serif-display text-2xl text-navy">Archive Gallery</h2>
+        <p className="mt-1 text-sm text-navy/60">
+          Images uploaded here appear on the public Archive page.
+        </p>
 
-      <div className="mt-6">
-        <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
-          <input type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
-          {uploading ? "Uploading..." : "Choose photos to upload (multiple allowed)"}
-        </label>
-        {uploadError && <p className="mt-2 text-xs text-red-600">{uploadError}</p>}
-      </div>
+        <div className="mt-6">
+          <label className="flex cursor-pointer items-center gap-3 rounded border border-dashed border-gold/40 bg-white/50 px-4 py-3 text-sm text-navy/60 hover:border-gold hover:text-navy transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleUpload}
+              disabled={uploading}
+            />
+            {uploading ? "Uploading..." : "Choose photos to upload (multiple allowed)"}
+          </label>
+          {uploadError && <p className="mt-2 text-xs text-red-600">{uploadError}</p>}
+        </div>
 
-      {loading && <p className="mt-6 text-navy/60">Loading images...</p>}
-      {!loading && images.length === 0 && <p className="mt-6 text-navy/60">No images uploaded yet.</p>}
+        {loading && <p className="mt-6 text-navy/60">Loading images...</p>}
+        {!loading && images.length === 0 && (
+          <p className="mt-6 text-navy/60">No images uploaded yet.</p>
+        )}
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-        {images.map((img) => (
-          <div key={img.name} className="group relative overflow-hidden rounded-lg border border-gold/20">
-            <img src={img.url} alt="" className="h-32 w-full object-cover" />
-            <button
-              onClick={() => void deleteImage(img.name)}
-              disabled={deletingName === img.name}
-              className="absolute inset-0 flex items-center justify-center bg-red-600/80 opacity-0 transition-opacity group-hover:opacity-100"
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          {images.map((img) => (
+            <div
+              key={img.name}
+              className="group relative overflow-hidden rounded-lg border border-gold/20"
             >
-              <span className="rounded bg-white px-2 py-1 text-xs font-medium text-red-600">
-                {deletingName === img.name ? "Deleting..." : "Delete"}
-              </span>
-            </button>
-          </div>
-        ))}
-      </div>
-      </div>
-    </div>
-  );
-}
-
-function AddMemberTab() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [relationship, setRelationship] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    setError("");
-
-    const { error: insertError } = await getSupabase().from("family_members").insert({
-      full_name_en: fullName.trim(),
-      relation: relationship.trim() || null,
-      email: email.trim(),
-    });
-
-    if (insertError) {
-      setError(insertError.message);
-      setLoading(false);
-      return;
-    }
-
-    // Send invite so they can log in
-    const invite = await inviteByMagicLink(email.trim(), fullName.trim());
-
-    if (!invite.success) {
-      setError(`تمت إضافة الفرد لكن تعذّر إرسال الدعوة: ${invite.error}`);
-    } else {
-      setMessage(`Family member added. Invite email sent to ${email.trim()}.`);
-      setFullName("");
-      setEmail("");
-      setRelationship("");
-    }
-
-    setLoading(false);
-  };
-
-  return (
-    <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
-      <h2 className="font-serif-display text-2xl text-navy">Add family member</h2>
-      <p className="mt-1 text-sm text-navy/60">An invite email will be sent so they can set their password and log in.</p>
-      <form onSubmit={handleSubmit} className="mt-6 max-w-lg space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="member-name">Full name</Label>
-          <Input id="member-name" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="member-email">Email address</Label>
-          <Input id="member-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="family@example.com" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="member-relationship">Relationship</Label>
-          <Input id="member-relationship" placeholder="e.g. cousin, aunt, son" value={relationship} onChange={(e) => setRelationship(e.target.value)} />
-        </div>
-
-        {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
-        {message && <p className="text-sm text-green-700">{message}</p>}
-
-        <Button type="submit" disabled={loading}>
-          {loading ? "Sending invite..." : "Add member & send invite"}
-        </Button>
-      </form>
-    </div>
-  );
-}
-
-function FamilyMembersTab() {
-  const [members, setMembers] = useState<FamilyMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const loadMembers = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    const { data, error: fetchError } = await getSupabase()
-      .from("family_members")
-      .select("id, full_name_en, full_name_ar, relation, birth_year, death_year, photo_url, email, created_at")
-      .order("created_at", { ascending: false });
-
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setMembers((data ?? []) as FamilyMember[]);
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { void loadMembers(); }, [loadMembers]);
-
-  const removeMember = async (id: string, _email?: string | null) => {
-    if (!window.confirm("هل تريد حذف هذا الفرد من الشجرة؟")) return;
-    setError("");
-    const { error: delErr } = await getSupabase().from("family_members").delete().eq("id", id);
-    if (delErr) {
-      setError("تعذّر الحذف: " + delErr.message);
-    } else {
-      setMembers((prev) => prev.filter((m) => m.id !== id));
-    }
-  };
-
-  return (
-    <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
-      <h2 className="font-serif-display text-2xl text-navy">
-        Family Members ({members.length})
-      </h2>
-
-      {loading && <p className="mt-4 text-navy/60">Loading...</p>}
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-      {!loading && !error && members.length === 0 && (
-        <p className="mt-4 text-navy/60">No family members registered yet.</p>
-      )}
-
-      <ul className="mt-6 space-y-3">
-        {members.map((member) => (
-          <li
-            key={member.id}
-            className="flex items-center justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3"
-          >
-            <div className="flex items-center gap-3">
-              {member.photo_url && (
-                <img src={member.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-              )}
-              <div>
-                <p className="font-medium text-navy">
-                  {member.full_name_en}
-                  {member.full_name_ar && <span className="ml-2 font-arabic text-navy/60">{member.full_name_ar}</span>}
-                </p>
-                <p className="text-sm text-navy/60">
-                  {member.relation && <span className="mr-2">{member.relation}</span>}
-                  {member.birth_year && <span className="mr-1">{member.birth_year}</span>}
-                  {member.death_year && <span>– {member.death_year}</span>}
-                </p>
-              </div>
+              <img src={img.url} alt="" className="h-32 w-full object-cover" />
+              <button
+                onClick={() => void deleteImage(img.name)}
+                disabled={deletingName === img.name}
+                className="absolute inset-0 flex items-center justify-center bg-red-600/80 opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                <span className="rounded bg-white px-2 py-1 text-xs font-medium text-red-600">
+                  {deletingName === img.name ? "Deleting..." : "Delete"}
+                </span>
+              </button>
             </div>
-            <div className="flex items-center gap-1">
-              {member.email && (
-                <Button variant="ghost" size="sm" className="text-gold hover:bg-gold/10"
-                  onClick={async () => { const r = await inviteByMagicLink(member.email!, member.full_name_en); setError(r.success ? "" : r.error); if (r.success) window.alert("أُرسلت دعوة الدخول إلى " + member.email); }}>
-                  إرسال دعوة
-                </Button>
-              )}
-              <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 hover:text-red-700" onClick={() => removeMember(member.id, member.email)}>
-                حذف
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
