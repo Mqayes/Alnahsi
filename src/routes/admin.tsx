@@ -1,7 +1,7 @@
 import { StaffTab } from "@/components/admin/StaffTab";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { inviteFamilyMember } from "@/lib/api/invite-member";
+import { inviteByMagicLink } from "@/lib/api/invite-client";
 import { removeFamilyMember } from "@/lib/api/remove-member";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -261,11 +261,9 @@ function JoinRequestsTab() {
       }
 
       // Send invite email so they can actually log in
-      const invite = await inviteFamilyMember({
-        data: { email: request.email, fullName: request.full_name_en },
-      });
+      const invite = await inviteByMagicLink(request.email, request.full_name_en);
       if (!invite.success) {
-        setMessage?.("تمت الإضافة. لم تُرسل دعوة بريدية (أضف SUPABASE_SERVICE_ROLE_KEY في Vercel لتفعيلها).");
+        setError(`تمت الإضافة لكن تعذّر إرسال الدعوة: ${invite.error}`);
         setActionId(null);
         return;
       }
@@ -1119,14 +1117,10 @@ function AddMemberTab() {
     }
 
     // Send invite so they can log in
-    const invite = await inviteFamilyMember({
-      data: { email: email.trim(), fullName: fullName.trim() },
-    });
+    const invite = await inviteByMagicLink(email.trim(), fullName.trim());
 
     if (!invite.success) {
-      setMessage("تمت إضافة الفرد ✓ (لم تُرسل دعوة بريدية — أضف SUPABASE_SERVICE_ROLE_KEY في Vercel لتفعيلها)");
-    } else if ((invite as { skipped?: boolean }).skipped) {
-      setMessage("تمت إضافة الفرد ✓");
+      setError(`تمت إضافة الفرد لكن تعذّر إرسال الدعوة: ${invite.error}`);
     } else {
       setMessage(`Family member added. Invite email sent to ${email.trim()}.`);
       setFullName("");
