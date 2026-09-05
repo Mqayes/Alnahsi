@@ -408,4 +408,9 @@ drop policy if exists "support staff delete" on public.support_messages;
 create policy "support staff delete" on public.support_messages for delete using (public.is_admin());
 `,
   },
+  {
+    id: "2026-09-05d-password-set",
+    title: "تتبع إنشاء كلمة المرور للأعضاء",
+    sql: `alter table public.profiles add column if not exists password_set boolean default false;`,
+  },
 ];

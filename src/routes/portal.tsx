@@ -39,12 +39,34 @@ function PortalPage() {
   const [setPasswordError, setSetPasswordError] = useState("");
 
   // Detect invite / password-recovery token in the URL and wait for session
+  // من لديه جلسة لكنه لم يُنشئ كلمة مرور بعد → اطلبها
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    (async () => {
+      const {
+        data: { session },
+      } = await getSupabase().auth.getSession();
+      if (!session) return;
+      const { data } = await getSupabase()
+        .from("profiles")
+        .select("password_set")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (data && (data as { password_set?: boolean | null }).password_set === false)
+        setShowSetPassword(true);
+    })();
+  }, []);
+
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
     const hash = window.location.hash;
     const isInvite = hash.includes("type=invite");
     const isRecovery = hash.includes("type=recovery");
-    if (!isInvite && !isRecovery) return;
+    const isMagic =
+      hash.includes("type=magiclink") ||
+      hash.includes("type=signup") ||
+      hash.includes("access_token=");
+    if (!isInvite && !isRecovery && !isMagic) return;
 
     // Listen for Supabase to finish exchanging the token
     const {
@@ -81,7 +103,22 @@ function PortalPage() {
       setSetPasswordLoading(false);
       return;
     }
-    // Navigate to family portal after setting password
+    // سجّل أن كلمة المرور أُنشئت، ثم إلى لوحة العضو (أو لوحة التحكم للإدارة)
+    const {
+      data: { session },
+    } = await getSupabase().auth.getSession();
+    if (session) {
+      await getSupabase().from("profiles").update({ password_set: true }).eq("id", session.user.id);
+      const { data: prof } = await getSupabase()
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      void navigate({
+        to: ["owner", "admin", "moderator"].includes(prof?.role ?? "") ? "/admin" : "/family",
+      });
+      return;
+    }
     void navigate({ to: "/family" });
   };
 
@@ -102,6 +139,25 @@ function PortalPage() {
     if (error) setForgotError(error.message);
     else setForgotSent(true);
     setForgotLoading(false);
+  };
+
+  // رابط دخول سحري بدل كلمة المرور
+  const [magicSent, setMagicSent] = useState(false);
+  const sendMagic = async () => {
+    const mail = email.trim();
+    if (!email) {
+      setLoginError(lang === "en" ? "Enter your email first." : "أدخل بريدك أولاً.");
+      return;
+    }
+    setLoginLoading(true);
+    setLoginError("");
+    const { error } = await getSupabase().auth.signInWithOtp({
+      email: mail,
+      options: { emailRedirectTo: `${window.location.origin}/portal` },
+    });
+    setLoginLoading(false);
+    if (error) setLoginError(error.message);
+    else setMagicSent(true);
   };
 
   // Request access state
@@ -408,6 +464,19 @@ function PortalPage() {
                 className="text-navy/55 hover:text-gold"
               >
                 {t(c.forgot, lang)}
+              </button>
+              <button
+                type="button"
+                onClick={() => void sendMagic()}
+                className="text-xs text-navy/70 underline-offset-4 hover:text-gold hover:underline"
+              >
+                {magicSent
+                  ? lang === "en"
+                    ? "✓ Login link sent to your email"
+                    : "✓ أُرسل رابط الدخول إلى بريدك"
+                  : lang === "en"
+                    ? "Email me a login link"
+                    : "أرسل لي رابط دخول بالبريد"}
               </button>
               <button
                 type="button"
