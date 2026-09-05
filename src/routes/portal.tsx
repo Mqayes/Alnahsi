@@ -4,6 +4,8 @@ import { translations, t } from "@/lib/i18n/translations";
 import { Ornament } from "@/components/site/Ornament";
 import { useState, useEffect, type FormEvent } from "react";
 import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
+import { AddToTreeModal } from "@/components/tree/AddToTreeModal";
+import type { LineageRow } from "@/lib/lineage";
 
 export const Route = createFileRoute("/portal")({
   head: () => ({
@@ -162,6 +164,16 @@ function PortalPage() {
 
   // Request access state
   const [showRequest, setShowRequest] = useState(false);
+  const [treeById, setTreeById] = useState<Record<string, LineageRow>>({});
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    getSupabase()
+      .from("family_members")
+      .select("id, full_name_ar, full_name_en, first_name, parent_id, generation, gender")
+      .then(({ data }) => {
+        setTreeById(Object.fromEntries(((data ?? []) as LineageRow[]).map((r) => [r.id, r])));
+      });
+  }, []);
   const [reqName, setReqName] = useState("");
   const [reqEmail, setReqEmail] = useState("");
   const [reqRelation, setReqRelation] = useState("");

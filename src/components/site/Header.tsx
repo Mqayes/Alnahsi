@@ -213,6 +213,7 @@ export function Header() {
               </Link>
               <Link
                 to="/tree"
+                search={{ join: "1" }}
                 className="rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-4 py-2 text-xs font-bold text-navy shadow-[0_6px_18px_rgba(207,169,58,.4)] transition-all hover:brightness-105"
               >
                 {lang === "en" ? "Join the family" : "انضم للعائلة"}
@@ -271,7 +272,7 @@ export function Header() {
                 <Link to="/portal" className="btn-gold mt-4">
                   {lang === "en" ? "Sign in" : "دخول"}
                 </Link>
-                <Link to="/tree" className="btn-outline-navy mt-2">
+                <Link to="/tree" search={{ join: "1" }} className="btn-outline-navy mt-2">
                   {lang === "en" ? "Join the family" : "انضم للعائلة"}
                 </Link>
               </>
