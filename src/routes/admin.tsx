@@ -7,6 +7,7 @@ import { InboxTab } from "@/components/admin/InboxTab";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { ContentEditor } from "@/components/admin/ContentEditor";
 import { AuditLog } from "@/components/admin/AuditLog";
+import { MessagesTab } from "@/components/admin/MessagesTab";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -286,6 +287,7 @@ function AdminPage() {
           {tab === "news" && <NewsTab />}
           {tab === "gallery" && <GalleryTab />}
           {tab === "content" && <ContentEditor />}
+          {tab === "messages" && <MessagesTab ar={ar} />}
           {tab === "audit" && <AuditLog ar={ar} />}
           {tab === "settings" && <SettingsTab />}
         </main>

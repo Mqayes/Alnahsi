@@ -383,4 +383,29 @@ end $$;
 alter table public.site_content add column if not exists created_at timestamptz default now();
 `,
   },
+  {
+    id: "2026-09-05c-support-messages",
+    title: "رسائل الدعم والتفعيل عبر الموقع",
+    sql: `
+create table if not exists public.support_messages (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz default now(),
+  kind text not null default 'support',
+  name text, email text, phone text,
+  message text not null,
+  user_id uuid references auth.users(id) on delete set null,
+  status text not null default 'new',
+  handled_by uuid, handled_at timestamptz, note text
+);
+alter table public.support_messages enable row level security;
+drop policy if exists "support insert public" on public.support_messages;
+create policy "support insert public" on public.support_messages for insert with check (true);
+drop policy if exists "support read own" on public.support_messages;
+create policy "support read own" on public.support_messages for select using (user_id = auth.uid() or public.is_admin() or public.has_perm('approve_requests'));
+drop policy if exists "support staff all" on public.support_messages;
+create policy "support staff all" on public.support_messages for update using (public.is_admin() or public.has_perm('approve_requests')) with check (public.is_admin() or public.has_perm('approve_requests'));
+drop policy if exists "support staff delete" on public.support_messages;
+create policy "support staff delete" on public.support_messages for delete using (public.is_admin());
+`,
+  },
 ];

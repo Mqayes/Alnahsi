@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 
-type Stats = { members: number; users: number; pending: number; news: number; suspended: number };
+type Stats = {
+  members: number;
+  users: number;
+  pending: number;
+  news: number;
+  suspended: number;
+  messages: number;
+};
 type Req = { id: string; full_name_en: string; email: string; created_at: string; status: string };
 
 export function Dashboard({
@@ -19,7 +26,7 @@ export function Dashboard({
     const sb = getSupabase();
     (async () => {
       try {
-        const [m, u, p, n, su, r] = await Promise.all([
+        const [m, u, p, n, sm, su, r] = await Promise.all([
           sb.from("family_members").select("id", { count: "exact", head: true }),
           sb.from("profiles").select("id", { count: "exact", head: true }),
           sb
@@ -27,6 +34,14 @@ export function Dashboard({
             .select("id", { count: "exact", head: true })
             .eq("status", "pending"),
           sb.from("news_posts").select("id", { count: "exact", head: true }),
+          sb
+            .from("support_messages")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "new")
+            .then(
+              (r) => r,
+              () => ({ count: 0 }),
+            ),
           sb
             .from("profiles")
             .select("id", { count: "exact", head: true })
@@ -43,6 +58,7 @@ export function Dashboard({
           pending: p.count ?? 0,
           news: n.count ?? 0,
           suspended: su.count ?? 0,
+          messages: (sm as { count?: number | null }).count ?? 0,
         });
         setRecent((r.data ?? []) as Req[]);
       } catch (e) {
@@ -82,7 +98,7 @@ export function Dashboard({
         <p className="text-sm text-navy/60">نظرة عامة على العائلة والمنصة</p>
       </div>
       {err && <p className="text-sm text-red-600">{err}</p>}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
         <Card label="أفراد في الشجرة" value={s?.members ?? "…"} tab="members" />
         <Card label="حسابات مسجّلة" value={s?.users ?? "…"} tab="users" tone="emerald" />
         <Card
@@ -90,6 +106,12 @@ export function Dashboard({
           value={s?.pending ?? "…"}
           tab="requests"
           tone={s?.pending ? "red" : "navy"}
+        />
+        <Card
+          label="رسائل جديدة"
+          value={s?.messages ?? "…"}
+          tab="messages"
+          tone={s?.messages ? "red" : "navy"}
         />
         <Card label="أخبار منشورة" value={s?.news ?? "…"} tab="news" tone="navy" />
         <Card label="حسابات موقوفة" value={s?.suspended ?? "…"} tab="users" tone="navy" />
