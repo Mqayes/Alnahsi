@@ -300,4 +300,33 @@ insert into public.site_content (key, value)
   on conflict (key) do nothing;
 `,
   },
+  {
+    id: "2026-09-05-member-portal",
+    title: "لوحة الأعضاء: مشاركات الأعضاء + تعديل الملف الشخصي",
+    sql: `
+alter table public.news_posts add column if not exists author_id uuid references auth.users(id) on delete set null;
+alter table public.news_posts add column if not exists status text not null default 'published';
+alter table public.join_requests add column if not exists requested_by uuid references auth.users(id) on delete set null;
+alter table public.join_requests add column if not exists event_kind text;
+drop policy if exists "news read" on public.news_posts;
+create policy "news read" on public.news_posts for select using (
+  (status = 'published' and (is_private = false or auth.role() = 'authenticated'))
+  or author_id = auth.uid() or public.is_admin()
+);
+drop policy if exists "news member insert" on public.news_posts;
+create policy "news member insert" on public.news_posts for insert with check (author_id = auth.uid() and status = 'pending');
+drop policy if exists "news member own" on public.news_posts;
+create policy "news member own" on public.news_posts for update using (author_id = auth.uid() and status = 'pending') with check (author_id = auth.uid() and status = 'pending');
+drop policy if exists "news member delete own" on public.news_posts;
+create policy "news member delete own" on public.news_posts for delete using (author_id = auth.uid());
+drop policy if exists "members self update" on public.family_members;
+create policy "members self update" on public.family_members for update
+  using (id = (select member_id from public.profiles where id = auth.uid()))
+  with check (id = (select member_id from public.profiles where id = auth.uid()));
+drop policy if exists "profiles self update" on public.profiles;
+create policy "profiles self update" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid() and role = (select role from public.profiles where id = auth.uid()));
+drop policy if exists "join read own" on public.join_requests;
+create policy "join read own" on public.join_requests for select using (requested_by = auth.uid());
+`,
+  },
 ];

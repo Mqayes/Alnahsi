@@ -79,6 +79,9 @@ export type NewsPost = {
   content_ar: string;
   cover_image?: string | null;
   is_private?: boolean;
+  status?: string | null;
+  author_id?: string | null;
+  category?: string | null;
   created_at: string;
 };
 

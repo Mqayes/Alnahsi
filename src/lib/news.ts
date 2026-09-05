@@ -74,7 +74,11 @@ export async function fetchNews(): Promise<FetchNewsResult> {
   for (const table of NEWS_TABLES) {
     try {
       const { data, error } = await withTimeout(
-        supabase.from(table).select("*").order("created_at", { ascending: false }),
+        supabase
+          .from(table)
+          .select("*")
+          .or("status.eq.published,status.is.null")
+          .order("created_at", { ascending: false }),
         10_000,
         `Loading ${table}`,
       );

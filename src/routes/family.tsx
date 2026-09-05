@@ -8,6 +8,9 @@ import {
 } from "@/lib/supabase";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MyProfile } from "@/components/member/MyProfile";
+import { MyBranch } from "@/components/member/MyBranch";
+import { MyPosts } from "@/components/member/MyPosts";
 import { Ornament } from "@/components/site/Ornament";
 
 export const Route = createFileRoute("/family")({
@@ -100,6 +103,12 @@ function FamilyPortal() {
           </div>
           <div className="flex gap-3">
             <Link
+              to="/tree"
+              className="border border-gold/40 bg-gold/10 px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.18em] text-navy hover:bg-gold/20 transition-colors"
+            >
+              {lang === "en" ? "Family tree" : "شجرة العائلة"}
+            </Link>
+            <Link
               to="/"
               className="border border-gold/40 px-4 py-1.5 font-cinzel text-xs uppercase tracking-[0.18em] text-navy/60 hover:text-navy transition-colors"
             >
@@ -114,8 +123,13 @@ function FamilyPortal() {
           </div>
         </div>
 
-        <Tabs defaultValue="news">
+        <Tabs defaultValue="profile">
           <TabsList className="h-auto flex-wrap gap-1 bg-navy/5 p-1">
+            <TabsTrigger value="profile">{lang === "en" ? "My profile" : "ملفي"}</TabsTrigger>
+            <TabsTrigger value="branch">
+              {lang === "en" ? "My branch" : "فرعي في الشجرة"}
+            </TabsTrigger>
+            <TabsTrigger value="posts">{lang === "en" ? "My posts" : "مشاركاتي"}</TabsTrigger>
             <TabsTrigger value="news">{lang === "en" ? "News" : "الأخبار"}</TabsTrigger>
             <TabsTrigger value="gallery">{lang === "en" ? "Gallery" : "المعرض"}</TabsTrigger>
             <TabsTrigger value="directory">
@@ -123,6 +137,15 @@ function FamilyPortal() {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="profile" className="mt-8">
+            <MyProfile ar={lang !== "en"} />
+          </TabsContent>
+          <TabsContent value="branch" className="mt-8">
+            <MyBranch ar={lang !== "en"} />
+          </TabsContent>
+          <TabsContent value="posts" className="mt-8">
+            <MyPosts ar={lang !== "en"} />
+          </TabsContent>
           <TabsContent value="news" className="mt-8">
             <FamilyNewsTab lang={lang} />
           </TabsContent>
@@ -147,7 +170,10 @@ function FamilyNewsTab({ lang }: { lang: string }) {
   useEffect(() => {
     getSupabase()
       .from("news_posts")
-      .select("id, title_en, title_ar, content_en, content_ar, cover_image, created_at, is_private")
+      .select(
+        "id, title_en, title_ar, content_en, content_ar, cover_image, created_at, is_private, status",
+      )
+      .or("status.eq.published,status.is.null")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setPosts((data ?? []) as (NewsPost & { is_private?: boolean })[]);

@@ -451,7 +451,7 @@ function NewsTab() {
     setPostsLoading(true);
     const { data } = await getSupabase()
       .from("news_posts")
-      .select("id, title_en, title_ar, content_en, content_ar, created_at, is_private")
+      .select("*")
       .order("created_at", { ascending: false });
     setPosts((data ?? []) as NewsPost[]);
     setPostsLoading(false);
@@ -460,6 +460,12 @@ function NewsTab() {
   useEffect(() => {
     void loadPosts();
   }, [loadPosts]);
+
+  const setStatus = async (id: string, status: "published" | "rejected") => {
+    const { error: e } = await getSupabase().from("news_posts").update({ status }).eq("id", id);
+    if (e) setError("تعذّر التحديث: " + e.message);
+    else void loadPosts();
+  };
 
   const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -623,42 +629,76 @@ function NewsTab() {
       </div>
 
       <div className="rounded-xl border border-gold/20 bg-parchment/50 p-6">
-        <h2 className="font-serif-display text-2xl text-navy">Published posts</h2>
+        {posts.some((p) => p.status === "pending") && (
+          <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4" dir="rtl">
+            <h3 className="font-arabic text-lg text-navy">مشاركات الأعضاء بانتظار الاعتماد</h3>
+            <ul className="mt-2 divide-y divide-amber-200">
+              {posts
+                .filter((p) => p.status === "pending")
+                .map((p) => (
+                  <li key={p.id} className="py-3">
+                    <div className="font-arabic text-navy">{p.title_ar}</div>
+                    <p className="mt-1 whitespace-pre-wrap text-sm text-navy/70">{p.content_ar}</p>
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        size="sm"
+                        className="bg-gold text-navy hover:bg-gold/90"
+                        onClick={() => void setStatus(p.id, "published")}
+                      >
+                        اعتماد ونشر
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600"
+                        onClick={() => void setStatus(p.id, "rejected")}
+                      >
+                        رفض
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
+        <h2 className="font-serif-display text-2xl text-navy">المنشورات</h2>
         {postsLoading && <p className="mt-4 text-navy/60">Loading...</p>}
         {!postsLoading && posts.length === 0 && (
           <p className="mt-4 text-navy/60">No news posts yet.</p>
         )}
         <ul className="mt-4 space-y-3">
-          {posts.map((post) => (
-            <li
-              key={post.id}
-              className="flex items-start justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-navy">{post.title_en}</p>
-                  {(post as NewsPost & { is_private?: boolean }).is_private && (
-                    <span className="rounded bg-gold/20 px-1.5 py-0.5 text-xs text-gold">
-                      Family Only
-                    </span>
-                  )}
-                </div>
-                <p className="font-arabic text-sm text-navy/60">{post.title_ar}</p>
-                <p className="mt-1 text-xs text-navy/40">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
-                disabled={deletingId === post.id}
-                onClick={() => void deletePost(post.id)}
+          {posts
+            .filter((post) => post.status !== "pending")
+            .map((post) => (
+              <li
+                key={post.id}
+                className="flex items-start justify-between gap-4 rounded-lg border border-gold/15 bg-white/60 px-4 py-3"
               >
-                {deletingId === post.id ? "Deleting..." : "Delete"}
-              </Button>
-            </li>
-          ))}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-navy">{post.title_en}</p>
+                    {(post as NewsPost & { is_private?: boolean }).is_private && (
+                      <span className="rounded bg-gold/20 px-1.5 py-0.5 text-xs text-gold">
+                        Family Only
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-arabic text-sm text-navy/60">{post.title_ar}</p>
+                  <p className="mt-1 text-xs text-navy/40">
+                    {new Date(post.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0 text-red-500 hover:bg-red-50 hover:text-red-700"
+                  disabled={deletingId === post.id}
+                  onClick={() => void deletePost(post.id)}
+                >
+                  {deletingId === post.id ? "Deleting..." : "Delete"}
+                </Button>
+              </li>
+            ))}
         </ul>
       </div>
     </div>
