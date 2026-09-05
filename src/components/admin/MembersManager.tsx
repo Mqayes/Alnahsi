@@ -3,7 +3,7 @@ import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
-import { setGenerationBase, generationOf } from "@/lib/lineage";
+import { setGenerationBase, generationOf, ancestors, firstNameOf } from "@/lib/lineage";
 
 export type Member = {
   id: string;
@@ -189,6 +189,28 @@ export function MembersManager() {
       setMsg("تم الحذف");
       void load();
     }
+  };
+
+  const chainOf = (r: Member) => {
+    const c = ancestors(r.parent_id, lineageById).map(firstNameOf);
+    return c.length ? c.join(" ← ") : "الجذر";
+  };
+  const recomputeNow = async () => {
+    setMsg(null);
+    setErr(null);
+    const updates = rows.map((r) => ({ id: r.id, generation: generationOf(r.id, lineageById) }));
+    for (const u of updates) {
+      const { error } = await getSupabase()
+        .from("family_members")
+        .update({ generation: u.generation })
+        .eq("id", u.id);
+      if (error) {
+        setErr(error.message);
+        return;
+      }
+    }
+    setMsg(`تم تصحيح الأجيال (${updates.length}) ✓`);
+    await load();
   };
 
   const quickAdd = async () => {
@@ -418,6 +440,9 @@ export function MembersManager() {
         <Button variant="outline" onClick={() => void load()}>
           تحديث
         </Button>
+        <Button variant="outline" onClick={() => void recomputeNow()}>
+          ↻ تصحيح الأجيال
+        </Button>
         {msg && <span className="text-sm text-green-700">{msg}</span>}
         {err && <span className="text-sm text-red-600">{err}</span>}
       </div>
@@ -461,7 +486,9 @@ export function MembersManager() {
                     {m.parent_id && byId[m.parent_id] ? name(byId[m.parent_id]) : "—"}
                   </dd>
                   <dt>الجيل</dt>
-                  <dd className="text-navy">{m.generation ?? "—"}</dd>
+                  <dd className="text-navy">{generationOf(m.id, lineageById)}</dd>
+                  <dt>النسب</dt>
+                  <dd className="font-arabic text-navy">{chainOf(m)}</dd>
                   <dt>المدينة</dt>
                   <dd className="text-navy">{m.city ?? "—"}</dd>
                   <dt>أُضيف</dt>
@@ -561,7 +588,9 @@ export function MembersManager() {
                     <td className="p-3 text-navy/70">
                       {m.parent_id && byId[m.parent_id] ? name(byId[m.parent_id]) : "—"}
                     </td>
-                    <td className="p-3 text-center">{m.generation ?? "—"}</td>
+                    <td className="p-3 text-center" title={chainOf(m)}>
+                      {generationOf(m.id, lineageById)}
+                    </td>
                     <td className="p-3 text-center">{m.city ?? "—"}</td>
                     <td className="p-3 text-center">{m.birth_year ?? "—"}</td>
                     <td className="p-3 text-center text-xs text-navy/60">{fmt(m.created_at)}</td>
