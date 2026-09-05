@@ -8,6 +8,7 @@ import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { PortalCta } from "@/components/home/PortalCta";
 import { Platform } from "@/components/home/Platform";
 import { useSiteContent } from "@/lib/site-content";
+import { Notice } from "@/components/home/Notice";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +35,7 @@ function Index() {
   return (
     <>
       <Hero />
+      {on("sec_notice") && <Notice />}
       {on("sec_origin") && <Origin />}
       {on("sec_platform") && <Platform />}
       {on("sec_timeline") && <Timeline />}
