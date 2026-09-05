@@ -7,6 +7,8 @@ import { getSupabase, isSupabaseConfigured, withTimeout } from "@/lib/supabase";
 import { RichEditor } from "@/components/blog/RichEditor";
 import { GalleryContribTab } from "@/components/blog/GalleryContribTab";
 import { NewsContribTab } from "@/components/blog/NewsContribTab";
+import { OccasionsTab } from "@/components/blog/OccasionsTab";
+import { ContactAdminTab } from "@/components/blog/ContactAdminTab";
 import {
   deletePost,
   excerpt,
@@ -23,7 +25,7 @@ export const Route = createFileRoute("/my-blog")({
   component: MyBlogPage,
 });
 
-type Me = { id: string; name: string | null };
+type Me = { id: string; name: string | null; email: string | null };
 type Auth = { status: "loading" } | { status: "denied" } | { status: "ok"; me: Me };
 
 const EMPTY: BlogDraft = {
@@ -36,7 +38,9 @@ const EMPTY: BlogDraft = {
 
 function MyBlogPage() {
   const [auth, setAuth] = useState<Auth>({ status: "loading" });
-  const [section, setSection] = useState<"blog" | "gallery" | "news">("blog");
+  const [section, setSection] = useState<"blog" | "gallery" | "news" | "occasions" | "contact">(
+    "blog",
+  );
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [needsMigration, setNeedsMigration] = useState(false);
   const [draft, setDraft] = useState<BlogDraft>(EMPTY);
@@ -75,6 +79,7 @@ function MyBlogPage() {
         me: {
           id: session.user.id,
           name: (profile as { full_name?: string } | null)?.full_name ?? session.user.email ?? null,
+          email: session.user.email ?? null,
         },
       });
     })();
@@ -219,6 +224,8 @@ function MyBlogPage() {
             { id: "blog", label: "✎ مدونتي" },
             { id: "news", label: "📰 أخباري" },
             { id: "gallery", label: "🖼 صور العائلة" },
+            { id: "occasions", label: "🎉 مناسبات" },
+            { id: "contact", label: "✉ مراسلة الإدارة" },
           ] as const
         ).map((s) => (
           <button
@@ -265,6 +272,18 @@ function MyBlogPage() {
       {section === "news" && (
         <div className="mt-8">
           <NewsContribTab me={me} onNotice={flash} onError={setError} />
+        </div>
+      )}
+
+      {section === "occasions" && (
+        <div className="mt-8">
+          <OccasionsTab me={me} onNotice={flash} onError={setError} />
+        </div>
+      )}
+
+      {section === "contact" && (
+        <div className="mt-8">
+          <ContactAdminTab me={me} onNotice={flash} onError={setError} />
         </div>
       )}
 

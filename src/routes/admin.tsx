@@ -3,6 +3,7 @@ import { UsersManager } from "@/components/admin/UsersManager";
 import { Dashboard } from "@/components/admin/Dashboard";
 import { SettingsTab } from "@/components/admin/SettingsTab";
 import { DbUpgrade } from "@/components/admin/DbUpgrade";
+import { InboxTab } from "@/components/admin/InboxTab";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -175,6 +176,7 @@ function AdminPage() {
     { id: "dashboard", label: "لوحة القيادة", icon: "▦" },
     { id: "members", label: "الأعضاء والشجرة", icon: "🌳", perm: "manage_members" },
     { id: "requests", label: "طلبات الانضمام", icon: "✉", perm: "approve_requests" },
+    { id: "inbox", label: "رسائل الأعضاء", icon: "📬", perm: "approve_requests" },
     { id: "users", label: "الحسابات والصلاحيات", icon: "👥" },
     { id: "events", label: "مناسبات العائلة", icon: "🎉", perm: "manage_news" },
     { id: "news", label: "الأخبار", icon: "📰", perm: "manage_news" },
@@ -252,6 +254,7 @@ function AdminPage() {
 
         <main className="min-w-0">
           {tab === "dashboard" && <Dashboard go={setTab} isOwner={role === "owner"} />}
+          {tab === "inbox" && <InboxTab />}
           {tab === "members" && <MembersManager />}
           {tab === "requests" && <JoinRequestsTab />}
           {tab === "users" && <UsersManager me={{ id: auth.profile.id, role }} />}

@@ -14,6 +14,7 @@ const navItems = [
   { to: "/tree", key: "tree" as const },
   { to: "/news", key: "news" as const },
   { to: "/blog", key: "blog" as const },
+  { to: "/occasions", key: "occasions" as const },
   { to: "/contact", key: "contact" as const },
 ];
 
@@ -118,13 +119,9 @@ export function Header() {
           {signedIn && (
             <Link
               to="/my-blog"
-              className={`hidden rounded-sm border border-gold/40 px-3 py-1.5 text-xs transition-all lg:inline-block ${
-                headerScrolled
-                  ? "text-navy hover:bg-gold"
-                  : "text-cream bg-navy/10 hover:bg-navy hover:text-cream"
-              }`}
+              className="hidden rounded-sm bg-gold px-3 py-1.5 text-xs font-semibold text-navy transition-all hover:bg-gold/85 lg:inline-block"
             >
-              {lang === "en" ? "My space" : "مساحتي"}
+              ⚙ {lang === "en" ? "My space" : "مساحتي"}
             </Link>
           )}
           <button

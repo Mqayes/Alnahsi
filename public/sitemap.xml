@@ -8,4 +8,6 @@
   <url><loc>https://alnahsi.com/businesses</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://alnahsi.com/news</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://alnahsi.com/contact</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://alnahsi.com/occasions</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://alnahsi.com/blog</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
 </urlset>

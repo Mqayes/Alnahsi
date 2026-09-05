@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TreeRouteImport } from './routes/tree'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as OurStoryRouteImport } from './routes/our-story'
+import { Route as OccasionsRouteImport } from './routes/occasions'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as MyBlogRouteImport } from './routes/my-blog'
 import { Route as GalleryRouteImport } from './routes/gallery'
@@ -36,6 +37,11 @@ const PortalRoute = PortalRouteImport.update({
 const OurStoryRoute = OurStoryRouteImport.update({
   id: '/our-story',
   path: '/our-story',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OccasionsRoute = OccasionsRouteImport.update({
+  id: '/occasions',
+  path: '/occasions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NewsRoute = NewsRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
+  '/occasions': typeof OccasionsRoute
   '/our-story': typeof OurStoryRoute
   '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
+  '/occasions': typeof OccasionsRoute
   '/our-story': typeof OurStoryRoute
   '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
+  '/occasions': typeof OccasionsRoute
   '/our-story': typeof OurStoryRoute
   '/portal': typeof PortalRoute
   '/tree': typeof TreeRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/my-blog'
     | '/news'
+    | '/occasions'
     | '/our-story'
     | '/portal'
     | '/tree'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/my-blog'
     | '/news'
+    | '/occasions'
     | '/our-story'
     | '/portal'
     | '/tree'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/my-blog'
     | '/news'
+    | '/occasions'
     | '/our-story'
     | '/portal'
     | '/tree'
@@ -193,6 +205,7 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   MyBlogRoute: typeof MyBlogRoute
   NewsRoute: typeof NewsRoute
+  OccasionsRoute: typeof OccasionsRoute
   OurStoryRoute: typeof OurStoryRoute
   PortalRoute: typeof PortalRoute
   TreeRoute: typeof TreeRoute
@@ -220,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/our-story'
       fullPath: '/our-story'
       preLoaderRoute: typeof OurStoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/occasions': {
+      id: '/occasions'
+      path: '/occasions'
+      fullPath: '/occasions'
+      preLoaderRoute: typeof OccasionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/news': {
@@ -305,6 +325,7 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   MyBlogRoute: MyBlogRoute,
   NewsRoute: NewsRoute,
+  OccasionsRoute: OccasionsRoute,
   OurStoryRoute: OurStoryRoute,
   PortalRoute: PortalRoute,
   TreeRoute: TreeRoute,
