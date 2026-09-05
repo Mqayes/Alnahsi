@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useState, type FormEvent } from "react";
+import { getSupabase } from "@/lib/supabase";
 
 export function SupportModal({
   ar,
@@ -13,15 +13,6 @@ export function SupportModal({
   const [f, setF] = useState({ kind: defaultKind, name: "", email: "", phone: "", message: "" });
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [err, setErr] = useState("");
-
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-    getSupabase()
-      .auth.getSession()
-      .then(({ data: { session } }) => {
-        if (session?.user.email) setF((s) => ({ ...s, email: session.user.email ?? "" }));
-      });
-  }, []);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();

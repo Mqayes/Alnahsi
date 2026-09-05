@@ -150,9 +150,6 @@ export function MyProfile({ ar }: { ar: boolean }) {
           {m.generation ? (ar ? `الجيل ${m.generation}` : `Generation ${m.generation}`) : ""}
           {m.birth_year ? ` · ${m.birth_year}` : ""}
         </p>
-        <p className="mt-2 text-xs text-navy/40" dir="ltr">
-          {me.email}
-        </p>
       </div>
       <div className="premium-card space-y-3 p-6">
         <h3 className="font-arabic text-lg text-navy">{ar ? "بياناتي" : "My details"}</h3>

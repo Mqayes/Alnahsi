@@ -46,7 +46,7 @@ function FamilyPortal() {
         void navigate({ to: "/admin" });
         return;
       }
-      setUserName(profile?.full_name || session.user.email || "");
+      setUserName(profile?.full_name || (lang === "en" ? "Family member" : "عضو العائلة"));
       setLoading(false);
     }
 
