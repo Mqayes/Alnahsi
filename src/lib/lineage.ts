@@ -53,9 +53,14 @@ export function setGenerationBase(n: number) {
 
 export function nextGeneration(parentId: string | null, byId: Record<string, LineageRow>): number {
   if (!parentId) return GENERATION_BASE;
-  const p = byId[parentId];
-  if (p?.generation) return p.generation + 1;
   return ancestors(parentId, byId).length + GENERATION_BASE;
+}
+
+/** جيل فرد محسوب من عمق نسبه */
+export function generationOf(id: string, byId: Record<string, LineageRow>): number {
+  const r = byId[id];
+  if (!r) return GENERATION_BASE;
+  return ancestors(r.parent_id, byId).length + GENERATION_BASE;
 }
 
 /** يعيد احتساب جيل كل فرد من عمق النسب */

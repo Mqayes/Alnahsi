@@ -3,7 +3,7 @@ import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
-import { setGenerationBase } from "@/lib/lineage";
+import { setGenerationBase, generationOf } from "@/lib/lineage";
 
 export type Member = {
   id: string;
@@ -95,19 +95,41 @@ export function MembersManager() {
       .order("generation", { ascending: true, nullsFirst: false })
       .order("birth_year", { ascending: true, nullsFirst: false });
     if (error) setErr(error.message);
-    else setRows((data ?? []) as Member[]);
+    else {
+      const list = (data ?? []) as Member[];
+      // تصحيح تلقائي للأجيال من سلسلة النسب
+      const byIdL = Object.fromEntries(list.map((r) => [r.id, r])) as unknown as Record<
+        string,
+        LineageRow
+      >;
+      const fixes = list.filter((r) => r.generation !== generationOf(r.id, byIdL));
+      if (fixes.length) {
+        await Promise.all(
+          fixes.map((r) =>
+            getSupabase()
+              .from("family_members")
+              .update({ generation: generationOf(r.id, byIdL) })
+              .eq("id", r.id),
+          ),
+        );
+        fixes.forEach((r) => {
+          r.generation = generationOf(r.id, byIdL);
+        });
+      }
+      setRows(list);
+    }
     setLoading(false);
   };
   useEffect(() => {
-    void getSupabase()
-      .from("site_content")
-      .select("value")
-      .eq("key", "generation_base")
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.value) setGenerationBase(Number(data.value));
-      });
-    void load();
+    void (async () => {
+      const { data } = await getSupabase()
+        .from("site_content")
+        .select("value")
+        .eq("key", "generation_base")
+        .maybeSingle();
+      if (data?.value) setGenerationBase(Number(data.value));
+      await load();
+    })();
   }, []);
 
   const byId = useMemo(() => Object.fromEntries(rows.map((r) => [r.id, r])), [rows]);

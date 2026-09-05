@@ -4,7 +4,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { Ornament } from "@/components/site/Ornament";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
-import { setGenerationBase } from "@/lib/lineage";
+import { setGenerationBase, generationOf } from "@/lib/lineage";
 import { PanZoom } from "@/components/tree/PanZoom";
 import { useSiteContent } from "@/lib/site-content";
 
@@ -113,6 +113,10 @@ type Row = {
 };
 function buildFromRows(rows: Row[]): Person | null {
   if (!rows.length) return null;
+  const byIdL = Object.fromEntries(rows.map((r) => [r.id, r])) as unknown as Record<
+    string,
+    LineageRow
+  >;
   const nodes: Record<string, Person> = {};
   rows.forEach((r) => {
     nodes[r.id] = {
@@ -123,7 +127,7 @@ function buildFromRows(rows: Row[]): Person | null {
         ? `${r.birth_year} م${r.death_year ? " — " + r.death_year + " م" : ""}`
         : undefined,
       place:
-        [r.city, r.generation ? `الجيل ${r.generation}` : null, r.is_deceased ? "رحمه الله" : null]
+        [r.city, `الجيل ${generationOf(r.id, byIdL)}`, r.is_deceased ? "رحمه الله" : null]
           .filter(Boolean)
           .join(" · ") || undefined,
       note: r.notes
@@ -274,6 +278,12 @@ function TreePage() {
     const sb = getSupabase();
     const load = async () => {
       await sb.auth.getSession(); // انتظر استعادة الجلسة قبل القراءة (RLS)
+      const { data: gb } = await sb
+        .from("site_content")
+        .select("value")
+        .eq("key", "generation_base")
+        .maybeSingle();
+      if (gb?.value) setGenerationBase(Number(gb.value));
       const { data: rows, error } = await sb.from("family_members").select("*");
       if (cancelled || error) return;
       const built = buildFromRows((rows ?? []) as Row[]);
