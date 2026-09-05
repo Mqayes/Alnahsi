@@ -11,6 +11,16 @@ type Stats = {
   messages: number;
 };
 type Req = { id: string; full_name_en: string; email: string; created_at: string; status: string };
+type Msg = {
+  id: string;
+  created_at: string;
+  kind: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  message: string;
+  status: string;
+};
 
 export function Dashboard({
   go,
@@ -21,6 +31,7 @@ export function Dashboard({
 }) {
   const [s, setS] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<Req[]>([]);
+  const [inbox, setInbox] = useState<Msg[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,11 +78,41 @@ export function Dashboard({
           messages: (sm as { count?: number | null }).count ?? 0,
         });
         setRecent((r.data ?? []) as Req[]);
+        try {
+          const { data: msgs } = await sb
+            .from("support_messages")
+            .select("id, created_at, kind, name, email, phone, message, status")
+            .eq("status", "new")
+            .order("created_at", { ascending: false })
+            .limit(6);
+          setInbox((msgs ?? []) as Msg[]);
+        } catch {
+          /* pre-migration */
+        }
       } catch (e) {
         setErr(e instanceof Error ? e.message : "خطأ");
       }
     })();
   }, []);
+
+  const markHandled = async (id: string) => {
+    const {
+      data: { session },
+    } = await getSupabase().auth.getSession();
+    await getSupabase()
+      .from("support_messages")
+      .update({
+        status: "handled",
+        handled_by: session?.user.id,
+        handled_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    setInbox((l) => l.filter((m) => m.id !== id));
+  };
+  const wa = (p: string | null) => {
+    const x = (p ?? "").replace(/\D/g, "");
+    return x ? `https://wa.me/${x.startsWith("0") ? "966" + x.slice(1) : x}` : "";
+  };
 
   const Card = ({
     label,
@@ -132,6 +173,70 @@ export function Dashboard({
         />
         <Card label="أخبار منشورة" value={s?.news ?? "…"} tab="news" tone="navy" />
         <Card label="حسابات موقوفة" value={s?.suspended ?? "…"} tab="users" tone="navy" />
+      </div>
+
+      <div className="premium-card border-amber-300/60 p-5">
+        <div className="flex items-center justify-between">
+          <h3 className="font-arabic text-lg text-navy">
+            📥 صندوق الرسائل{" "}
+            {inbox.length > 0 && (
+              <span className="ms-2 rounded-full bg-red-600 px-2 py-0.5 text-xs text-white">
+                {inbox.length}
+              </span>
+            )}
+          </h3>
+          <button onClick={() => go("messages")} className="text-sm text-gold hover:underline">
+            فتح صندوق الرسائل
+          </button>
+        </div>
+        {inbox.length === 0 ? (
+          <p className="mt-3 text-sm text-navy/50">لا توجد رسائل جديدة</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-gold/15">
+            {inbox.map((m) => (
+              <li key={m.id} className="py-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span
+                    className={`rounded-full px-2 py-0.5 ${m.kind === "activation" ? "bg-emerald-100 text-emerald-800" : "bg-sky-100 text-sky-800"}`}
+                  >
+                    {m.kind === "activation" ? "تفعيل حساب" : "استفسار"}
+                  </span>
+                  <span className="font-arabic text-sm text-navy">{m.name || "—"}</span>
+                  <span className="text-navy/40" dir="ltr">
+                    {new Date(m.created_at).toLocaleString("ar-SA")}
+                  </span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-sm text-navy/75">{m.message}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {m.email && (
+                    <a
+                      href={`mailto:${m.email}`}
+                      className="rounded-md border border-gold/40 px-2.5 py-1 text-xs text-navy hover:bg-parchment"
+                    >
+                      رد بالبريد
+                    </a>
+                  )}
+                  {wa(m.phone) && (
+                    <a
+                      href={wa(m.phone)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md border border-gold/40 px-2.5 py-1 text-xs text-navy hover:bg-parchment"
+                    >
+                      رد بواتساب
+                    </a>
+                  )}
+                  <button
+                    onClick={() => void markHandled(m.id)}
+                    className="rounded-md bg-gold px-2.5 py-1 text-xs font-semibold text-navy"
+                  >
+                    ✓ تمت المعالجة
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
