@@ -37,6 +37,14 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [menu, setMenu] = useState(false);
+
+  const signOut = async () => {
+    await getSupabase().auth.signOut();
+    setMenu(false);
+    window.location.href = "/";
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -52,10 +60,11 @@ export function Header() {
       }
       const { data } = await sb
         .from("profiles")
-        .select("role")
+        .select("role, full_name")
         .eq("id", session.user.id)
         .maybeSingle();
       setIsStaff(["owner", "admin", "moderator"].includes(data?.role ?? ""));
+      setUserName(data?.full_name || (lang === "en" ? "Member" : "عضو"));
     };
     void check();
     const { data: sub } = sb.auth.onAuthStateChange(() => {
@@ -145,16 +154,71 @@ export function Header() {
           >
             {lang === "en" ? "عربي" : "EN"}
           </button>
-          <Link
-            to={isStaff ? "/admin" : "/portal"}
-            className="hidden rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-4 py-2 text-xs font-bold text-navy shadow-[0_6px_18px_rgba(207,169,58,.4)] transition-all hover:brightness-105 md:inline-block"
-          >
-            {isStaff
-              ? lang === "en"
-                ? "Dashboard"
-                : "لوحة التحكم"
-              : t(translations.nav.portal, lang)}
-          </Link>
+          {signedIn ? (
+            <div className="relative hidden md:block">
+              <button
+                onClick={() => setMenu((m) => !m)}
+                className="flex items-center gap-2 rounded-lg border border-gold/50 bg-white/10 px-3 py-1.5 text-xs font-bold text-gold backdrop-blur hover:bg-gold hover:text-navy"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold text-[11px] text-navy">
+                  {userName.slice(0, 1)}
+                </span>
+                <span className="max-w-[140px] truncate">{userName}</span>
+                <span className="text-[10px]">▾</span>
+              </button>
+              {menu && (
+                <div
+                  className="absolute end-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-gold/30 bg-white text-navy shadow-2xl"
+                  dir={lang === "en" ? "ltr" : "rtl"}
+                >
+                  {isStaff && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setMenu(false)}
+                      className="block px-4 py-2.5 text-sm hover:bg-parchment"
+                    >
+                      ⚙ {lang === "en" ? "Dashboard" : "لوحة التحكم"}
+                    </Link>
+                  )}
+                  <Link
+                    to="/family"
+                    onClick={() => setMenu(false)}
+                    className="block px-4 py-2.5 text-sm hover:bg-parchment"
+                  >
+                    👤 {lang === "en" ? "My portal" : "لوحتي الخاصة"}
+                  </Link>
+                  <Link
+                    to="/tree"
+                    onClick={() => setMenu(false)}
+                    className="block px-4 py-2.5 text-sm hover:bg-parchment"
+                  >
+                    🌳 {lang === "en" ? "Family tree" : "شجرة العائلة"}
+                  </Link>
+                  <button
+                    onClick={() => void signOut()}
+                    className="block w-full px-4 py-2.5 text-start text-sm text-red-600 hover:bg-red-50"
+                  >
+                    ⎋ {lang === "en" ? "Sign out" : "تسجيل الخروج"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="hidden items-center gap-2 md:flex">
+              <Link
+                to="/portal"
+                className="rounded-lg border border-gold/60 bg-white/10 px-3 py-1.5 text-xs font-bold text-gold backdrop-blur hover:bg-gold hover:text-navy"
+              >
+                {lang === "en" ? "Sign in" : "دخول"}
+              </Link>
+              <Link
+                to="/tree"
+                className="rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-4 py-2 text-xs font-bold text-navy shadow-[0_6px_18px_rgba(207,169,58,.4)] transition-all hover:brightness-105"
+              >
+                {lang === "en" ? "Join the family" : "انضم للعائلة"}
+              </Link>
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
@@ -182,21 +246,36 @@ export function Header() {
                 {t(translations.nav[item.key], lang)}
               </Link>
             ))}
-            {signedIn && (
-              <Link
-                to="/my-blog"
-                className="border-b border-gold/20 py-3.5 font-arabic-body text-base font-semibold text-navy"
-              >
-                {lang === "en" ? "My space" : "مساحتي"}
-              </Link>
+            {signedIn ? (
+              <>
+                <div className="mt-4 rounded-lg border border-gold/30 bg-white/60 px-3 py-2 text-sm text-navy">
+                  👤 {userName}
+                </div>
+                {isStaff && (
+                  <Link to="/admin" className="btn-gold mt-3">
+                    {lang === "en" ? "Dashboard" : "لوحة التحكم"}
+                  </Link>
+                )}
+                <Link to="/family" className="btn-outline-navy mt-2">
+                  {lang === "en" ? "My portal" : "لوحتي الخاصة"}
+                </Link>
+                <button
+                  onClick={() => void signOut()}
+                  className="mt-2 rounded-lg border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-600"
+                >
+                  {lang === "en" ? "Sign out" : "تسجيل الخروج"}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/portal" className="btn-gold mt-4">
+                  {lang === "en" ? "Sign in" : "دخول"}
+                </Link>
+                <Link to="/tree" className="btn-outline-navy mt-2">
+                  {lang === "en" ? "Join the family" : "انضم للعائلة"}
+                </Link>
+              </>
             )}
-            <Link to={isStaff ? "/admin" : "/portal"} className="btn-gold mt-4">
-              {isStaff
-                ? lang === "en"
-                  ? "Dashboard"
-                  : "لوحة التحكم"
-                : t(translations.nav.portal, lang)}
-            </Link>
           </nav>
         </div>
       )}
