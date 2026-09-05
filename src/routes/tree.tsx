@@ -509,8 +509,16 @@ function AddModal({
   byId: Record<string, LineageRow>;
   onClose: () => void;
 }) {
-  const parentId = parent.id === "root" ? null : parent.id;
+  const initialParent = parent.id === "root" ? null : byId[parent.id] ? parent.id : null;
+  const [parentId, setParentId] = useState<string | null>(initialParent);
   const isDbParent = parentId !== null && !!byId[parentId];
+  const fathers = Object.values(byId)
+    .filter((r) => r.gender !== "f")
+    .sort(
+      (a, b) =>
+        (a.generation ?? 99) - (b.generation ?? 99) ||
+        (a.full_name_ar ?? "").localeCompare(b.full_name_ar ?? "", "ar"),
+    );
   const [f, setF] = useState({
     first: "",
     gender: "m" as "m" | "f",
