@@ -45,13 +45,26 @@ export function composeFullName(
   return parts.join(" ");
 }
 
-export function nextGeneration(
-  parentId: string | null,
-  byId: Record<string, LineageRow>,
-): number | null {
-  if (!parentId) return 1;
+/** رقم جيل الجذر (بلا أب مسجّل). يُضبط من الإعدادات: generation_base */
+export let GENERATION_BASE = 2;
+export function setGenerationBase(n: number) {
+  if (Number.isFinite(n) && n >= 0) GENERATION_BASE = n;
+}
+
+export function nextGeneration(parentId: string | null, byId: Record<string, LineageRow>): number {
+  if (!parentId) return GENERATION_BASE;
   const p = byId[parentId];
-  return p?.generation ? p.generation + 1 : null;
+  if (p?.generation) return p.generation + 1;
+  return ancestors(parentId, byId).length + GENERATION_BASE;
+}
+
+/** يعيد احتساب جيل كل فرد من عمق النسب */
+export function recomputeGenerations(rows: LineageRow[]): { id: string; generation: number }[] {
+  const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
+  return rows.map((r) => ({
+    id: r.id,
+    generation: ancestors(r.parent_id, byId).length + GENERATION_BASE,
+  }));
 }
 
 export function chainLabel(parentId: string | null, byId: Record<string, LineageRow>): string {

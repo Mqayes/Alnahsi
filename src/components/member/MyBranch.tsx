@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { composeFullName, type LineageRow } from "@/lib/lineage";
+import { setGenerationBase } from "@/lib/lineage";
 
 type M = LineageRow & {
   birth_year: number | null;
@@ -60,6 +61,14 @@ export function MyBranch({ ar }: { ar: boolean }) {
     setReqs((r ?? []) as Req[]);
   };
   useEffect(() => {
+    void getSupabase()
+      .from("site_content")
+      .select("value")
+      .eq("key", "generation_base")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) setGenerationBase(Number(data.value));
+      });
     void load();
   }, []);
 

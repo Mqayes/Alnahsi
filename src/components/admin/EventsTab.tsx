@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { composeFullName, nextGeneration, type LineageRow } from "@/lib/lineage";
+import { setGenerationBase } from "@/lib/lineage";
 import { EVENT_TYPES, type EventType } from "@/lib/events";
 
 type M = {
@@ -47,6 +48,14 @@ export function EventsTab() {
     setMembers((data ?? []) as M[]);
   };
   useEffect(() => {
+    void getSupabase()
+      .from("site_content")
+      .select("value")
+      .eq("key", "generation_base")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) setGenerationBase(Number(data.value));
+      });
     void load();
   }, []);
   const byId = useMemo(

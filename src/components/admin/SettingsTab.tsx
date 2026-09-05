@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { recomputeGenerations, setGenerationBase, type LineageRow } from "@/lib/lineage";
 
 const FIELDS: {
   key: string;
@@ -8,6 +9,11 @@ const FIELDS: {
   hint?: string;
   type?: "text" | "textarea" | "toggle";
 }[] = [
+  {
+    key: "generation_base",
+    label: "رقم الجيل للجذر (أول اسم بلا أب)",
+    hint: "مثال: 2 يجعل مفلح الجيل الثاني ثم يتسلسل 3، 4…",
+  },
   { key: "site_name_ar", label: "اسم الموقع (عربي)" },
   { key: "site_name_en", label: "اسم الموقع (إنجليزي)" },
   { key: "contact_email", label: "بريد التواصل" },

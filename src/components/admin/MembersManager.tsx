@@ -3,6 +3,7 @@ import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
+import { setGenerationBase } from "@/lib/lineage";
 
 export type Member = {
   id: string;
@@ -96,6 +97,14 @@ export function MembersManager() {
     setLoading(false);
   };
   useEffect(() => {
+    void getSupabase()
+      .from("site_content")
+      .select("value")
+      .eq("key", "generation_base")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) setGenerationBase(Number(data.value));
+      });
     void load();
   }, []);
 

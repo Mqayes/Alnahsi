@@ -4,6 +4,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { Ornament } from "@/components/site/Ornament";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
+import { setGenerationBase } from "@/lib/lineage";
 import { PanZoom } from "@/components/tree/PanZoom";
 
 export const Route = createFileRoute("/tree")({

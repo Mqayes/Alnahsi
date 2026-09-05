@@ -134,7 +134,7 @@ export function Dashboard({
               ["news", "＋ نشر خبر"],
               ["gallery", "＋ رفع صور"],
               ["users", "إدارة الحسابات"],
-              ["content", "تعديل محتوى الموقع"],
+              ["content", "✎ تعديل محتوى الصفحات"],
               ["settings", "إعدادات المنصة"],
             ].map(([t, l]) => (
               <button

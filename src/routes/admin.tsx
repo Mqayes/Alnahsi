@@ -5,6 +5,7 @@ import { SettingsTab } from "@/components/admin/SettingsTab";
 import { DbUpgrade } from "@/components/admin/DbUpgrade";
 import { InboxTab } from "@/components/admin/InboxTab";
 import { EventsTab } from "@/components/admin/EventsTab";
+import { ContentEditor } from "@/components/admin/ContentEditor";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteByMagicLink } from "@/lib/api/invite-client";
@@ -181,8 +182,7 @@ function AdminPage() {
     { id: "events", label: "مناسبات العائلة", icon: "🎉", perm: "manage_news" },
     { id: "news", label: "الأخبار", icon: "📰", perm: "manage_news" },
     { id: "gallery", label: "الأرشيف والصور", icon: "🖼", perm: "manage_gallery" },
-    { id: "content", label: "محتوى الرئيسية", icon: "✎", perm: "manage_content" },
-    { id: "story", label: "صفحة قصتنا", icon: "📜", perm: "manage_content" },
+    { id: "content", label: "محتوى الصفحات", icon: "✎", perm: "manage_content" },
     { id: "settings", label: "الإعدادات", icon: "⚙" },
   ];
   const role = auth.profile.role;
@@ -261,8 +261,7 @@ function AdminPage() {
           {tab === "events" && <EventsTab />}
           {tab === "news" && <NewsTab />}
           {tab === "gallery" && <GalleryTab />}
-          {tab === "content" && <HomeContentTab />}
-          {tab === "story" && <OurStoryTab />}
+          {tab === "content" && <ContentEditor />}
           {tab === "settings" && <SettingsTab />}
         </main>
       </div>
