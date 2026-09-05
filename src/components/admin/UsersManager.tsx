@@ -91,6 +91,38 @@ export function UsersManager({ me }: { me: { id: string; role: string } }) {
   const canEdit = (p: P) =>
     p.id !== me.id && p.role !== "owner" && !(p.role === "admin" && !isOwner);
 
+  const [pwFor, setPwFor] = useState<P | null>(null);
+  const [pw, setPw] = useState("");
+  const setPassword = async () => {
+    if (!pwFor) return;
+    if (pw.length < 6) {
+      setErr("كلمة المرور 6 أحرف على الأقل");
+      return;
+    }
+    setErr(null);
+    setMsg(null);
+    const { error } = await getSupabase().rpc("admin_set_password", {
+      target: pwFor.id,
+      new_password: pw,
+    });
+    if (error) {
+      setErr("تعذّر التعيين: " + error.message);
+      return;
+    }
+    setMsg(`تم تعيين كلمة مرور لـ ${pwFor.full_name || pwFor.email} ✓`);
+    setPwFor(null);
+    setPw("");
+  };
+  const sendReset = async (email: string) => {
+    setErr(null);
+    setMsg(null);
+    const { error } = await getSupabase().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/portal`,
+    });
+    if (error) setErr(error.message);
+    else setMsg("أُرسل رابط استعادة كلمة المرور إلى " + email);
+  };
+
   const invite = async () => {
     if (!inviteEmail.trim()) return;
     const r = await inviteByMagicLink(inviteEmail.trim());
@@ -291,6 +323,24 @@ export function UsersManager({ me }: { me: { id: string; role: string } }) {
                       إرسال رابط دخول
                     </Button>
                   )}
+                  {p.email && (
+                    <Button size="sm" variant="outline" onClick={() => void sendReset(p.email!)}>
+                      رابط استعادة كلمة المرور
+                    </Button>
+                  )}
+                  {(isOwner || me.role === "admin") && p.role !== "owner" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-[#1F5C4F]"
+                      onClick={() => {
+                        setPwFor(p);
+                        setPw("");
+                      }}
+                    >
+                      🔑 تعيين كلمة مرور
+                    </Button>
+                  )}
                 </div>
                 <div className="mt-3 text-[11px] text-navy/40">
                   انضم: {new Date(p.created_at).toLocaleDateString("ar-SA")}
@@ -299,6 +349,45 @@ export function UsersManager({ me }: { me: { id: string; role: string } }) {
             );
           })}
           {filtered.length === 0 && <p className="text-navy/50">لا توجد حسابات مطابقة</p>}
+        </div>
+      )}
+
+      {pwFor && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-navy/50 p-4"
+          onClick={() => setPwFor(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            dir="rtl"
+          >
+            <h3 className="font-arabic text-xl text-navy">تعيين كلمة مرور</h3>
+            <p className="mt-1 text-sm text-navy/60">{pwFor.full_name || pwFor.email}</p>
+            <input
+              className={I + " mt-4"}
+              type="text"
+              dir="ltr"
+              placeholder="كلمة المرور الجديدة (6+ أحرف)"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+            />
+            <p className="mt-2 text-xs text-navy/50">
+              أبلغ العضو بكلمة المرور بطريقة آمنة (واتساب مثلاً). يستطيع تغييرها لاحقاً من "نسيت
+              كلمة المرور".
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setPwFor(null)}>
+                إلغاء
+              </Button>
+              <Button
+                className="bg-gold text-navy hover:bg-gold/90"
+                onClick={() => void setPassword()}
+              >
+                حفظ
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

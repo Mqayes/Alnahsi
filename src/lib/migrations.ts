@@ -413,4 +413,21 @@ create policy "support staff delete" on public.support_messages for delete using
     title: "تتبع إنشاء كلمة المرور للأعضاء",
     sql: `alter table public.profiles add column if not exists password_set boolean default false;`,
   },
+  {
+    id: "2026-09-05e-admin-set-password",
+    title: "تعيين كلمة المرور من لوحة التحكم",
+    sql: `
+create extension if not exists pgcrypto;
+create or replace function public.admin_set_password(target uuid, new_password text)
+returns void language plpgsql security definer set search_path = public, auth, extensions as $$
+begin
+  if not public.is_admin() then raise exception 'not allowed'; end if;
+  if length(new_password) < 6 then raise exception 'password too short'; end if;
+  update auth.users set encrypted_password = extensions.crypt(new_password, extensions.gen_salt('bf')), updated_at = now() where id = target;
+  update public.profiles set password_set = true where id = target;
+end $$;
+revoke all on function public.admin_set_password(uuid, text) from public;
+grant execute on function public.admin_set_password(uuid, text) to authenticated;
+`,
+  },
 ];
