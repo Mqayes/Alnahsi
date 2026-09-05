@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
 
@@ -6,9 +6,9 @@ export type TreeParent = { id: string; ar: string; en: string };
 
 /* ─── Add member modal ───────────────────────────────────────── */
 export function AddToTreeModal({
+  byId: byIdProp,
   ar,
   parent,
-  byId,
   onClose,
 }: {
   ar: boolean;
@@ -16,6 +16,27 @@ export function AddToTreeModal({
   byId: Record<string, LineageRow>;
   onClose: () => void;
 }) {
+  const [byId, setById] = useState<Record<string, LineageRow>>(byIdProp);
+  const [loadingTree, setLoadingTree] = useState(Object.keys(byIdProp).length === 0);
+  useEffect(() => {
+    if (Object.keys(byIdProp).length > 0) {
+      setById(byIdProp);
+      setLoadingTree(false);
+      return;
+    }
+    if (!isSupabaseConfigured()) {
+      setLoadingTree(false);
+      return;
+    }
+    getSupabase()
+      .from("family_members")
+      .select("id, full_name_ar, full_name_en, first_name, parent_id, generation, gender")
+      .then(({ data }) => {
+        setById(Object.fromEntries(((data ?? []) as LineageRow[]).map((r) => [r.id, r])));
+        setLoadingTree(false);
+      });
+  }, [byIdProp]);
+
   const initialParent = parent.id === "root" ? null : byId[parent.id] ? parent.id : null;
   const [parentId, setParentId] = useState<string | null>(initialParent);
   const isDbParent = parentId !== null && !!byId[parentId];
