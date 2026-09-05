@@ -58,6 +58,19 @@ export function MembersManager() {
   const [editing, setEditing] = useState<Member | null>(null);
   const [creating, setCreating] = useState(false);
   const [q, setQ] = useState("");
+  const [sortKey, setSortKey] = useState<"name" | "birth" | "generation" | "city" | "status">(
+    "generation",
+  );
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [genFilter, setGenFilter] = useState<string>("");
+  const toggleSort = (k: typeof sortKey) => {
+    if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(k);
+      setSortDir("asc");
+    }
+  };
+  const arrow = (k: typeof sortKey) => (sortKey === k ? (sortDir === "asc" ? " ▲" : " ▼") : "");
   const [qa, setQa] = useState({
     first: "",
     gender: "m" as "m" | "f",
@@ -171,13 +184,46 @@ export function MembersManager() {
     qaFirstRef.current?.focus();
   };
 
-  const filtered = rows.filter(
-    (r) =>
-      !q ||
-      name(r).includes(q) ||
-      (r.full_name_en ?? "").toLowerCase().includes(q.toLowerCase()) ||
-      (r.city ?? "").includes(q),
-  );
+  const filtered = rows
+    .filter(
+      (r) =>
+        (!q ||
+          name(r).includes(q) ||
+          (r.full_name_en ?? "").toLowerCase().includes(q.toLowerCase()) ||
+          (r.city ?? "").includes(q)) &&
+        (!genFilter || String(r.generation ?? "") === genFilter),
+    )
+    .sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      const cmp = (
+        x: string | number | null | undefined,
+        y: string | number | null | undefined,
+      ) => {
+        if (x == null && y == null) return 0;
+        if (x == null) return 1;
+        if (y == null) return -1;
+        return typeof x === "number" && typeof y === "number"
+          ? x - y
+          : String(x).localeCompare(String(y), "ar");
+      };
+      switch (sortKey) {
+        case "name":
+          return dir * cmp(name(a), name(b));
+        case "birth":
+          return dir * cmp(a.birth_year, b.birth_year);
+        case "generation":
+          return dir * (cmp(a.generation, b.generation) || cmp(a.birth_year, b.birth_year));
+        case "city":
+          return dir * cmp(a.city, b.city);
+        case "status":
+          return dir * cmp(Number(!!a.is_deceased), Number(!!b.is_deceased));
+        default:
+          return 0;
+      }
+    });
+  const generations = Array.from(
+    new Set(rows.map((r) => r.generation).filter((g): g is number => !!g)),
+  ).sort((a, b) => a - b);
 
   return (
     <div dir="rtl" className="space-y-5">
@@ -279,6 +325,43 @@ export function MembersManager() {
           onChange={(e) => setQ(e.target.value)}
           className="max-w-sm"
         />
+        <select
+          className={I + " w-auto"}
+          value={genFilter}
+          onChange={(e) => setGenFilter(e.target.value)}
+        >
+          <option value="">كل الأجيال</option>
+          {generations.map((g) => (
+            <option key={g} value={String(g)}>
+              الجيل {g}
+            </option>
+          ))}
+        </select>
+        <div className="flex items-center gap-1 rounded-md border border-gold/40 bg-white p-1 text-xs">
+          <span className="px-1 text-navy/50">ترتيب:</span>
+          {(
+            [
+              ["generation", "الجيل"],
+              ["name", "الاسم"],
+              ["birth", "الميلاد"],
+              ["city", "المدينة"],
+              ["status", "الحالة"],
+            ] as const
+          ).map(([k, l]) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => toggleSort(k)}
+              className={`rounded px-2 py-1 ${sortKey === k ? "bg-gold text-navy font-semibold" : "text-navy/70 hover:bg-parchment"}`}
+            >
+              {l}
+              {arrow(k)}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-navy/50">
+          {filtered.length} / {rows.length}
+        </span>
         <Button
           onClick={() => {
             setEditing({ ...EMPTY, id: "" } as Member);
@@ -372,12 +455,37 @@ export function MembersManager() {
             <table className="w-full text-sm">
               <thead className="bg-parchment text-navy/70">
                 <tr>
-                  <th className="p-3 text-right">الاسم</th>
+                  <th
+                    className="cursor-pointer p-3 text-right hover:text-gold"
+                    onClick={() => toggleSort("name")}
+                  >
+                    الاسم{arrow("name")}
+                  </th>
                   <th className="p-3 text-right">الأب</th>
-                  <th className="p-3">الجيل</th>
-                  <th className="p-3">المدينة</th>
-                  <th className="p-3">الميلاد</th>
-                  <th className="p-3">الحالة</th>
+                  <th
+                    className="cursor-pointer p-3 hover:text-gold"
+                    onClick={() => toggleSort("generation")}
+                  >
+                    الجيل{arrow("generation")}
+                  </th>
+                  <th
+                    className="cursor-pointer p-3 hover:text-gold"
+                    onClick={() => toggleSort("city")}
+                  >
+                    المدينة{arrow("city")}
+                  </th>
+                  <th
+                    className="cursor-pointer p-3 hover:text-gold"
+                    onClick={() => toggleSort("birth")}
+                  >
+                    الميلاد{arrow("birth")}
+                  </th>
+                  <th
+                    className="cursor-pointer p-3 hover:text-gold"
+                    onClick={() => toggleSort("status")}
+                  >
+                    الحالة{arrow("status")}
+                  </th>
                   <th className="p-3"></th>
                 </tr>
               </thead>
