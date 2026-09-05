@@ -5,6 +5,7 @@ type Stats = {
   members: number;
   users: number;
   pending: number;
+  approved: number;
   news: number;
   suspended: number;
   messages: number;
@@ -26,13 +27,17 @@ export function Dashboard({
     const sb = getSupabase();
     (async () => {
       try {
-        const [m, u, p, n, sm, su, r] = await Promise.all([
+        const [m, u, p, ap, n, sm, su, r] = await Promise.all([
           sb.from("family_members").select("id", { count: "exact", head: true }),
           sb.from("profiles").select("id", { count: "exact", head: true }),
           sb
             .from("join_requests")
             .select("id", { count: "exact", head: true })
             .eq("status", "pending"),
+          sb
+            .from("join_requests")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "approved"),
           sb.from("news_posts").select("id", { count: "exact", head: true }),
           sb
             .from("support_messages")
@@ -56,6 +61,7 @@ export function Dashboard({
           members: m.count ?? 0,
           users: u.count ?? 0,
           pending: p.count ?? 0,
+          approved: ap.count ?? 0,
           news: n.count ?? 0,
           suspended: su.count ?? 0,
           messages: (sm as { count?: number | null }).count ?? 0,
@@ -80,14 +86,14 @@ export function Dashboard({
   }) => (
     <button
       onClick={() => go(tab)}
-      className="premium-card p-5 text-right transition hover:-translate-y-0.5"
+      className="premium-card p-4 text-right transition hover:-translate-y-0.5 md:p-5"
     >
       <div
         className={`hero-kufi text-3xl ${tone === "red" ? "text-red-600" : tone === "emerald" ? "text-[#1F5C4F]" : tone === "navy" ? "text-navy" : "text-gold"}`}
       >
         {value}
       </div>
-      <div className="mt-1 text-sm text-navy/60">{label}</div>
+      <div className="mt-1 text-xs leading-snug text-navy/60 md:text-sm">{label}</div>
     </button>
   );
 
@@ -98,9 +104,20 @@ export function Dashboard({
         <p className="text-sm text-navy/60">نظرة عامة على العائلة والمنصة</p>
       </div>
       {err && <p className="text-sm text-red-600">{err}</p>}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
         <Card label="أفراد في الشجرة" value={s?.members ?? "…"} tab="members" />
-        <Card label="حسابات مسجّلة" value={s?.users ?? "…"} tab="users" tone="emerald" />
+        <Card
+          label="طلبات معتمدة (أُضيفت للشجرة)"
+          value={s?.approved ?? "…"}
+          tab="requests"
+          tone="emerald"
+        />
+        <Card
+          label="حسابات دخول فعّالة (سجّلوا الدخول)"
+          value={s?.users ?? "…"}
+          tab="users"
+          tone="navy"
+        />
         <Card
           label="طلبات بانتظار الاعتماد"
           value={s?.pending ?? "…"}

@@ -249,7 +249,7 @@ function AdminPage() {
       </div>
 
       {/* Mobile nav */}
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 md:hidden">
+      <div className="sticky top-16 z-30 -mx-4 mb-4 flex gap-2 overflow-x-auto bg-parchment/95 px-4 py-2 backdrop-blur md:hidden">
         {visible.map((n) => (
           <button
             key={n.id}
