@@ -329,4 +329,58 @@ drop policy if exists "join read own" on public.join_requests;
 create policy "join read own" on public.join_requests for select using (requested_by = auth.uid());
 `,
   },
+  {
+    id: "2026-09-05b-audit-trail",
+    title: "سجل التغييرات (تاريخ كل إضافة/تعديل) + updated_at",
+    sql: `
+create table if not exists public.audit_log (
+  id bigserial primary key,
+  at timestamptz not null default now(),
+  actor uuid,
+  actor_email text,
+  table_name text not null,
+  row_id text,
+  action text not null,
+  summary text,
+  old_data jsonb,
+  new_data jsonb
+);
+alter table public.audit_log enable row level security;
+drop policy if exists "audit read staff" on public.audit_log;
+create policy "audit read staff" on public.audit_log for select using (public.is_admin() or public.has_perm('manage_members'));
+
+create or replace function public.audit_row() returns trigger language plpgsql security definer set search_path = public as $$
+declare v_summary text; v_id text; v_email text;
+begin
+  select email into v_email from public.profiles where id = auth.uid();
+  v_id := coalesce((case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end)->>'id', (case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end)->>'key');
+  v_summary := coalesce(
+    (case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end)->>'full_name_ar',
+    (case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end)->>'title_ar',
+    (case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end)->>'full_name',
+    (case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end)->>'email',
+    (case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end)->>'key');
+  insert into public.audit_log (actor, actor_email, table_name, row_id, action, summary, old_data, new_data)
+  values (auth.uid(), v_email, tg_table_name, v_id, tg_op, v_summary,
+    case when tg_op in ('UPDATE','DELETE') then to_jsonb(old) end,
+    case when tg_op in ('INSERT','UPDATE') then to_jsonb(new) end);
+  if tg_op = 'DELETE' then return old; end if;
+  return new;
+end $$;
+
+create or replace function public.set_updated_at() returns trigger language plpgsql as $$
+begin new.updated_at := now(); return new; end $$;
+
+do $$ declare t text; begin
+  foreach t in array array['family_members','news_posts','profiles','join_requests','site_content'] loop
+    execute format('alter table public.%I add column if not exists updated_at timestamptz default now()', t);
+    execute format('drop trigger if exists trg_audit_%I on public.%I', t, t);
+    execute format('create trigger trg_audit_%I after insert or update or delete on public.%I for each row execute function public.audit_row()', t, t);
+    execute format('drop trigger if exists trg_updated_%I on public.%I', t, t);
+    execute format('create trigger trg_updated_%I before update on public.%I for each row execute function public.set_updated_at()', t, t);
+  end loop;
+end $$;
+alter table public.site_content add column if not exists created_at timestamptz default now();
+`,
+  },
 ];

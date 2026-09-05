@@ -26,6 +26,8 @@ export type Member = {
   death_cause: string | null;
   spouse_name: string | null;
   marriage_year: number | null;
+  created_at?: string;
+  updated_at?: string | null;
 };
 const EMPTY: Omit<Member, "id"> = {
   full_name_ar: "",
@@ -59,9 +61,9 @@ export function MembersManager() {
   const [editing, setEditing] = useState<Member | null>(null);
   const [creating, setCreating] = useState(false);
   const [q, setQ] = useState("");
-  const [sortKey, setSortKey] = useState<"name" | "birth" | "generation" | "city" | "status">(
-    "generation",
-  );
+  const [sortKey, setSortKey] = useState<
+    "seq" | "name" | "birth" | "generation" | "city" | "status"
+  >("seq");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [genFilter, setGenFilter] = useState<string>("");
   const toggleSort = (k: typeof sortKey) => {
@@ -109,6 +111,14 @@ export function MembersManager() {
   }, []);
 
   const byId = useMemo(() => Object.fromEntries(rows.map((r) => [r.id, r])), [rows]);
+  const seqOf = useMemo(() => {
+    const sorted = [...rows].sort((a, b) => (a.created_at ?? "").localeCompare(b.created_at ?? ""));
+    return Object.fromEntries(sorted.map((r, i) => [r.id, i + 1]));
+  }, [rows]);
+  const fmt = (d?: string | null) =>
+    d
+      ? new Date(d).toLocaleDateString("ar-SA", { year: "numeric", month: "short", day: "numeric" })
+      : "—";
   const lineageById = byId as unknown as Record<string, LineageRow>;
   const applyLineage = (e: Member): Member => {
     const first = (e.first_name ?? "").trim();
@@ -216,6 +226,8 @@ export function MembersManager() {
           : String(x).localeCompare(String(y), "ar");
       };
       switch (sortKey) {
+        case "seq":
+          return dir * cmp(seqOf[a.id], seqOf[b.id]);
         case "name":
           return dir * cmp(name(a), name(b));
         case "birth":
@@ -350,6 +362,7 @@ export function MembersManager() {
           <span className="px-1 text-navy/50">ترتيب:</span>
           {(
             [
+              ["seq", "الرقم"],
               ["generation", "الجيل"],
               ["name", "الاسم"],
               ["birth", "الميلاد"],
@@ -398,6 +411,9 @@ export function MembersManager() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="font-arabic text-lg text-navy">
+                      <span className="me-2 rounded bg-navy/10 px-1.5 py-0.5 text-xs text-navy/70">
+                        #{seqOf[m.id]}
+                      </span>
                       {m.gender === "f" ? "♀ " : ""}
                       {name(m)}
                     </div>
@@ -426,6 +442,10 @@ export function MembersManager() {
                   <dd className="text-navy">{m.generation ?? "—"}</dd>
                   <dt>المدينة</dt>
                   <dd className="text-navy">{m.city ?? "—"}</dd>
+                  <dt>أُضيف</dt>
+                  <dd className="text-navy">{fmt(m.created_at)}</dd>
+                  <dt>آخر تعديل</dt>
+                  <dd className="text-navy">{fmt(m.updated_at)}</dd>
                   <dt>الميلاد</dt>
                   <dd className="text-navy">
                     {m.birth_year ?? "—"}
@@ -466,6 +486,12 @@ export function MembersManager() {
                 <tr>
                   <th
                     className="cursor-pointer p-3 text-right hover:text-gold"
+                    onClick={() => toggleSort("seq")}
+                  >
+                    #{arrow("seq")}
+                  </th>
+                  <th
+                    className="cursor-pointer p-3 text-right hover:text-gold"
                     onClick={() => toggleSort("name")}
                   >
                     الاسم{arrow("name")}
@@ -489,6 +515,8 @@ export function MembersManager() {
                   >
                     الميلاد{arrow("birth")}
                   </th>
+                  <th className="p-3">أُضيف</th>
+                  <th className="p-3">آخر تعديل</th>
                   <th
                     className="cursor-pointer p-3 hover:text-gold"
                     onClick={() => toggleSort("status")}
@@ -501,6 +529,7 @@ export function MembersManager() {
               <tbody>
                 {filtered.map((m) => (
                   <tr key={m.id} className="border-t border-gold/15 hover:bg-parchment/60">
+                    <td className="p-3 text-center text-xs text-navy/60">{seqOf[m.id]}</td>
                     <td className="p-3 font-arabic text-base text-navy">
                       {name(m)}
                       <div className="text-xs text-navy/40" dir="ltr">
@@ -513,6 +542,8 @@ export function MembersManager() {
                     <td className="p-3 text-center">{m.generation ?? "—"}</td>
                     <td className="p-3 text-center">{m.city ?? "—"}</td>
                     <td className="p-3 text-center">{m.birth_year ?? "—"}</td>
+                    <td className="p-3 text-center text-xs text-navy/60">{fmt(m.created_at)}</td>
+                    <td className="p-3 text-center text-xs text-navy/60">{fmt(m.updated_at)}</td>
                     <td className="p-3 text-center">
                       {m.is_deceased ? (
                         <span className="rounded-full bg-navy/10 px-2 py-0.5 text-xs">
@@ -546,7 +577,7 @@ export function MembersManager() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-navy/50">
+                    <td colSpan={10} className="p-6 text-center text-navy/50">
                       لا يوجد أفراد بعد
                     </td>
                   </tr>

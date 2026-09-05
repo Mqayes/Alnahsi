@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Header } from "@/components/site/Header";
+import { MaintenanceGate } from "@/components/site/MaintenanceGate";
 import { Footer } from "@/components/site/Footer";
 
 // صفحتا 404 والخطأ قد تُصيَّران خارج LanguageProvider، لذا نقرأ اللغة مباشرة.
@@ -187,7 +188,9 @@ function RootComponent() {
         <Header />
         <main className="min-h-screen">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
+          <MaintenanceGate>
+            <Outlet />
+          </MaintenanceGate>
         </main>
         <Footer />
       </LanguageProvider>

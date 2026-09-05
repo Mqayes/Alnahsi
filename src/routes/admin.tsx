@@ -6,6 +6,8 @@ import { DbUpgrade } from "@/components/admin/DbUpgrade";
 import { InboxTab } from "@/components/admin/InboxTab";
 import { EventsTab } from "@/components/admin/EventsTab";
 import { ContentEditor } from "@/components/admin/ContentEditor";
+import { AuditLog } from "@/components/admin/AuditLog";
+import { useLang } from "@/lib/i18n/LanguageContext";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { inviteByMagicLink } from "@/lib/api/invite-client";
@@ -45,6 +47,9 @@ type AuthState =
   | { status: "authorized"; profile: Profile };
 
 function AdminPage() {
+  const { lang } = useLang();
+  const ar = lang !== "en";
+  const L = (arS: string, enS: string) => (ar ? arS : enS);
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
   const [tab, setTab] = useState<string>("dashboard");
 
@@ -174,16 +179,31 @@ function AdminPage() {
   }
 
   const NAV: { id: string; label: string; icon: string; perm?: string }[] = [
-    { id: "dashboard", label: "لوحة القيادة", icon: "▦" },
-    { id: "members", label: "الأعضاء والشجرة", icon: "🌳", perm: "manage_members" },
-    { id: "requests", label: "طلبات الانضمام", icon: "✉", perm: "approve_requests" },
-    { id: "inbox", label: "رسائل الأعضاء", icon: "📬", perm: "approve_requests" },
-    { id: "users", label: "الحسابات والصلاحيات", icon: "👥" },
-    { id: "events", label: "مناسبات العائلة", icon: "🎉", perm: "manage_news" },
-    { id: "news", label: "الأخبار", icon: "📰", perm: "manage_news" },
-    { id: "gallery", label: "الأرشيف والصور", icon: "🖼", perm: "manage_gallery" },
-    { id: "content", label: "محتوى الصفحات", icon: "✎", perm: "manage_content" },
-    { id: "settings", label: "الإعدادات", icon: "⚙" },
+    { id: "dashboard", label: L("لوحة القيادة", "Dashboard"), icon: "▦" },
+    {
+      id: "members",
+      label: L("الأعضاء والشجرة", "Members & Tree"),
+      icon: "🌳",
+      perm: "manage_members",
+    },
+    {
+      id: "requests",
+      label: L("طلبات الانضمام", "Join requests"),
+      icon: "✉",
+      perm: "approve_requests",
+    },
+    { id: "users", label: L("الحسابات والصلاحيات", "Accounts & roles"), icon: "👥" },
+    { id: "events", label: L("مناسبات العائلة", "Family events"), icon: "🎉", perm: "manage_news" },
+    { id: "news", label: L("الأخبار", "News"), icon: "📰", perm: "manage_news" },
+    {
+      id: "gallery",
+      label: L("الأرشيف والصور", "Archive & photos"),
+      icon: "🖼",
+      perm: "manage_gallery",
+    },
+    { id: "content", label: L("محتوى الصفحات", "Page content"), icon: "✎", perm: "manage_content" },
+    { id: "audit", label: L("سجل التغييرات", "Change log"), icon: "🕓", perm: "manage_members" },
+    { id: "settings", label: L("الإعدادات", "Settings"), icon: "⚙" },
   ];
   const role = auth.profile.role;
   const perms = (auth.profile as { permissions?: string[] }).permissions ?? [];
@@ -192,16 +212,20 @@ function AdminPage() {
   const visible = NAV.filter((n) => (n.id === "users" ? role !== "moderator" : allowed(n)));
 
   return (
-    <section dir="rtl" className="mx-auto max-w-7xl px-4 pb-20 pt-28 md:px-6">
+    <section dir={ar ? "rtl" : "ltr"} className="mx-auto max-w-7xl px-4 pb-20 pt-28 md:px-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <span className="eyebrow-pill">لوحة التحكم</span>
+          <span className="eyebrow-pill">{L("لوحة التحكم", "Control panel")}</span>
           <h1 className="mt-2 font-arabic text-3xl text-navy md:text-4xl">بيت آل بوخف الناهسي</h1>
           <p className="mt-1 text-sm text-navy/60">
             مسجّل الدخول:{" "}
             <b className="text-navy">{auth.profile.full_name ?? auth.profile.email}</b> ·{" "}
             <span className="text-gold">
-              {role === "owner" ? "المالك" : role === "admin" ? "أدمن" : "مشرف"}
+              {role === "owner"
+                ? L("المالك", "Owner")
+                : role === "admin"
+                  ? L("أدمن", "Admin")
+                  : L("مشرف", "Moderator")}
             </span>
           </p>
         </div>
@@ -262,6 +286,7 @@ function AdminPage() {
           {tab === "news" && <NewsTab />}
           {tab === "gallery" && <GalleryTab />}
           {tab === "content" && <ContentEditor />}
+          {tab === "audit" && <AuditLog ar={ar} />}
           {tab === "settings" && <SettingsTab />}
         </main>
       </div>

@@ -6,6 +6,7 @@ import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
 import { setGenerationBase } from "@/lib/lineage";
 import { PanZoom } from "@/components/tree/PanZoom";
+import { useSiteContent } from "@/lib/site-content";
 
 export const Route = createFileRoute("/tree")({
   head: () => ({
@@ -256,6 +257,8 @@ function TreeNode({
 function TreePage() {
   const { lang } = useLang();
   const ar = lang === "ar";
+  const sc = useSiteContent();
+  const canAdd = sc["tree_allow_public_add"] !== "false";
   const [open, setOpen] = useState<Set<string>>(() => new Set(["root", "g2", "g3"]));
   const [selected, setSelected] = useState<Person>(ROOT);
   const [q, setQ] = useState("");
@@ -389,9 +392,11 @@ function TreePage() {
               +
             </button>
           </div>
-          <button onClick={() => setShowAdd(true)} className="btn-gold">
-            {ar ? "＋ أضف اسمك" : "＋ Add your name"}
-          </button>
+          {canAdd && (
+            <button onClick={() => setShowAdd(true)} className="btn-gold">
+              {ar ? "＋ أضف اسمك" : "＋ Add your name"}
+            </button>
+          )}
         </div>
       </section>
 

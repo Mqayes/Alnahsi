@@ -7,6 +7,7 @@ import { Values } from "@/components/home/Values";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { PortalCta } from "@/components/home/PortalCta";
 import { Platform } from "@/components/home/Platform";
+import { useSiteContent } from "@/lib/site-content";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,16 +29,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const sc = useSiteContent();
+  const on = (k: string) => sc[k] !== "false";
   return (
     <>
       <Hero />
-      <Origin />
-      <Platform />
-      <Timeline />
-      <Businesses />
-      <Values />
-      <GalleryPreview />
-      <PortalCta />
+      {on("sec_origin") && <Origin />}
+      {on("sec_platform") && <Platform />}
+      {on("sec_timeline") && <Timeline />}
+      {on("sec_businesses") && <Businesses />}
+      {on("sec_values") && <Values />}
+      {on("sec_gallery") && <GalleryPreview />}
+      {on("sec_portal") && <PortalCta />}
     </>
   );
 }

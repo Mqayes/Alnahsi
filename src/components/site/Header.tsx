@@ -6,7 +6,7 @@ import { useSiteContent } from "@/lib/site-content";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { NewsTicker } from "@/components/site/NewsTicker";
 
-const navItems = [
+const NAV_ALL = [
   { to: "/", key: "home" as const },
   { to: "/our-story", key: "story" as const },
   { to: "/businesses", key: "businesses" as const },
@@ -22,6 +22,15 @@ export function Header() {
   const { lang, toggle } = useLang();
   const location = useLocation();
   const sc = useSiteContent();
+  const PAGE_KEY: Record<string, string> = {
+    story: "page_story",
+    tree: "page_tree",
+    businesses: "page_businesses",
+    gallery: "page_gallery",
+    news: "page_news",
+    contact: "page_contact",
+  };
+  const navItems = NAV_ALL.filter((n) => sc[PAGE_KEY[n.key] ?? ""] !== "false");
   const nameAr = sc["site_name_ar"] || t(translations.hero.nameAr, lang);
   const nameEn = sc["site_name_en"] || t(translations.hero.nameEn, "en");
   const [scrolled, setScrolled] = useState(false);
