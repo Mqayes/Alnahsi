@@ -17,6 +17,7 @@ export function PanZoom({
   const vp = useRef<HTMLDivElement>(null);
   const inner = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [full, setFull] = useState(false);
   const drag = useRef<{ x: number; y: number; px: number; py: number; moved: boolean } | null>(
     null,
   );
@@ -29,16 +30,29 @@ export function PanZoom({
       c = inner.current;
     if (!v || !c) return;
     const cw = c.scrollWidth,
-      vw = v.clientWidth;
-    const z = clamp(Math.min(1, (vw - 32) / Math.max(cw, 1)));
+      ch = c.scrollHeight,
+      vw = v.clientWidth,
+      vh = v.clientHeight;
+    const z = clamp(Math.min(1.2, (vw - 24) / Math.max(cw, 1), (vh - 24) / Math.max(ch, 1)));
     onZoom(z);
-    setPos({ x: (vw - cw * z) / 2, y: 16 });
+    setPos({ x: (vw - cw * z) / 2, y: Math.max(12, (vh - ch * z) / 2) });
   }, [onZoom]);
 
   useEffect(() => {
     const t = setTimeout(fit, 60);
     return () => clearTimeout(t);
-  }, [fit, fitKey]);
+  }, [fit, fitKey, full]);
+
+  useEffect(() => {
+    if (!full) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [full]);
 
   const onDown = (e: React.PointerEvent) => {
     if (!(e.target as HTMLElement).closest("button"))
@@ -93,7 +107,7 @@ export function PanZoom({
       <div
         ref={vp}
         dir="ltr"
-        className="premium-card h-[70vh] cursor-grab touch-none select-none overflow-hidden active:cursor-grabbing"
+        className={`cursor-grab touch-none select-none overflow-hidden active:cursor-grabbing ${full ? "fixed inset-0 z-[200] h-[100dvh] w-screen bg-parchment" : "premium-card h-[70vh]"}`}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
@@ -113,12 +127,32 @@ export function PanZoom({
           {children}
         </div>
       </div>
-      <div className="pointer-events-none absolute bottom-10 left-3 flex gap-2">
+      <div
+        className={`pointer-events-none flex gap-2 ${full ? "fixed left-3 top-3 z-[201]" : "absolute bottom-10 left-3"}`}
+      >
         <button
           onClick={fit}
-          className="pointer-events-auto rounded-md border border-gold/40 bg-white/90 px-3 py-1.5 text-xs text-navy shadow hover:bg-parchment"
+          className="pointer-events-auto rounded-md border border-gold/40 bg-white/95 px-3 py-1.5 text-xs text-navy shadow hover:bg-parchment"
         >
-          {ar ? "⤢ ملاءمة الشاشة" : "⤢ Fit"}
+          {ar ? "⤢ ملاءمة" : "⤢ Fit"}
+        </button>
+        <button
+          onClick={() => setFull((v) => !v)}
+          className="pointer-events-auto rounded-md border border-gold/40 bg-white/95 px-3 py-1.5 text-xs text-navy shadow hover:bg-parchment"
+        >
+          {full ? (ar ? "✕ خروج" : "✕ Exit") : ar ? "⛶ ملء الشاشة" : "⛶ Fullscreen"}
+        </button>
+        <button
+          onClick={() => onZoom(clamp(zoom + 0.15))}
+          className="pointer-events-auto rounded-md border border-gold/40 bg-white/95 px-3 py-1.5 text-xs text-navy shadow hover:bg-parchment"
+        >
+          ＋
+        </button>
+        <button
+          onClick={() => onZoom(clamp(zoom - 0.15))}
+          className="pointer-events-auto rounded-md border border-gold/40 bg-white/95 px-3 py-1.5 text-xs text-navy shadow hover:bg-parchment"
+        >
+          －
         </button>
       </div>
       <p className="mt-2 text-center text-[11px] text-navy/40">
