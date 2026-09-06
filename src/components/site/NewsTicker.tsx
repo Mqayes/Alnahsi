@@ -198,7 +198,7 @@ export function NewsTicker() {
             >
               {strip}
               {/* نسخة ثانية تجعل الدوران متصلاً بلا قفزة */}
-              <span aria-hidden="true">{strip}</span>
+              {strip}
             </div>
           </div>
         )}

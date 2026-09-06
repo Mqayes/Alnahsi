@@ -682,7 +682,10 @@ html[dir="rtl"] label {
 .ticker-track {
   display: flex;
   width: max-content;
+  min-width: 200%;
+  flex-wrap: nowrap;
   will-change: transform;
+  backface-visibility: hidden;
 }
 /* العربية تُقرأ من اليمين، فيسير الشريط في الاتجاه المعاكس للإنجليزية */
 .ticker-track {
@@ -703,10 +706,10 @@ html[dir="rtl"] label {
 }
 @keyframes ticker-move-rtl {
   from {
-    transform: translateX(-50%);
+    transform: translateX(0);
   }
   to {
-    transform: translateX(0);
+    transform: translateX(50%);
   }
 }
 @keyframes ticker-move-ltr {
