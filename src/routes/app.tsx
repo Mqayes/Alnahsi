@@ -4,6 +4,8 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { Ornament } from "@/components/site/Ornament";
 
 export const Route = createFileRoute("/app")({
+  validateSearch: (s: Record<string, unknown>): { os?: string } =>
+    typeof s.os === "string" ? { os: s.os } : {},
   head: () => ({
     meta: [
       { title: "حمّل تطبيق آل بوخف الناهسي" },
@@ -28,6 +30,8 @@ type OS = "ios" | "android" | "desktop";
 function AppInstallPage() {
   const { lang } = useLang();
   const ar = lang !== "en";
+  const forced =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("os") : null;
   const [os, setOs] = useState<OS>("desktop");
   const [installed, setInstalled] = useState(false);
   const [prompt, setPrompt] = useState<{ prompt: () => void } | null>(null);
@@ -35,7 +39,12 @@ function AppInstallPage() {
 
   useEffect(() => {
     const ua = navigator.userAgent;
-    setOs(/iPad|iPhone|iPod/.test(ua) ? "ios" : /Android/i.test(ua) ? "android" : "desktop");
+    const detected: OS = /iPad|iPhone|iPod/.test(ua)
+      ? "ios"
+      : /Android/i.test(ua)
+        ? "android"
+        : "desktop";
+    setOs(forced === "ios" || forced === "android" ? (forced as OS) : detected);
     setInstalled(
       window.matchMedia("(display-mode: standalone)").matches ||
         (navigator as unknown as { standalone?: boolean }).standalone === true,
@@ -44,8 +53,13 @@ function AppInstallPage() {
       e.preventDefault();
       setPrompt(e as unknown as { prompt: () => void });
     };
+    const onInstalled = () => setInstalled(true);
     window.addEventListener("beforeinstallprompt", onPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", onPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, []);
 
   const url = typeof window !== "undefined" ? `${window.location.origin}/app` : "";

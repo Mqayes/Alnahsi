@@ -57,6 +57,10 @@ export function TreeToolsTab({ ar }: { ar: boolean }) {
 
   const joinUrl = typeof window !== "undefined" ? `${window.location.origin}/tree?join=1` : "";
   const appUrl = typeof window !== "undefined" ? `${window.location.origin}/app` : "";
+  const iosUrl = `${appUrl}?os=ios`;
+  const androidUrl = `${appUrl}?os=android`;
+  const waFor = (u: string, dev: string) =>
+    `https://wa.me/?text=${encodeURIComponent(`تطبيق عائلة آل بوخف الناهسي 🌳 (${dev})\nشجرة العائلة والأخبار والمناسبات في تطبيق واحد.\nافتح الرابط وثبّته على جوالك بخطوتين:\n${u}`)}`;
   const appWa = `https://wa.me/?text=${encodeURIComponent("تطبيق عائلة آل بوخف الناهسي 🌳\nشجرة العائلة والأخبار والمناسبات في تطبيق واحد.\nافتح الرابط وثبّته على جوالك بخطوتين:\n" + appUrl)}`;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(joinUrl)}`;
 
@@ -200,40 +204,64 @@ export function TreeToolsTab({ ar }: { ar: boolean }) {
         </div>
       )}
       {tab === "app" && (
-        <div className="premium-card p-5 text-center">
+        <div className="premium-card space-y-5 p-5 text-center">
           <img src="/icon-192.png" alt="" className="mx-auto h-16 w-16 rounded-2xl" />
-          <p className="mt-3 text-sm text-navy/70">
-            رابط تحميل التطبيق — يفتح صفحة تشرح التثبيت خطوة بخطوة حسب جهاز المستقبِل (آيفون /
-            أندرويد).
+          <p className="text-sm text-navy/70">
+            رابطان جاهزان — كل رابط يفتح صفحة تثبيت مخصّصة للجهاز، وبعد التثبيت تظهر رسالة ترحيب
+            ودعوة للتسجيل.
           </p>
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(appUrl)}`}
-            alt="QR"
-            className="mx-auto mt-4 rounded-xl border border-gold/30 bg-white p-2"
-            width={220}
-            height={220}
-          />
-          <p className="mt-3 break-all text-xs text-navy/50" dir="ltr">
-            {appUrl}
-          </p>
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {[
+              { t: " آيفون / آيباد", u: iosUrl, d: "iPhone", icon: "" },
+              { t: "🤖 أندرويد", u: androidUrl, d: "Android", icon: "🤖" },
+            ].map((x) => (
+              <div key={x.d} className="rounded-xl border border-gold/30 bg-parchment p-4">
+                <h4 className="font-arabic text-lg text-navy">{x.t}</h4>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(x.u)}`}
+                  alt="QR"
+                  className="mx-auto mt-3 rounded-lg border border-gold/30 bg-white p-2"
+                  width={180}
+                  height={180}
+                />
+                <p className="mt-2 break-all text-[11px] text-navy/50" dir="ltr">
+                  {x.u}
+                </p>
+                <div className="mt-3 flex flex-wrap justify-center gap-2">
+                  <a
+                    className="btn-gold !px-3 !py-1.5 !text-xs"
+                    href={waFor(x.u, x.d)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    إرسال بواتساب
+                  </a>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(x.u);
+                      setCopied(true);
+                    }}
+                  >
+                    نسخ
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-2 border-t border-gold/15 pt-4">
             <a
-              className="btn-gold !px-4 !py-2 !text-sm"
+              className="btn-outline-navy !px-4 !py-2 !text-sm"
               href={appWa}
               target="_blank"
               rel="noreferrer"
             >
-              مشاركة التطبيق عبر واتساب
+              رابط عام (يكتشف الجهاز تلقائياً)
             </a>
-            <Button
-              variant="outline"
-              onClick={() => {
-                void navigator.clipboard.writeText(appUrl);
-                setCopied(true);
-              }}
-            >
-              {copied ? "✓ نُسخ" : "نسخ رابط التطبيق"}
-            </Button>
+            {copied && <span className="self-center text-xs text-green-700">✓ نُسخ الرابط</span>}
           </div>
         </div>
       )}
