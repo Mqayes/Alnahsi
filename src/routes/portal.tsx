@@ -135,8 +135,17 @@ function PortalPage() {
     e.preventDefault();
     setForgotLoading(true);
     setForgotError("");
-    const { error } = await getSupabase().auth.resetPasswordForEmail(forgotEmail.trim(), {
-      redirectTo: `${window.location.origin}/portal`,
+    const mail = forgotEmail.trim();
+    // رابط دخول واحد يعمل للمسجّل وغير المسجّل: يُنشئ الحساب إن لم يكن موجوداً،
+    // وعند الوصول يُطلب تعيين كلمة مرور جديدة (نيّة الاستعادة محفوظة محلياً)
+    try {
+      window.localStorage.setItem("alnahsi_pw_reset_intent", "1");
+    } catch {
+      /* ignore */
+    }
+    const { error } = await getSupabase().auth.signInWithOtp({
+      email: mail,
+      options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/portal` },
     });
     if (error) setForgotError(error.message);
     else setForgotSent(true);
@@ -388,8 +397,8 @@ function PortalPage() {
             {forgotSent ? (
               <p className="text-center text-sm text-navy/70">
                 {lang === "en"
-                  ? "Check your email for a reset link."
-                  : "تحقق من بريدك الإلكتروني للحصول على رابط إعادة التعيين."}
+                  ? "✓ We emailed you a sign-in link. Open it, then set your new password. If you were not registered, your account has been created."
+                  : "✓ أرسلنا إلى بريدك رابط دخول. افتحه ثم عيّن كلمة مرورك الجديدة. وإن لم تكن مسجّلاً فقد أُنشئ حسابك الآن."}
               </p>
             ) : (
               <>
