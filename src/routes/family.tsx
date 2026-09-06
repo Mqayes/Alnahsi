@@ -12,6 +12,7 @@ import { MyProfile } from "@/components/member/MyProfile";
 import { MyBranch } from "@/components/member/MyBranch";
 import { MyPosts } from "@/components/member/MyPosts";
 import { FamilyCalendar } from "@/components/member/FamilyCalendar";
+import { OnThisDay } from "@/components/member/OnThisDay";
 import { PrivacyTab } from "@/components/member/PrivacyTab";
 import { MyArchive } from "@/components/member/MyArchive";
 import { Ornament } from "@/components/site/Ornament";
@@ -144,6 +145,9 @@ function FamilyPortal() {
           </TabsList>
 
           <TabsContent value="profile" className="mt-8">
+            <div className="mb-5">
+              <OnThisDay ar={lang !== "en"} limit={4} />
+            </div>
             <MyProfile ar={lang !== "en"} />
           </TabsContent>
           <TabsContent value="branch" className="mt-8">
@@ -159,6 +163,9 @@ function FamilyPortal() {
             <PrivacyTab ar={lang !== "en"} />
           </TabsContent>
           <TabsContent value="calendar" className="mt-8">
+            <div className="mb-4">
+              <OnThisDay ar={lang !== "en"} />
+            </div>
             <FamilyCalendar ar={lang !== "en"} />
           </TabsContent>
           <TabsContent value="news" className="mt-8">

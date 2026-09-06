@@ -7,6 +7,8 @@ export const translations = {
     businesses: { en: "Legacy", ar: "إرثنا" },
     gallery: { en: "Archive", ar: "الأرشيف" },
     tree: { en: "Family Tree", ar: "شجرة العائلة" },
+    journey: { en: "Journey", ar: "رحلة العائلة" },
+    games: { en: "Majlis", ar: "المجلس" },
     news: { en: "News", ar: "الأخبار" },
     blog: { en: "Blogs", ar: "المدونات" },
     occasions: { en: "Occasions", ar: "المناسبات" },

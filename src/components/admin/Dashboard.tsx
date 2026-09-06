@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { DbUpgrade } from "@/components/admin/DbUpgrade";
+import { OnThisDay } from "@/components/member/OnThisDay";
 
 type Stats = {
   members: number;
@@ -174,6 +176,8 @@ export function Dashboard({
         <Card label="أخبار منشورة" value={s?.news ?? "…"} tab="news" tone="navy" />
         <Card label="حسابات موقوفة" value={s?.suspended ?? "…"} tab="users" tone="navy" />
       </div>
+
+      <OnThisDay ar limit={5} />
 
       <div className="premium-card border-amber-300/60 p-5">
         <div className="flex items-center justify-between">

@@ -166,6 +166,20 @@ const GROUPS: Group[] = [
     fields: [
       { key: "page_story", ar: "قصتنا", en: "Our story", type: "toggle", def: "true" },
       { key: "page_tree", ar: "شجرة العائلة", en: "Family tree", type: "toggle", def: "true" },
+      {
+        key: "page_journey",
+        ar: "رحلة العائلة (الخريطة)",
+        en: "Journey map",
+        type: "toggle",
+        def: "true",
+      },
+      {
+        key: "page_games",
+        ar: "مجلس العائلة (الألعاب)",
+        en: "Family majlis (games)",
+        type: "toggle",
+        def: "true",
+      },
       { key: "page_businesses", ar: "الإرث", en: "Legacy", type: "toggle", def: "true" },
       { key: "page_gallery", ar: "الأرشيف", en: "Archive", type: "toggle", def: "true" },
       { key: "page_news", ar: "الأخبار", en: "News", type: "toggle", def: "true" },

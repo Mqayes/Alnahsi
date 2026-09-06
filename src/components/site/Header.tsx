@@ -12,6 +12,8 @@ const NAV_ALL = [
   { to: "/businesses", key: "businesses" as const },
   { to: "/gallery", key: "gallery" as const },
   { to: "/tree", key: "tree" as const },
+  { to: "/journey", key: "journey" as const },
+  { to: "/games", key: "games" as const },
   { to: "/news", key: "news" as const },
   { to: "/blog", key: "blog" as const },
   { to: "/occasions", key: "occasions" as const },
@@ -23,6 +25,8 @@ export function Header() {
   const location = useLocation();
   const sc = useSiteContent();
   const PAGE_KEY: Record<string, string> = {
+    journey: "page_journey",
+    games: "page_games",
     story: "page_story",
     tree: "page_tree",
     businesses: "page_businesses",
