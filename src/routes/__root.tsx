@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Header } from "@/components/site/Header";
 import { MaintenanceGate } from "@/components/site/MaintenanceGate";
+import { SiteNotice } from "@/components/site/SiteNotice";
 import { PwaSetup } from "@/components/site/PwaSetup";
 import { Footer } from "@/components/site/Footer";
 
@@ -193,6 +194,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <Header />
+        <SiteNotice />
         <main className="min-h-screen">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <MaintenanceGate>

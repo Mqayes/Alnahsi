@@ -15,7 +15,6 @@ import { Route as OurStoryRouteImport } from './routes/our-story'
 import { Route as OccasionsRouteImport } from './routes/occasions'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as MyBlogRouteImport } from './routes/my-blog'
-import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as FamilyRouteImport } from './routes/family'
@@ -55,11 +54,6 @@ const NewsRoute = NewsRouteImport.update({
 const MyBlogRoute = MyBlogRouteImport.update({
   id: '/my-blog',
   path: '/my-blog',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JourneyRoute = JourneyRouteImport.update({
-  id: '/journey',
-  path: '/journey',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesRoute = GamesRouteImport.update({
@@ -123,7 +117,6 @@ export interface FileRoutesByFullPath {
   '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
   '/games': typeof GamesRoute
-  '/journey': typeof JourneyRoute
   '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
   '/occasions': typeof OccasionsRoute
@@ -142,7 +135,6 @@ export interface FileRoutesByTo {
   '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
   '/games': typeof GamesRoute
-  '/journey': typeof JourneyRoute
   '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
   '/occasions': typeof OccasionsRoute
@@ -162,7 +154,6 @@ export interface FileRoutesById {
   '/family': typeof FamilyRoute
   '/gallery': typeof GalleryRoute
   '/games': typeof GamesRoute
-  '/journey': typeof JourneyRoute
   '/my-blog': typeof MyBlogRoute
   '/news': typeof NewsRoute
   '/occasions': typeof OccasionsRoute
@@ -183,7 +174,6 @@ export interface FileRouteTypes {
     | '/family'
     | '/gallery'
     | '/games'
-    | '/journey'
     | '/my-blog'
     | '/news'
     | '/occasions'
@@ -202,7 +192,6 @@ export interface FileRouteTypes {
     | '/family'
     | '/gallery'
     | '/games'
-    | '/journey'
     | '/my-blog'
     | '/news'
     | '/occasions'
@@ -221,7 +210,6 @@ export interface FileRouteTypes {
     | '/family'
     | '/gallery'
     | '/games'
-    | '/journey'
     | '/my-blog'
     | '/news'
     | '/occasions'
@@ -241,7 +229,6 @@ export interface RootRouteChildren {
   FamilyRoute: typeof FamilyRoute
   GalleryRoute: typeof GalleryRoute
   GamesRoute: typeof GamesRoute
-  JourneyRoute: typeof JourneyRoute
   MyBlogRoute: typeof MyBlogRoute
   NewsRoute: typeof NewsRoute
   OccasionsRoute: typeof OccasionsRoute
@@ -293,13 +280,6 @@ declare module '@tanstack/react-router' {
       path: '/my-blog'
       fullPath: '/my-blog'
       preLoaderRoute: typeof MyBlogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/journey': {
-      id: '/journey'
-      path: '/journey'
-      fullPath: '/journey'
-      preLoaderRoute: typeof JourneyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games': {
@@ -385,7 +365,6 @@ const rootRouteChildren: RootRouteChildren = {
   FamilyRoute: FamilyRoute,
   GalleryRoute: GalleryRoute,
   GamesRoute: GamesRoute,
-  JourneyRoute: JourneyRoute,
   MyBlogRoute: MyBlogRoute,
   NewsRoute: NewsRoute,
   OccasionsRoute: OccasionsRoute,

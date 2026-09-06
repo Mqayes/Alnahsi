@@ -12,7 +12,6 @@ const NAV_ALL = [
   { to: "/businesses", key: "businesses" as const },
   { to: "/gallery", key: "gallery" as const },
   { to: "/tree", key: "tree" as const },
-  { to: "/journey", key: "journey" as const },
   { to: "/games", key: "games" as const },
   { to: "/news", key: "news" as const },
   { to: "/blog", key: "blog" as const },
@@ -239,12 +238,18 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="border-t border-gold/20 bg-parchment/98 lg:hidden">
-          <nav className="flex flex-col px-6 py-6">
+        <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain border-t border-gold/20 bg-parchment/98 lg:hidden">
+          <nav className="flex flex-col px-6 pb-10 pt-4">
+            {signedIn && isStaff && (
+              <Link to="/admin" onClick={() => setOpen(false)} className="btn-gold mb-4">
+                ⚙ {lang === "en" ? "Dashboard" : "لوحة التحكم"}
+              </Link>
+            )}
             {navItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
+                onClick={() => setOpen(false)}
                 className="border-b border-gold/20 py-3.5 font-arabic-body text-base font-semibold text-navy"
               >
                 {t(translations.nav[item.key], lang)}

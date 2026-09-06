@@ -54,7 +54,7 @@ export function NewsTicker() {
         <Link
           key={n.id}
           to="/news"
-          className="mx-6 inline-flex shrink-0 items-center gap-2 text-[13px] text-cream/90 transition-colors hover:text-gold"
+          className="mx-7 inline-flex shrink-0 items-center gap-2 text-[15px] text-cream/95 transition-colors hover:text-gold md:text-base"
         >
           <span aria-hidden="true" className="text-gold">
             ◆
@@ -68,7 +68,7 @@ export function NewsTicker() {
   return (
     <div className="border-b border-gold/20 bg-navy" role="region" aria-label={label}>
       <div className="mx-auto flex max-w-7xl items-stretch">
-        <span className="z-10 flex shrink-0 items-center gap-2 bg-gold px-3 py-1.5 text-[11px] font-bold text-navy md:px-4">
+        <span className="z-10 flex shrink-0 items-center gap-2 bg-gold px-4 py-2.5 text-[13px] font-bold text-navy md:px-5 md:text-sm">
           <span aria-hidden="true" className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-navy/70" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-navy" />
@@ -77,9 +77,9 @@ export function NewsTicker() {
         </span>
 
         {reduceMotion ? (
-          <div className="flex min-w-0 flex-1 items-center overflow-x-auto py-1.5">{strip}</div>
+          <div className="flex min-w-0 flex-1 items-center overflow-x-auto py-2.5">{strip}</div>
         ) : (
-          <div className="ticker-viewport group min-w-0 flex-1 py-1.5">
+          <div className="ticker-viewport group min-w-0 flex-1 py-2.5">
             <div
               className={`ticker-track ${ar ? "ticker-rtl" : "ticker-ltr"}`}
               style={{ "--ticker-duration": `${duration}s` } as CSSProperties}

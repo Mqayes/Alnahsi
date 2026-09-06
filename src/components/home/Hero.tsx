@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { useSiteContent } from "@/lib/site-content";
-import { HeroNotice } from "@/components/home/HeroNotice";
 import hero from "@/assets/hero-heritage.webp";
 
 export function Hero() {
@@ -30,7 +29,6 @@ export function Hero() {
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-12 pt-36 text-center md:pb-20">
-        <HeroNotice />
         <div className="hero-nasab animate-fade-in delay-200">
           <b>{ar ? "خثعم" : "Khath'am"}</b>
           <i>◆</i>
