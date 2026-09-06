@@ -316,9 +316,8 @@ function PortalPage() {
   };
 
   return (
-    <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-cream py-32 text-navy">
+    <section className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-b from-parchment to-cream pb-24 pt-44 text-navy">
       <div className="absolute inset-0 -z-10 opacity-[0.07] [background-image:radial-gradient(circle_at_1px_1px,#D4AF37_1px,transparent_0)] [background-size:36px_36px]" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-navy via-navy to-navy-deep" />
 
       <div className="mx-auto w-full max-w-md px-6">
         <div className="text-center">
@@ -607,8 +606,6 @@ function PortalPage() {
             </button>
           </div>
         )}
-
-        <p className="mt-10 text-center text-xs italic text-navy/45">{t(c.notice, lang)}</p>
 
         <div className="mt-10 text-center">
           <Link

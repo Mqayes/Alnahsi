@@ -287,7 +287,7 @@ export const translations = {
     forgot: { en: "Forgot password?", ar: "نسيت كلمة السر؟" },
     notice: {
       en: "Family Portal is coming soon. Sign-in and the private archive will be available in the next release.",
-      ar: "بوابة العائلة قادمة قريباً. سيتاح تسجيل الدخول والأرشيف الخاص في الإصدار القادم.",
+      ar: "الدخول لأفراد العائلة المسجّلين. إن واجهتك مشكلة راسلنا عبر زر «راسلنا» في أعلى الموقع.",
     },
   },
   news: {
