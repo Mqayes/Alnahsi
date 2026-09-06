@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 
@@ -61,21 +62,17 @@ export function PrivacyTab({ ar }: { ar: boolean }) {
       .maybeSingle();
     setMe(p as Me);
     if (!p?.member_id) return;
-    const [{ data: mm }, { data: all }, { data: sh }] = await Promise.all([
+    const [{ data: mm }, { rows: all }, { data: sh }] = await Promise.all([
       sb
         .from("family_members")
         .select("id, full_name_ar, full_name_en, vis_name, vis_photo, vis_details, vis_contact")
         .eq("id", p.member_id)
         .maybeSingle(),
-      sb
-        .from("tree_public")
-        .select("id, full_name_ar, full_name_en")
-        .neq("id", p.member_id)
-        .order("full_name_ar"),
+      fetchTreeRows<Person>("id, full_name_ar, full_name_en"),
       sb.from("member_shares").select("viewer_member").eq("owner_member", p.member_id),
     ]);
     setM(mm as M);
-    setPeople((all ?? []) as Person[]);
+    setPeople(all.filter((x) => x.id !== p.member_id));
     setShared(new Set(((sh ?? []) as { viewer_member: string }[]).map((r) => r.viewer_member)));
   };
   useEffect(() => {

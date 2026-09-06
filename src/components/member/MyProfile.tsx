@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 
@@ -47,13 +48,10 @@ export function MyProfile({ ar }: { ar: boolean }) {
         .maybeSingle();
       setM(mm as Member);
     } else {
-      const { data: all } = await sb
-        .from("tree_public")
-        .select(
-          "id, full_name_ar, full_name_en, city, phone, occupation, birth_year, photo_url, generation, spouse_name, notes",
-        )
-        .order("full_name_ar");
-      setCandidates((all ?? []) as Member[]);
+      const { rows: all } = await fetchTreeRows<Member>(
+        "id, full_name_ar, full_name_en, city, phone, occupation, birth_year, photo_url, generation, spouse_name, notes",
+      );
+      setCandidates(all);
     }
   };
   useEffect(() => {

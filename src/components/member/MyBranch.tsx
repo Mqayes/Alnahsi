@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { getSupabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { composeFullName, type LineageRow } from "@/lib/lineage";
@@ -43,9 +44,9 @@ export function MyBranch({ ar }: { ar: boolean }) {
     } = await sb.auth.getSession();
     if (!session) return;
     setMeId(session.user.id);
-    const [{ data: p }, { data: all }, { data: r }] = await Promise.all([
+    const [{ data: p }, { rows: all }, { data: r }] = await Promise.all([
       sb.from("profiles").select("member_id").eq("id", session.user.id).maybeSingle(),
-      sb.from("tree_public").select("*"),
+      fetchTreeRows<M>(),
       sb
         .from("join_requests")
         .select("id, full_name_ar, full_name_en, status, created_at, event_kind")
@@ -53,7 +54,7 @@ export function MyBranch({ ar }: { ar: boolean }) {
         .order("created_at", { ascending: false }),
     ]);
     setMyMember(p?.member_id ?? null);
-    setRows((all ?? []) as M[]);
+    setRows(all);
     setReqs((r ?? []) as Req[]);
   };
   useEffect(() => {

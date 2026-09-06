@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { getSupabase } from "@/lib/supabase";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { buildHighlights } from "@/lib/onthisday";
 import type { PersonRow } from "@/components/tree/PersonCard";
 
 export function OnThisDay({ ar, limit = 6 }: { ar: boolean; limit?: number }) {
   const [rows, setRows] = useState<PersonRow[]>([]);
   useEffect(() => {
-    getSupabase()
-      .from("tree_public")
-      .select("*")
-      .then(({ data }) => setRows((data ?? []) as PersonRow[]));
+    void fetchTreeRows<PersonRow>().then(({ rows: r }) => setRows(r));
   }, []);
   const items = useMemo(() => buildHighlights(rows, ar).slice(0, limit), [rows, ar, limit]);
   if (items.length === 0) return null;

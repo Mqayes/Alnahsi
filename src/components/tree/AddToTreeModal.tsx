@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/lib/lineage";
 
@@ -28,13 +29,12 @@ export function AddToTreeModal({
       setLoadingTree(false);
       return;
     }
-    getSupabase()
-      .from("tree_public")
-      .select("id, full_name_ar, full_name_en, first_name, parent_id, generation, gender")
-      .then(({ data }) => {
-        setById(Object.fromEntries(((data ?? []) as LineageRow[]).map((r) => [r.id, r])));
-        setLoadingTree(false);
-      });
+    void fetchTreeRows<LineageRow>(
+      "id, full_name_ar, full_name_en, first_name, parent_id, generation, gender",
+    ).then(({ rows }) => {
+      setById(Object.fromEntries(rows.map((r) => [r.id, r])));
+      setLoadingTree(false);
+    });
   }, [byIdProp]);
 
   const initialParent = parent.id === "root" ? null : byId[parent.id] ? parent.id : null;

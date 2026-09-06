@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getSupabase } from "@/lib/supabase";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { relationBetween, type LineageRow } from "@/lib/lineage";
 import type { PersonRow } from "@/components/tree/PersonCard";
 
@@ -14,10 +14,7 @@ export function GuessWho({ ar }: { ar: boolean }) {
   const [best, setBest] = useState(0);
 
   useEffect(() => {
-    getSupabase()
-      .from("tree_public")
-      .select("*")
-      .then(({ data }) => setRows((data ?? []) as PersonRow[]));
+    void fetchTreeRows<PersonRow>().then(({ rows: r }) => setRows(r));
     try {
       setBest(Number(localStorage.getItem("alnahsi_guess_best") ?? 0));
     } catch {

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { Ornament } from "@/components/site/Ornament";
@@ -303,12 +304,12 @@ function TreePage() {
         .eq("key", "generation_base")
         .maybeSingle();
       if (gb?.value) setGenerationBase(Number(gb.value));
-      const { data: rows, error } = await sb.from("tree_public").select("*");
+      const { rows, error } = await fetchTreeRows<Row & PersonRow>();
       if (cancelled || error) return;
-      const built = buildFromRows((rows ?? []) as Row[]);
-      setDbRows((rows ?? []) as PersonRow[]);
+      const built = buildFromRows(rows as Row[]);
+      setDbRows(rows as PersonRow[]);
       setRowsById(
-        Object.fromEntries(((rows ?? []) as Row[]).map((r) => [r.id, r as unknown as LineageRow])),
+        Object.fromEntries((rows as Row[]).map((r) => [r.id, r as unknown as LineageRow])),
       );
       if (built) {
         setData(built);

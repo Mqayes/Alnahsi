@@ -1,15 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { getSupabase } from "@/lib/supabase";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { upcomingEvents } from "@/lib/gedcom";
 import type { PersonRow } from "@/components/tree/PersonCard";
 
 export function FamilyCalendar({ ar }: { ar: boolean }) {
   const [rows, setRows] = useState<PersonRow[]>([]);
   useEffect(() => {
-    getSupabase()
-      .from("tree_public")
-      .select("*")
-      .then(({ data }) => setRows((data ?? []) as PersonRow[]));
+    void fetchTreeRows<PersonRow>().then(({ rows: r }) => setRows(r));
   }, []);
   const events = useMemo(() => upcomingEvents(rows), [rows]);
   const birthdays = events.filter((e) => e.kind === "birthday").slice(0, 12);

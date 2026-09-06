@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { fetchTreeRows } from "@/lib/tree-source";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useSiteContent } from "@/lib/site-content";
@@ -56,53 +57,50 @@ export function NewsTicker() {
     if (!isSupabaseConfigured()) setLoaded((l) => ({ ...l, events: true }));
     if (isSupabaseConfigured()) {
       const y = new Date().getFullYear();
-      void getSupabase()
-        .from("tree_public")
-        .select(
-          "id, full_name_ar, full_name_en, birth_year, death_year, marriage_year, is_deceased, gender",
-        )
-        .then(({ data }) => {
-          if (cancelled || !data) return;
-          type R = {
-            id: string;
-            full_name_ar: string | null;
-            full_name_en: string | null;
-            birth_year: number | null;
-            death_year: number | null;
-            marriage_year: number | null;
-            is_deceased: boolean | null;
-            gender: string | null;
-          };
-          const out: { id: string; text: string; icon: string; w: number }[] = [];
-          (data as R[]).forEach((r) => {
-            const nm = r.full_name_ar || r.full_name_en;
-            if (!nm) return;
-            const first = nm.split(/\s+/).slice(0, 3).join(" ");
-            if (r.birth_year && y - r.birth_year <= 1 && !r.is_deceased)
-              out.push({
-                id: r.id + "b",
-                icon: "🍼",
-                w: y - r.birth_year,
-                text: `مبارك المولود ${first}`,
-              });
-            if (r.marriage_year && y - r.marriage_year <= 1)
-              out.push({
-                id: r.id + "m",
-                icon: "💍",
-                w: y - r.marriage_year,
-                text: `مبارك زواج ${first}`,
-              });
-            if (r.death_year && y - r.death_year <= 1)
-              out.push({
-                id: r.id + "d",
-                icon: "🕊",
-                w: y - r.death_year,
-                text: `${first} — رحمه الله`,
-              });
-          });
-          setEvents(out.sort((a, b) => a.w - b.w).slice(0, 6));
-          setLoaded((l) => ({ ...l, events: true }));
+      void fetchTreeRows(
+        "id, full_name_ar, full_name_en, birth_year, death_year, marriage_year, is_deceased, gender",
+      ).then(({ rows: data }) => {
+        if (cancelled || !data) return;
+        type R = {
+          id: string;
+          full_name_ar: string | null;
+          full_name_en: string | null;
+          birth_year: number | null;
+          death_year: number | null;
+          marriage_year: number | null;
+          is_deceased: boolean | null;
+          gender: string | null;
+        };
+        const out: { id: string; text: string; icon: string; w: number }[] = [];
+        (data as R[]).forEach((r) => {
+          const nm = r.full_name_ar || r.full_name_en;
+          if (!nm) return;
+          const first = nm.split(/\s+/).slice(0, 3).join(" ");
+          if (r.birth_year && y - r.birth_year <= 1 && !r.is_deceased)
+            out.push({
+              id: r.id + "b",
+              icon: "🍼",
+              w: y - r.birth_year,
+              text: `مبارك المولود ${first}`,
+            });
+          if (r.marriage_year && y - r.marriage_year <= 1)
+            out.push({
+              id: r.id + "m",
+              icon: "💍",
+              w: y - r.marriage_year,
+              text: `مبارك زواج ${first}`,
+            });
+          if (r.death_year && y - r.death_year <= 1)
+            out.push({
+              id: r.id + "d",
+              icon: "🕊",
+              w: y - r.death_year,
+              text: `${first} — رحمه الله`,
+            });
         });
+        setEvents(out.sort((a, b) => a.w - b.w).slice(0, 6));
+        setLoaded((l) => ({ ...l, events: true }));
+      });
     }
     return () => {
       cancelled = true;
