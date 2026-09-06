@@ -54,6 +54,9 @@ export function Footer() {
             <Link to="/contact" className="block hover:text-gold">
               {t(translations.nav.contact, lang)}
             </Link>
+            <a href="/app" className="block transition-colors hover:text-gold">
+              📲 {lang === "en" ? "Get the app" : "حمّل التطبيق"}
+            </a>
             <Link to="/portal" className="block text-gold hover:text-navy">
               {t(translations.nav.portal, lang)}
             </Link>

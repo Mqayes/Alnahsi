@@ -6,7 +6,7 @@ import type { PersonRow } from "@/components/tree/PersonCard";
 
 export function TreeToolsTab({ ar }: { ar: boolean }) {
   const [rows, setRows] = useState<PersonRow[]>([]);
-  const [tab, setTab] = useState<"audit" | "calendar" | "export" | "invite">("audit");
+  const [tab, setTab] = useState<"audit" | "calendar" | "export" | "invite" | "app">("audit");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -56,6 +56,8 @@ export function TreeToolsTab({ ar }: { ar: boolean }) {
   };
 
   const joinUrl = typeof window !== "undefined" ? `${window.location.origin}/tree?join=1` : "";
+  const appUrl = typeof window !== "undefined" ? `${window.location.origin}/app` : "";
+  const appWa = `https://wa.me/?text=${encodeURIComponent("تطبيق عائلة آل بوخف الناهسي 🌳\nشجرة العائلة والأخبار والمناسبات في تطبيق واحد.\nافتح الرابط وثبّته على جوالك بخطوتين:\n" + appUrl)}`;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(joinUrl)}`;
 
   const TabBtn = ({ id, label }: { id: typeof tab; label: string }) => (
@@ -93,6 +95,7 @@ export function TreeToolsTab({ ar }: { ar: boolean }) {
           <TabBtn id="calendar" label="📅 تقويم المناسبات" />
           <TabBtn id="export" label="⬇ تصدير" />
           <TabBtn id="invite" label="📱 دعوة بـ QR" />
+          <TabBtn id="app" label="📲 مشاركة التطبيق" />
         </div>
       </div>
 
@@ -193,6 +196,44 @@ export function TreeToolsTab({ ar }: { ar: boolean }) {
             >
               مشاركة عبر واتساب
             </a>
+          </div>
+        </div>
+      )}
+      {tab === "app" && (
+        <div className="premium-card p-5 text-center">
+          <img src="/icon-192.png" alt="" className="mx-auto h-16 w-16 rounded-2xl" />
+          <p className="mt-3 text-sm text-navy/70">
+            رابط تحميل التطبيق — يفتح صفحة تشرح التثبيت خطوة بخطوة حسب جهاز المستقبِل (آيفون /
+            أندرويد).
+          </p>
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(appUrl)}`}
+            alt="QR"
+            className="mx-auto mt-4 rounded-xl border border-gold/30 bg-white p-2"
+            width={220}
+            height={220}
+          />
+          <p className="mt-3 break-all text-xs text-navy/50" dir="ltr">
+            {appUrl}
+          </p>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <a
+              className="btn-gold !px-4 !py-2 !text-sm"
+              href={appWa}
+              target="_blank"
+              rel="noreferrer"
+            >
+              مشاركة التطبيق عبر واتساب
+            </a>
+            <Button
+              variant="outline"
+              onClick={() => {
+                void navigator.clipboard.writeText(appUrl);
+                setCopied(true);
+              }}
+            >
+              {copied ? "✓ نُسخ" : "نسخ رابط التطبيق"}
+            </Button>
           </div>
         </div>
       )}
