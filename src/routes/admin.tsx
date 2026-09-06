@@ -215,7 +215,7 @@ function AdminPage() {
   const visible = NAV.filter((n) => (n.id === "users" ? role !== "moderator" : allowed(n)));
 
   return (
-    <section dir={ar ? "rtl" : "ltr"} className="mx-auto max-w-7xl px-4 pb-20 pt-28 md:px-6">
+    <section dir={ar ? "rtl" : "ltr"} className="mx-auto max-w-7xl px-4 pb-20 pt-40 md:px-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <span className="eyebrow-pill">{L("لوحة التحكم", "Control panel")}</span>

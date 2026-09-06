@@ -97,7 +97,7 @@ function FamilyPortal() {
   }
 
   return (
-    <section className="min-h-screen bg-parchment pb-24 pt-36">
+    <section className="min-h-screen bg-parchment pb-24 pt-48">
       <div className="mx-auto max-w-6xl px-6">
         {/* Welcome header */}
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4 border-b border-gold/20 pb-8">

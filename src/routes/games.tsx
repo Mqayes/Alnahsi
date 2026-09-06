@@ -24,7 +24,7 @@ function GamesPage() {
   const [tab, setTab] = useState<"guess" | "baloot">("guess");
 
   return (
-    <main dir={ar ? "rtl" : "ltr"} className="min-h-screen bg-parchment px-4 pb-20 pt-28">
+    <main dir={ar ? "rtl" : "ltr"} className="min-h-screen bg-parchment px-4 pb-20 pt-40">
       <div className="mx-auto max-w-3xl text-center">
         <span className="eyebrow-pill">{ar ? "مجلس العائلة" : "Family majlis"}</span>
         <h1 className="mt-4 font-arabic text-4xl text-navy md:text-5xl">

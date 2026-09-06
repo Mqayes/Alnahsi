@@ -357,7 +357,7 @@ function TreePage() {
   return (
     <main className="min-h-screen bg-parchment" dir={ar ? "rtl" : "ltr"}>
       {/* Header */}
-      <section className="emerald-band pattern-bg pb-12 pt-36 text-center">
+      <section className="emerald-band pattern-bg pb-12 pt-48 text-center">
         <div className="mx-auto max-w-4xl px-6">
           <span className="eyebrow-pill">✦ {ar ? "النسب" : "Lineage"}</span>
           <h1 className="mt-5 font-arabic text-5xl text-[#F5EDD8] md:text-7xl">

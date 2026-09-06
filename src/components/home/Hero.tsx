@@ -28,7 +28,7 @@ export function Hero() {
         <div className="hero-glow" />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-12 pt-36 text-center md:pb-20">
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-5 pb-12 pt-48 text-center md:pb-20 md:pt-52">
         <div className="hero-nasab animate-fade-in delay-200">
           <b>{ar ? "ناهس شهران" : "Nahas Shahran"}</b>
           <i>◆</i>

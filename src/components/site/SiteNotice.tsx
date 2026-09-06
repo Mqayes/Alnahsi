@@ -46,19 +46,23 @@ export function SiteNotice() {
     <>
       <div
         dir={ar ? "rtl" : "ltr"}
-        className="border-b border-gold/30 bg-gradient-to-l from-[#FFF3C4] via-[#FFF8E6] to-[#FAF0D0]"
+        className="border-b border-gold/30 bg-[#FFF6DA]/97 backdrop-blur-sm"
       >
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-2.5 md:px-6">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-2 md:gap-3 md:px-6">
           <span className="text-lg">📣</span>
           <div className="min-w-0 flex-1">
-            <span className="font-arabic text-sm font-bold text-navy md:text-base">{title}</span>
+            <span className="hidden font-arabic text-sm font-bold text-navy sm:inline md:text-base">
+              {title}
+            </span>
             <span className="mx-2 hidden text-navy/40 md:inline">·</span>
-            <span className="block text-xs text-navy/70 md:inline md:text-sm">{text}</span>
+            <span className="line-clamp-2 block text-[11px] leading-snug text-navy/75 sm:line-clamp-1 md:inline md:text-sm">
+              {text}
+            </span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={() => setOpen(true)}
-              className="rounded-lg bg-navy px-3 py-1.5 text-xs font-bold text-white hover:bg-navy/90"
+              className="whitespace-nowrap rounded-lg bg-navy px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-navy/90 md:px-3 md:text-xs"
             >
               {ar ? "✉ راسلنا" : "✉ Message"}
             </button>
@@ -67,7 +71,7 @@ export function SiteNotice() {
                 href={wa}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-3 py-1.5 text-xs font-bold text-navy"
+                className="whitespace-nowrap rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-2.5 py-1.5 text-[11px] font-bold text-navy md:px-3 md:text-xs"
               >
                 {ar ? "واتساب" : "WhatsApp"}
               </a>

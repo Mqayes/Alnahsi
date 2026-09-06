@@ -77,7 +77,7 @@ function AppInstallPage() {
   );
 
   return (
-    <main dir={ar ? "rtl" : "ltr"} className="min-h-screen bg-parchment px-5 pb-20 pt-28">
+    <main dir={ar ? "rtl" : "ltr"} className="min-h-screen bg-parchment px-5 pb-20 pt-40">
       <div className="mx-auto max-w-lg text-center">
         <img
           src="/icon-512.png"
