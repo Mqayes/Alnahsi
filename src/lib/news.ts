@@ -71,7 +71,19 @@ export async function fetchNews(): Promise<FetchNewsResult> {
   const supabase = getSupabase();
   let lastError: string | undefined;
 
-  for (const table of NEWS_TABLES) {
+  // نتذكّر الجدول الذي نجح سابقاً لتفادي محاولات فاشلة بطيئة
+  let tables: readonly string[] = NEWS_TABLES;
+  try {
+    const known =
+      typeof window !== "undefined" ? window.localStorage.getItem("alnahsi_news_table") : null;
+    if (known && (NEWS_TABLES as readonly string[]).includes(known)) {
+      tables = [known, ...NEWS_TABLES.filter((t) => t !== known)];
+    }
+  } catch {
+    /* ignore */
+  }
+
+  for (const table of tables) {
     try {
       const { data, error } = await withTimeout(
         supabase
@@ -79,7 +91,7 @@ export async function fetchNews(): Promise<FetchNewsResult> {
           .select("*")
           .or("status.eq.published,status.is.null")
           .order("created_at", { ascending: false }),
-        10_000,
+        4_000,
         `Loading ${table}`,
       );
 

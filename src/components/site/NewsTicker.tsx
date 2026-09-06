@@ -17,16 +17,43 @@ export function NewsTicker() {
   const sc = useSiteContent();
   const [items, setItems] = useState<NewsItem[]>([]);
   const [events, setEvents] = useState<{ id: string; text: string; icon: string }[]>([]);
+
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [loaded, setLoaded] = useState({ news: false, events: false });
+
+  // عرض فوري من ذاكرة الجلسة، ثم تحديث من الخادم
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("alnahsi_ticker");
+      if (raw) {
+        const c = JSON.parse(raw) as {
+          items: NewsItem[];
+          events: { id: string; text: string; icon: string }[];
+        };
+        if (c.items?.length || c.events?.length) {
+          setItems(c.items ?? []);
+          setEvents(c.events ?? []);
+          setLoaded({ news: true, events: true });
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const enabled = sc["ticker_enabled"] !== "false";
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
-    void fetchNews().then((res) => {
-      if (!cancelled) setItems(res.items.slice(0, 5));
-    });
+    void fetchNews()
+      .then((res) => {
+        if (!cancelled) setItems(res.items.slice(0, 5));
+      })
+      .finally(() => {
+        if (!cancelled) setLoaded((l) => ({ ...l, news: true }));
+      });
+    if (!isSupabaseConfigured()) setLoaded((l) => ({ ...l, events: true }));
     if (isSupabaseConfigured()) {
       const y = new Date().getFullYear();
       void getSupabase()
@@ -74,6 +101,7 @@ export function NewsTicker() {
               });
           });
           setEvents(out.sort((a, b) => a.w - b.w).slice(0, 6));
+          setLoaded((l) => ({ ...l, events: true }));
         });
     }
     return () => {
@@ -90,7 +118,19 @@ export function NewsTicker() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  if (!enabled || (items.length === 0 && events.length === 0)) return null;
+  useEffect(() => {
+    if (!loaded.news || !loaded.events) return;
+    try {
+      sessionStorage.setItem("alnahsi_ticker", JSON.stringify({ items, events }));
+    } catch {
+      /* ignore */
+    }
+  }, [loaded, items, events]);
+
+  const settled = loaded.news && loaded.events;
+  const empty = items.length === 0 && events.length === 0;
+  if (!enabled) return null;
+  if (settled && empty) return null;
 
   const ar = lang === "ar";
   const label = ar ? "أخبار ومناسبات" : "News & events";
@@ -140,7 +180,17 @@ export function NewsTicker() {
           {label}
         </span>
 
-        {reduceMotion ? (
+        {!settled && empty ? (
+          <div className="flex min-w-0 flex-1 items-center gap-6 overflow-hidden py-2.5 ps-6">
+            {[64, 40, 52].map((w, i) => (
+              <span
+                key={i}
+                className="h-3 animate-pulse rounded bg-cream/20"
+                style={{ width: `${w}px` }}
+              />
+            ))}
+          </div>
+        ) : reduceMotion ? (
           <div className="flex min-w-0 flex-1 items-center overflow-x-auto py-2.5">{strip}</div>
         ) : (
           <div className="ticker-viewport group min-w-0 flex-1 py-2.5">
