@@ -201,6 +201,7 @@ function FamilyNewsTab({ lang }: { lang: string }) {
         setPosts((data ?? []) as (NewsPost & { is_private?: boolean })[]);
         setLoading(false);
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formatDate = (d: string) =>

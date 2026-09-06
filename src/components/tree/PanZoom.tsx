@@ -75,7 +75,9 @@ export function PanZoom({
     if (e.ctrlKey || e.metaKey) {
       e.preventDefault();
       const nz = clamp(zoom * (e.deltaY < 0 ? 1.1 : 0.9));
-      const rect = vp.current!.getBoundingClientRect();
+      const el = vp.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
       const mx = e.clientX - rect.left,
         my = e.clientY - rect.top;
       setPos({ x: mx - ((mx - pos.x) * nz) / zoom, y: my - ((my - pos.y) * nz) / zoom });

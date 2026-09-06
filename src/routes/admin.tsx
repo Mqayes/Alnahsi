@@ -195,6 +195,18 @@ function AdminPage() {
       perm: "approve_requests",
     },
     { id: "users", label: L("الحسابات والصلاحيات", "Accounts & roles"), icon: "👥" },
+    {
+      id: "inbox",
+      label: L("رسائل الأعضاء", "Member inbox"),
+      icon: "📬",
+      perm: "approve_requests",
+    },
+    {
+      id: "messages",
+      label: L("رسائل الموقع (دعم/تفعيل)", "Site messages"),
+      icon: "💬",
+      perm: "approve_requests",
+    },
     { id: "events", label: L("مناسبات العائلة", "Family events"), icon: "🎉", perm: "manage_news" },
     { id: "news", label: L("الأخبار", "News"), icon: "📰", perm: "manage_news" },
     {
@@ -219,9 +231,11 @@ function AdminPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <span className="eyebrow-pill">{L("لوحة التحكم", "Control panel")}</span>
-          <h1 className="mt-2 font-arabic text-3xl text-navy md:text-4xl">بيت آل بوخف الناهسي</h1>
+          <h1 className="mt-2 font-arabic text-3xl text-navy md:text-4xl">
+            {L("بيت آل بوخف الناهسي", "House of Al Bukhuf Alnahsi")}
+          </h1>
           <p className="mt-1 text-sm text-navy/60">
-            مسجّل الدخول:{" "}
+            {L("مسجّل الدخول:", "Signed in as:")}{" "}
             <b className="text-navy">{auth.profile.full_name ?? auth.profile.email}</b> ·{" "}
             <span className="text-gold">
               {role === "owner"
@@ -237,7 +251,7 @@ function AdminPage() {
             to="/"
             className="rounded-lg border border-gold/40 bg-white px-4 py-2 text-sm text-navy hover:bg-parchment"
           >
-            عرض الموقع
+            {L("عرض الموقع", "View site")}
           </Link>
           <Button variant="outline" onClick={handleSignOut}>
             تسجيل الخروج

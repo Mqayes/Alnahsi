@@ -103,7 +103,11 @@ export function MyArchive({ ar }: { ar: boolean }) {
   };
   const remove = async (f: F) => {
     if (!window.confirm(ar ? "حذف الملف؟" : "Delete file?")) return;
-    await getSupabase().storage.from("member-files").remove([f.path]);
+    const rm = await getSupabase().storage.from("member-files").remove([f.path]);
+    if (rm.error) {
+      setErr(rm.error.message);
+      return;
+    }
     const { error } = await getSupabase().from("member_files").delete().eq("id", f.id);
     if (error) setErr(error.message);
     else void load();

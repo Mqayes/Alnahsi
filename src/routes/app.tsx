@@ -60,6 +60,7 @@ function AppInstallPage() {
       window.removeEventListener("beforeinstallprompt", onPrompt);
       window.removeEventListener("appinstalled", onInstalled);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const url = typeof window !== "undefined" ? `${window.location.origin}/app` : "";
