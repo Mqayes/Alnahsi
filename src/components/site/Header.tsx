@@ -5,7 +5,6 @@ import { translations, t } from "@/lib/i18n/translations";
 import { useSiteContent } from "@/lib/site-content";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { NewsTicker } from "@/components/site/NewsTicker";
-import { SiteNotice } from "@/components/site/SiteNotice";
 
 const NAV_ALL = [
   { to: "/", key: "home" as const },
@@ -103,7 +102,6 @@ export function Header() {
       }`}
     >
       <NewsTicker />
-      <SiteNotice />
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:py-5">
         <Link to="/" className="group flex items-center gap-3">
           <span className="hero-kufi text-[1.35rem] text-gold transition-colors group-hover:text-navy md:text-2xl">

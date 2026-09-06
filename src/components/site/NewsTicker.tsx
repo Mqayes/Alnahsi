@@ -3,6 +3,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { useSiteContent } from "@/lib/site-content";
 import { fetchNews } from "@/lib/news";
+import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import type { NewsItem } from "@/lib/news-data";
 
 /**
@@ -15,6 +16,7 @@ export function NewsTicker() {
   const { lang } = useLang();
   const sc = useSiteContent();
   const [items, setItems] = useState<NewsItem[]>([]);
+  const [events, setEvents] = useState<{ id: string; text: string; icon: string }[]>([]);
   const [reduceMotion, setReduceMotion] = useState(false);
 
   const enabled = sc["ticker_enabled"] !== "false";
@@ -23,8 +25,57 @@ export function NewsTicker() {
     if (!enabled) return;
     let cancelled = false;
     void fetchNews().then((res) => {
-      if (!cancelled) setItems(res.items.slice(0, 8));
+      if (!cancelled) setItems(res.items.slice(0, 5));
     });
+    if (isSupabaseConfigured()) {
+      const y = new Date().getFullYear();
+      void getSupabase()
+        .from("tree_public")
+        .select(
+          "id, full_name_ar, full_name_en, birth_year, death_year, marriage_year, is_deceased, gender",
+        )
+        .then(({ data }) => {
+          if (cancelled || !data) return;
+          type R = {
+            id: string;
+            full_name_ar: string | null;
+            full_name_en: string | null;
+            birth_year: number | null;
+            death_year: number | null;
+            marriage_year: number | null;
+            is_deceased: boolean | null;
+            gender: string | null;
+          };
+          const out: { id: string; text: string; icon: string; w: number }[] = [];
+          (data as R[]).forEach((r) => {
+            const nm = r.full_name_ar || r.full_name_en;
+            if (!nm) return;
+            const first = nm.split(/\s+/).slice(0, 3).join(" ");
+            if (r.birth_year && y - r.birth_year <= 1 && !r.is_deceased)
+              out.push({
+                id: r.id + "b",
+                icon: "🍼",
+                w: y - r.birth_year,
+                text: `مبارك المولود ${first}`,
+              });
+            if (r.marriage_year && y - r.marriage_year <= 1)
+              out.push({
+                id: r.id + "m",
+                icon: "💍",
+                w: y - r.marriage_year,
+                text: `مبارك زواج ${first}`,
+              });
+            if (r.death_year && y - r.death_year <= 1)
+              out.push({
+                id: r.id + "d",
+                icon: "🕊",
+                w: y - r.death_year,
+                text: `${first} — رحمه الله`,
+              });
+          });
+          setEvents(out.sort((a, b) => a.w - b.w).slice(0, 6));
+        });
+    }
     return () => {
       cancelled = true;
     };
@@ -39,17 +90,30 @@ export function NewsTicker() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  if (!enabled || items.length === 0) return null;
+  if (!enabled || (items.length === 0 && events.length === 0)) return null;
 
   const ar = lang === "ar";
-  const label = ar ? "أخبار العائلة" : "Family news";
+  const label = ar ? "أخبار ومناسبات" : "News & events";
   const titleOf = (n: NewsItem) => (ar ? n.title_ar || n.title_en : n.title_en || n.title_ar);
 
   // نحو ٣٫٢ ثانية لكل خبر: سريع بما يكفي ليبدو حياً، بطيء بما يكفي ليُقرأ.
-  const duration = Math.max(12, items.length * 3.2);
+  const duration = Math.max(14, (items.length + events.length) * 3.4);
+
+  const shorten = (s: string, max = 60) =>
+    s.length > max ? s.slice(0, max - 1).trimEnd() + "…" : s;
 
   const strip = (
     <>
+      {events.map((e) => (
+        <Link
+          key={e.id}
+          to="/news"
+          className="mx-7 inline-flex shrink-0 items-center gap-2 text-[15px] font-semibold text-[#F0CC60] transition-colors hover:text-white md:text-base"
+        >
+          <span aria-hidden="true">{e.icon}</span>
+          <span className="whitespace-nowrap">{e.text}</span>
+        </Link>
+      ))}
       {items.map((n) => (
         <Link
           key={n.id}
@@ -59,7 +123,7 @@ export function NewsTicker() {
           <span aria-hidden="true" className="text-gold">
             ◆
           </span>
-          <span className="whitespace-nowrap">{titleOf(n)}</span>
+          <span className="whitespace-nowrap">{shorten(titleOf(n))}</span>
         </Link>
       ))}
     </>

@@ -197,14 +197,8 @@ function AdminPage() {
     { id: "users", label: L("الحسابات والصلاحيات", "Accounts & roles"), icon: "👥" },
     {
       id: "inbox",
-      label: L("رسائل الأعضاء", "Member inbox"),
+      label: L("الرسائل", "Messages"),
       icon: "📬",
-      perm: "approve_requests",
-    },
-    {
-      id: "messages",
-      label: L("رسائل الموقع (دعم/تفعيل)", "Site messages"),
-      icon: "💬",
       perm: "approve_requests",
     },
     { id: "events", label: L("مناسبات العائلة", "Family events"), icon: "🎉", perm: "manage_news" },

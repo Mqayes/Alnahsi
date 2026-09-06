@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { translations, t } from "@/lib/i18n/translations";
 import { useSiteContent } from "@/lib/site-content";
+import { SiteNotice } from "@/components/site/SiteNotice";
 import hero from "@/assets/hero-heritage.webp";
 
 export function Hero() {
@@ -49,7 +50,11 @@ export function Hero() {
             : "A house built across generations — from Al-Hafayer to Riyadh"}
         </p>
 
-        <div className="mt-40 flex flex-col items-stretch sm:mt-28 justify-center gap-3 animate-fade-up delay-800 sm:flex-row sm:items-center">
+        <div className="mx-auto mt-7 max-w-2xl">
+          <SiteNotice variant="hero" />
+        </div>
+
+        <div className="mt-10 flex flex-col items-stretch sm:mt-28 justify-center gap-3 animate-fade-up delay-800 sm:flex-row sm:items-center">
           <Link to="/tree" className="btn-gold">
             <svg
               width="20"

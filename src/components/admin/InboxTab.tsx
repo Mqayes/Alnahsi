@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MessagesTab } from "@/components/admin/MessagesTab";
 import { Textarea } from "@/components/ui/textarea";
 import {
   MESSAGE_TOPICS,
@@ -215,6 +216,14 @@ export function InboxTab() {
           );
         })}
       </div>
+      <details className="premium-card p-4">
+        <summary className="cursor-pointer font-arabic text-navy">
+          رسائل الموقع السابقة (الأرشيف)
+        </summary>
+        <div className="mt-4">
+          <MessagesTab ar />
+        </div>
+      </details>
     </div>
   );
 }

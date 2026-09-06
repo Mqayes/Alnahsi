@@ -4,7 +4,7 @@ import { useLang } from "@/lib/i18n/LanguageContext";
 import { SupportModal } from "@/components/site/SupportModal";
 
 /** إعلان يظهر لكل زائر في كل الصفحات — يُدار من الإعدادات (المربع الإعلاني) */
-export function SiteNotice() {
+export function SiteNotice({ variant = "bar" }: { variant?: "bar" | "hero" }) {
   const sc = useSiteContent();
   const { lang } = useLang();
   const ar = lang !== "en";
@@ -22,7 +22,8 @@ export function SiteNotice() {
     setReady(true);
   }, [version]);
 
-  if (!ready || hidden || sc["sec_notice"] === "false") return null;
+  if (!ready || sc["sec_notice"] === "false") return null;
+  if (variant === "bar" && hidden) return null;
 
   const title = sc["notice_title_ar"] || (ar ? "تنبيه للأعضاء" : "Notice");
   const text =
@@ -41,6 +42,44 @@ export function SiteNotice() {
       /* ignore */
     }
   };
+
+  if (variant === "hero") {
+    return (
+      <>
+        <div
+          dir={ar ? "rtl" : "ltr"}
+          className="animate-fade-in flex flex-col items-center gap-3 rounded-2xl border border-[#F0CC60]/50 bg-[rgba(10,20,34,0.6)] px-4 py-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-md sm:flex-row sm:text-start"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F0CC60]/20 text-lg">
+            📣
+          </span>
+          <div className="min-w-0 flex-1 text-center sm:text-start">
+            <div className="font-arabic text-base text-[#F0CC60]">{title}</div>
+            <div className="text-xs leading-relaxed text-[#FFF8E6]/85">{text}</div>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <button
+              onClick={() => setOpen(true)}
+              className="rounded-lg border border-[#F0CC60]/70 bg-white/10 px-3 py-1.5 text-xs font-bold text-[#FFF8E6] hover:bg-white/20"
+            >
+              {ar ? "✉ راسلنا" : "✉ Message"}
+            </button>
+            {wa && (
+              <a
+                href={wa}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg bg-gradient-to-br from-[#E2BC4A] to-[#B8860B] px-3 py-1.5 text-xs font-bold text-navy"
+              >
+                {ar ? "واتساب" : "WhatsApp"}
+              </a>
+            )}
+          </div>
+        </div>
+        {open && <SupportModal ar={ar} onClose={() => setOpen(false)} />}
+      </>
+    );
+  }
 
   return (
     <>
