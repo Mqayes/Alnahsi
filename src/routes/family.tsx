@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MyProfile } from "@/components/member/MyProfile";
 import { MyBranch } from "@/components/member/MyBranch";
 import { MyPosts } from "@/components/member/MyPosts";
+import { FamilyCalendar } from "@/components/member/FamilyCalendar";
 import { Ornament } from "@/components/site/Ornament";
 
 export const Route = createFileRoute("/family")({
@@ -130,6 +131,7 @@ function FamilyPortal() {
               {lang === "en" ? "My branch" : "فرعي في الشجرة"}
             </TabsTrigger>
             <TabsTrigger value="posts">{lang === "en" ? "My posts" : "مشاركاتي"}</TabsTrigger>
+            <TabsTrigger value="calendar">{lang === "en" ? "Calendar" : "المناسبات"}</TabsTrigger>
             <TabsTrigger value="news">{lang === "en" ? "News" : "الأخبار"}</TabsTrigger>
             <TabsTrigger value="gallery">{lang === "en" ? "Gallery" : "المعرض"}</TabsTrigger>
             <TabsTrigger value="directory">
@@ -145,6 +147,9 @@ function FamilyPortal() {
           </TabsContent>
           <TabsContent value="posts" className="mt-8">
             <MyPosts ar={lang !== "en"} />
+          </TabsContent>
+          <TabsContent value="calendar" className="mt-8">
+            <FamilyCalendar ar={lang !== "en"} />
           </TabsContent>
           <TabsContent value="news" className="mt-8">
             <FamilyNewsTab lang={lang} />

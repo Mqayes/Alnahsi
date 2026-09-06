@@ -8,6 +8,7 @@ import { EventsTab } from "@/components/admin/EventsTab";
 import { ContentEditor } from "@/components/admin/ContentEditor";
 import { AuditLog } from "@/components/admin/AuditLog";
 import { MessagesTab } from "@/components/admin/MessagesTab";
+import { TreeToolsTab } from "@/components/admin/TreeToolsTab";
 import { useLang } from "@/lib/i18n/LanguageContext";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -203,6 +204,7 @@ function AdminPage() {
       perm: "manage_gallery",
     },
     { id: "content", label: L("محتوى الصفحات", "Page content"), icon: "✎", perm: "manage_content" },
+    { id: "tools", label: L("أدوات الشجرة", "Tree tools"), icon: "🧰", perm: "manage_members" },
     { id: "audit", label: L("سجل التغييرات", "Change log"), icon: "🕓", perm: "manage_members" },
     { id: "settings", label: L("الإعدادات", "Settings"), icon: "⚙" },
   ];
@@ -288,6 +290,7 @@ function AdminPage() {
           {tab === "gallery" && <GalleryTab />}
           {tab === "content" && <ContentEditor />}
           {tab === "messages" && <MessagesTab ar={ar} />}
+          {tab === "tools" && <TreeToolsTab ar={ar} />}
           {tab === "audit" && <AuditLog ar={ar} />}
           {tab === "settings" && <SettingsTab />}
         </main>
