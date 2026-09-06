@@ -30,7 +30,8 @@ export function PersonCard({
     [rows],
   );
   const p = byId[id];
-  const name = (r?: PersonRow) => (r ? r.full_name_ar || r.full_name_en : "");
+  const name = (r?: PersonRow) =>
+    r ? r.full_name_ar || r.full_name_en || (ar ? "خاص" : "Private") : "";
   if (!p) return null;
 
   const father = p.parent_id ? byId[p.parent_id] : undefined;

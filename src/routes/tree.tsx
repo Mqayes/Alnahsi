@@ -135,8 +135,8 @@ function buildFromRows(rows: Row[]): Person | null {
   rows.forEach((r) => {
     nodes[r.id] = {
       id: r.id,
-      ar: r.full_name_ar || r.full_name_en,
-      en: r.full_name_en || r.full_name_ar || "",
+      ar: r.full_name_ar || r.full_name_en || "خاص",
+      en: r.full_name_en || r.full_name_ar || "Private",
       year: r.birth_year
         ? `${r.birth_year} م${r.death_year ? " — " + r.death_year + " م" : ""}`
         : undefined,
@@ -303,7 +303,7 @@ function TreePage() {
         .eq("key", "generation_base")
         .maybeSingle();
       if (gb?.value) setGenerationBase(Number(gb.value));
-      const { data: rows, error } = await sb.from("family_members").select("*");
+      const { data: rows, error } = await sb.from("tree_public").select("*");
       if (cancelled || error) return;
       const built = buildFromRows((rows ?? []) as Row[]);
       setDbRows((rows ?? []) as PersonRow[]);

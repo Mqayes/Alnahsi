@@ -430,4 +430,101 @@ revoke all on function public.admin_set_password(uuid, text) from public;
 grant execute on function public.admin_set_password(uuid, text) to authenticated;
 `,
   },
+  {
+    id: "2026-09-06-privacy",
+    title: "خصوصية الأعضاء: مستويات الرؤية، المشاركة المخصّصة، الأرشيف الشخصي",
+    sql: `
+alter table public.family_members add column if not exists vis_name text not null default 'family';
+alter table public.family_members add column if not exists vis_photo text not null default 'family';
+alter table public.family_members add column if not exists vis_details text not null default 'family';
+alter table public.family_members add column if not exists vis_contact text not null default 'private';
+
+create table if not exists public.member_shares (
+  id uuid primary key default gen_random_uuid(),
+  owner_member uuid not null references public.family_members(id) on delete cascade,
+  viewer_member uuid not null references public.family_members(id) on delete cascade,
+  created_at timestamptz default now(),
+  unique (owner_member, viewer_member)
+);
+alter table public.member_shares enable row level security;
+
+create table if not exists public.member_files (
+  id uuid primary key default gen_random_uuid(),
+  member_id uuid not null references public.family_members(id) on delete cascade,
+  owner_id uuid references auth.users(id) on delete set null,
+  title text, path text not null, mime text, size_kb int,
+  visibility text not null default 'private',
+  created_at timestamptz default now()
+);
+alter table public.member_files enable row level security;
+
+-- الفرد المرتبط بالحساب الحالي
+create or replace function public.my_member() returns uuid language sql stable security definer set search_path = public as $$
+  select member_id from public.profiles where id = auth.uid();
+$$;
+
+-- هل يحق لي رؤية محتوى بهذا المستوى لهذا الفرد؟
+create or replace function public.can_view(owner uuid, level text) returns boolean language sql stable security definer set search_path = public as $$
+  select case
+    when level = 'public' then true
+    when public.is_admin() then true
+    when auth.uid() is null then false
+    when owner = public.my_member() then true
+    when level = 'family' then auth.role() = 'authenticated'
+    when level = 'custom' then exists (
+      select 1 from public.member_shares s
+      where s.owner_member = owner and s.viewer_member = public.my_member())
+    else false
+  end;
+$$;
+
+drop policy if exists "shares owner" on public.member_shares;
+create policy "shares owner" on public.member_shares for all
+  using (owner_member = public.my_member() or public.is_admin())
+  with check (owner_member = public.my_member() or public.is_admin());
+drop policy if exists "shares viewer read" on public.member_shares;
+create policy "shares viewer read" on public.member_shares for select using (viewer_member = public.my_member());
+
+drop policy if exists "files owner all" on public.member_files;
+create policy "files owner all" on public.member_files for all
+  using (member_id = public.my_member() or public.is_admin())
+  with check (member_id = public.my_member() or public.is_admin());
+drop policy if exists "files shared read" on public.member_files;
+create policy "files shared read" on public.member_files for select using (public.can_view(member_id, visibility));
+
+insert into storage.buckets (id, name, public) values ('member-files','member-files', false) on conflict (id) do nothing;
+drop policy if exists "member files read" on storage.objects;
+create policy "member files read" on storage.objects for select using (
+  bucket_id = 'member-files' and (
+    public.is_admin() or
+    exists (select 1 from public.member_files f where f.path = name and public.can_view(f.member_id, f.visibility))
+  ));
+drop policy if exists "member files write" on storage.objects;
+create policy "member files write" on storage.objects for insert with check (bucket_id = 'member-files' and auth.role() = 'authenticated');
+drop policy if exists "member files delete" on storage.objects;
+create policy "member files delete" on storage.objects for delete using (
+  bucket_id = 'member-files' and (public.is_admin() or exists (select 1 from public.member_files f where f.path = name and f.member_id = public.my_member())));
+
+-- عرض عام للشجرة يحترم الخصوصية
+create or replace view public.tree_public as
+select
+  m.id, m.parent_id, m.generation, m.gender, m.birth_year, m.death_year, m.is_deceased,
+  case when public.can_view(m.id, m.vis_name) then m.full_name_ar else null end as full_name_ar,
+  case when public.can_view(m.id, m.vis_name) then m.full_name_en else null end as full_name_en,
+  case when public.can_view(m.id, m.vis_name) then m.first_name else null end as first_name,
+  case when public.can_view(m.id, m.vis_photo) then m.photo_url else null end as photo_url,
+  case when public.can_view(m.id, m.vis_details) then m.city else null end as city,
+  case when public.can_view(m.id, m.vis_details) then m.occupation else null end as occupation,
+  case when public.can_view(m.id, m.vis_details) then m.notes else null end as notes,
+  case when public.can_view(m.id, m.vis_details) then m.spouse_name else null end as spouse_name,
+  case when public.can_view(m.id, m.vis_details) then m.marriage_year else null end as marriage_year,
+  case when public.can_view(m.id, m.vis_details) then m.death_cause else null end as death_cause,
+  case when public.can_view(m.id, m.vis_contact) then m.phone else null end as phone,
+  case when public.can_view(m.id, m.vis_contact) then m.email else null end as email,
+  public.can_view(m.id, m.vis_name) as name_visible,
+  m.relation, m.created_at, m.updated_at
+from public.family_members m;
+grant select on public.tree_public to anon, authenticated;
+`,
+  },
 ];
