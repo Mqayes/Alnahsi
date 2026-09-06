@@ -163,7 +163,13 @@ function JourneyPage() {
             })}
             {total === 0 && (
               <div className="absolute inset-0 flex items-center justify-center text-sm text-navy/50">
-                {ar ? "لا توجد مدن مسجّلة في هذه الحقبة" : "No cities recorded"}
+                {rows.length === 0
+                  ? ar
+                    ? "سجّل دخولك لعرض الخريطة"
+                    : "Sign in to view"
+                  : ar
+                    ? "لا توجد مدن مسجّلة في هذه الحقبة"
+                    : "No cities recorded"}
               </div>
             )}
           </div>

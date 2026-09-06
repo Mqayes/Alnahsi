@@ -29,7 +29,7 @@ export function AddToTreeModal({
       return;
     }
     getSupabase()
-      .from("family_members")
+      .from("tree_public")
       .select("id, full_name_ar, full_name_en, first_name, parent_id, generation, gender")
       .then(({ data }) => {
         setById(Object.fromEntries(((data ?? []) as LineageRow[]).map((r) => [r.id, r])));

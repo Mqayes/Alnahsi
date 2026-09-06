@@ -68,7 +68,7 @@ export function PrivacyTab({ ar }: { ar: boolean }) {
         .eq("id", p.member_id)
         .maybeSingle(),
       sb
-        .from("family_members")
+        .from("tree_public")
         .select("id, full_name_ar, full_name_en")
         .neq("id", p.member_id)
         .order("full_name_ar"),

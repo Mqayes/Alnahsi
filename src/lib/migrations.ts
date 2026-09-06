@@ -527,4 +527,37 @@ from public.family_members m;
 grant select on public.tree_public to anon, authenticated;
 `,
   },
+  {
+    id: "2026-09-06b-privacy-fixes",
+    title: "إصلاحات الخصوصية: احترام إعداد الشجرة العامة",
+    sql: `
+create or replace function public.can_view(owner uuid, level text) returns boolean language sql stable security definer set search_path = public as $$
+  select case
+    when level = 'public' then true
+    when public.is_admin() then true
+    when owner = public.my_member() and auth.uid() is not null then true
+    when level = 'family' then (
+      auth.role() = 'authenticated'
+      or exists (select 1 from public.site_content where key = 'tree_public' and value = 'true')
+    )
+    when level = 'custom' then (
+      auth.uid() is not null and exists (
+        select 1 from public.member_shares s
+        where s.owner_member = owner and s.viewer_member = public.my_member())
+    )
+    else false
+  end;
+$$;
+`,
+  },
+  {
+    id: "2026-09-06c-lock-raw-table",
+    title: "سد ثغرة: منع قراءة الجدول الخام وإجبار المرور عبر العرض الآمن",
+    sql: `
+drop policy if exists "members read auth" on public.family_members;
+drop policy if exists "members self read" on public.family_members;
+create policy "members self read" on public.family_members for select
+  using (public.is_admin() or public.has_perm('manage_members') or id = public.my_member());
+`,
+  },
 ];

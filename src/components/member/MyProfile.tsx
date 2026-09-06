@@ -48,7 +48,7 @@ export function MyProfile({ ar }: { ar: boolean }) {
       setM(mm as Member);
     } else {
       const { data: all } = await sb
-        .from("family_members")
+        .from("tree_public")
         .select(
           "id, full_name_ar, full_name_en, city, phone, occupation, birth_year, photo_url, generation, spouse_name, notes",
         )

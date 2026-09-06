@@ -7,7 +7,7 @@ export function FamilyCalendar({ ar }: { ar: boolean }) {
   const [rows, setRows] = useState<PersonRow[]>([]);
   useEffect(() => {
     getSupabase()
-      .from("family_members")
+      .from("tree_public")
       .select("*")
       .then(({ data }) => setRows((data ?? []) as PersonRow[]));
   }, []);

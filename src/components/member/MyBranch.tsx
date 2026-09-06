@@ -45,11 +45,7 @@ export function MyBranch({ ar }: { ar: boolean }) {
     setMeId(session.user.id);
     const [{ data: p }, { data: all }, { data: r }] = await Promise.all([
       sb.from("profiles").select("member_id").eq("id", session.user.id).maybeSingle(),
-      sb
-        .from("family_members")
-        .select(
-          "id, full_name_ar, full_name_en, first_name, parent_id, generation, gender, birth_year, is_deceased, city",
-        ),
+      sb.from("tree_public").select("*"),
       sb
         .from("join_requests")
         .select("id, full_name_ar, full_name_en, status, created_at, event_kind")
