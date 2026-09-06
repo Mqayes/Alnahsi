@@ -67,8 +67,8 @@ const FEATURES = [
     to: "/our-story",
     ar: "توثيق النسب",
     en: "Lineage Record",
-    dAr: "خثعم ← ناهس ← المزارقة ← آل بوخف.",
-    dEn: "Khath'am → Nahas → Al-Mazarigah → Al Bukhuf.",
+    dAr: "ناهس شهران ← المزارقة ← آل بوخف.",
+    dEn: "Nahas Shahran → Al-Mazarigah → Al Bukhuf.",
   },
   {
     icon: I.archive,

@@ -32,8 +32,8 @@ export const translations = {
       ar: "من ناهس شهران إلى الرياض — جذورٌ في عمق التاريخ.",
     },
     p1: {
-      en: "The roots of Al Bukhuf Alnahsi lie in the history of Nahas Shahran, one of the ancient Khath'am tribes of southwestern Arabia. The family belongs to Al-Mazarigah, a principal branch of Nahas. Our ancestors rose in Al-Hafayer and Nahas Al-Qa'a with their horses and herds.",
-      ar: "تتأصل جذور آل بوخف الناهسي في تاريخ قبيلة ناهس شهران، إحدى القبائل الخثعمية العريقة في جنوب غرب المملكة، وتنتمي الأسرة تحديداً إلى المزارقة، أحد الفروع الرئيسية لناهس. نشأ الأجداد في الحفائر وبلاد ناهس القاعة بخيلهم وأنعامهم.",
+      en: "The roots of Al Bukhuf Alnahsi lie in the history of the ancient tribe of Nahas Shahran in southwestern Arabia. The family belongs to Al-Mazarigah, a principal branch of Nahas. Our ancestors rose in Al-Hafayer and Nahas Al-Qa'a with their horses and herds.",
+      ar: "تتأصل جذور آل بوخف الناهسي في تاريخ قبيلة ناهس شهران العريقة في جنوب غرب المملكة، وتنتمي الأسرة تحديداً إلى المزارقة، أحد الفروع الرئيسية لناهس. نشأ الأجداد في الحفائر وبلاد ناهس القاعة بخيلهم وأنعامهم.",
     },
     p2: {
       en: "From livestock trade and farming in Tanduhah under Saud Muflih Al Bukhuf, to farms in Qassim and Tabuk and the first settlement in Riyadh under Sheikh Saud Fahd Al Bukhuf, to today's trading and industrial companies — a journey defined by honesty, generosity, and loyalty.",
@@ -101,8 +101,8 @@ export const translations = {
         year: "571",
         name: { en: "Nahas · Al-Mazarigah · Al Bukhuf", ar: "ناهس · المزارقة · آل بوخف" },
         story: {
-          en: "The historic battle at Al-Hafayer, birthplace of Nahas, between the tribes of Khath'am led by Nahas and Abraha's army.",
-          ar: "المعركة التاريخية في الحفائر، مسقط رأس ناهس، بين قبائل خثعم وعلى رأسها ناهس وجيش أبرهة.",
+          en: "The historic battle at Al-Hafayer, birthplace of Nahas, between the tribes led by Nahas and Abraha's army.",
+          ar: "المعركة التاريخية في الحفائر، مسقط رأس ناهس، بين القبائل وعلى رأسها ناهس وجيش أبرهة.",
         },
       },
       {

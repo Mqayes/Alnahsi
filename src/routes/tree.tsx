@@ -44,8 +44,8 @@ const ROOT: Person = {
   year: "571 م",
   place: "الحفائر · بلاد ناهس القاعة",
   note: {
-    ar: "خثعم ← ناهس شهران ← المزارقة ← آل بوخف. نشأ الأجداد في الحفائر بخيلهم وأنعامهم متنقلين بين ضواحي بلاد ناهس القاعة.",
-    en: "Khath'am → Nahas Shahran → Al-Mazarigah → Al Bukhuf. Our ancestors rose in Al-Hafayer with their horses and herds.",
+    ar: "ناهس شهران ← المزارقة ← آل بوخف. نشأ الأجداد في الحفائر بخيلهم وأنعامهم متنقلين بين ضواحي بلاد ناهس القاعة.",
+    en: "Nahas Shahran → Al-Mazarigah → Al Bukhuf. Our ancestors rose in Al-Hafayer with their horses and herds.",
   },
   children: [
     {
@@ -365,9 +365,7 @@ function TreePage() {
           </h1>
           <Ornament className="mt-6" />
           <p className="mx-auto mt-5 max-w-2xl font-serif-display text-lg italic text-cream/75">
-            {ar
-              ? "خثعم ← ناهس شهران ← المزارقة ← آل بوخف"
-              : "Khath'am → Nahas Shahran → Al-Mazarigah → Al Bukhuf"}
+            {ar ? "ناهس شهران ← المزارقة ← آل بوخف" : "Nahas Shahran → Al-Mazarigah → Al Bukhuf"}
           </p>
 
           {/* Counters */}
