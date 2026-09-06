@@ -7,6 +7,8 @@ import { composeFullName, chainLabel, nextGeneration, type LineageRow } from "@/
 import { setGenerationBase, generationOf } from "@/lib/lineage";
 import { PanZoom } from "@/components/tree/PanZoom";
 import { AddToTreeModal } from "@/components/tree/AddToTreeModal";
+import { PersonCard, type PersonRow } from "@/components/tree/PersonCard";
+import { RelationFinder } from "@/components/tree/RelationFinder";
 import { useSiteContent } from "@/lib/site-content";
 
 export const Route = createFileRoute("/tree")({
@@ -72,6 +74,15 @@ const ROOT: Person = {
     },
   ],
 };
+
+function findNode(p: Person, id: string): Person | null {
+  if (p.id === id) return p;
+  for (const c of p.children ?? []) {
+    const r = findNode(c, id);
+    if (r) return r;
+  }
+  return null;
+}
 
 function countAll(p: Person): number {
   return 1 + (p.children ?? []).reduce((s, c) => s + countAll(c), 0);
@@ -278,6 +289,7 @@ function TreePage() {
   const [data, setData] = useState<Person>(ROOT);
   const [fromDb, setFromDb] = useState(false);
   const [rowsById, setRowsById] = useState<Record<string, LineageRow>>({});
+  const [dbRows, setDbRows] = useState<PersonRow[]>([]);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
@@ -294,6 +306,7 @@ function TreePage() {
       const { data: rows, error } = await sb.from("family_members").select("*");
       if (cancelled || error) return;
       const built = buildFromRows((rows ?? []) as Row[]);
+      setDbRows((rows ?? []) as PersonRow[]);
       setRowsById(
         Object.fromEntries(((rows ?? []) as Row[]).map((r) => [r.id, r as unknown as LineageRow])),
       );
@@ -434,43 +447,41 @@ function TreePage() {
           </div>
         </PanZoom>
 
-        <aside className="premium-card h-fit p-6 lg:sticky lg:top-36">
-          <div className="eyebrow">{ar ? "بطاقة الفرد" : "Profile"}</div>
-          <h3 className="mt-2 font-arabic text-2xl text-navy">{ar ? selected.ar : selected.en}</h3>
-          {selected.year && <p className="mt-1 text-sm text-gold">{selected.year}</p>}
-          {selected.place && <p className="text-xs text-navy/50">{selected.place}</p>}
-          {selected.note && (
-            <p className="mt-4 leading-relaxed text-navy/70">
-              {ar ? selected.note.ar : selected.note.en}
-            </p>
-          )}
-          {selected.children && selected.children.length > 0 && (
-            <div className="mt-5">
-              <div className="text-xs uppercase tracking-widest text-gold">
-                {ar ? "الأبناء" : "Children"}
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {selected.children.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => {
-                      setSelected(c);
-                      setOpen((o) => new Set([...o, selected.id]));
-                    }}
-                    className="rounded-full border border-gold/40 bg-parchment px-3 py-1 text-sm text-navy hover:bg-gold hover:text-white"
-                  >
-                    {ar ? c.ar : c.en}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => setShowAdd(true)}
-            className="mt-6 w-full rounded-md border border-gold px-4 py-2 text-sm text-gold hover:bg-gold hover:text-white"
-          >
-            {ar ? "أضف فرداً لهذا الفرع" : "Add to this branch"}
-          </button>
+        <aside className="space-y-4 lg:sticky lg:top-36 lg:self-start">
+          <div className="premium-card h-fit p-6">
+            {rowsById[selected.id] ? (
+              <PersonCard
+                id={selected.id}
+                rows={dbRows}
+                ar={ar}
+                onSelect={(id) => {
+                  const n = findNode(data, id);
+                  if (n) setSelected(n);
+                }}
+              />
+            ) : (
+              <>
+                <div className="eyebrow">{ar ? "بطاقة الفرد" : "Profile"}</div>
+                <h3 className="mt-2 font-arabic text-2xl text-navy">
+                  {ar ? selected.ar : selected.en}
+                </h3>
+                {selected.year && <p className="mt-1 text-sm text-gold">{selected.year}</p>}
+                {selected.place && <p className="text-xs text-navy/50">{selected.place}</p>}
+                {selected.note && (
+                  <p className="mt-4 leading-relaxed text-navy/70">
+                    {ar ? selected.note.ar : selected.note.en}
+                  </p>
+                )}
+              </>
+            )}
+            <button
+              onClick={() => setShowAdd(true)}
+              className="mt-6 w-full rounded-md border border-gold px-4 py-2 text-sm text-gold hover:bg-gold hover:text-white"
+            >
+              {ar ? "أضف فرداً لهذا الفرع" : "Add to this branch"}
+            </button>
+          </div>
+          <RelationFinder byId={rowsById} ar={ar} />
         </aside>
       </section>
 

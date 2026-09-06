@@ -76,3 +76,72 @@ export function chainLabel(parentId: string | null, byId: Record<string, Lineage
   const c = ancestors(parentId, byId).map(firstNameOf);
   return c.length ? c.join(" ← ") : "الجذر";
 }
+
+/* ─── حاسبة القرابة ─────────────────────────────────────────── */
+type Rel = { ar: string; en: string };
+
+function ordinalAr(n: number): string {
+  return (
+    ["", "الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن"][n] ??
+    `الـ${n}`
+  );
+}
+
+/** يحسب صلة القرابة بين شخصين داخل الشجرة */
+export function relationBetween(
+  aId: string,
+  bId: string,
+  byId: Record<string, LineageRow>,
+): Rel | null {
+  if (aId === bId) return { ar: "هو نفسه", en: "Same person" };
+  const A = byId[aId],
+    B = byId[bId];
+  if (!A || !B) return null;
+
+  const chainA = [A, ...ancestors(A.parent_id, byId)];
+  const chainB = [B, ...ancestors(B.parent_id, byId)];
+  const idxB = new Map(chainB.map((r, i) => [r.id, i]));
+
+  let da = -1,
+    db = -1;
+  for (let i = 0; i < chainA.length; i++) {
+    const j = idxB.get(chainA[i].id);
+    if (j !== undefined) {
+      da = i;
+      db = j;
+      break;
+    }
+  }
+  if (da < 0) return null; // لا يوجد جدّ مشترك مسجّل
+
+  const male = A.gender !== "f";
+  const P = (m: string, f: string) => (male ? m : f);
+
+  // خط مباشر
+  if (da === 0) {
+    if (db === 1) return { ar: P("ابنه", "ابنته"), en: "child" };
+    if (db === 2) return { ar: P("حفيده", "حفيدته"), en: "grandchild" };
+    return { ar: `${P("من ذريته", "من ذريته")} (${db} أجيال)`, en: `descendant (${db})` };
+  }
+  if (db === 0) {
+    if (da === 1) return { ar: P("أبوه", "أمه"), en: "parent" };
+    if (da === 2) return { ar: P("جدّه", "جدّته"), en: "grandparent" };
+    return { ar: `${P("من أجداده", "من جداته")} (${da} أجيال)`, en: `ancestor (${da})` };
+  }
+  // إخوة
+  if (da === 1 && db === 1) return { ar: P("أخوه", "أخته"), en: "sibling" };
+  // عم / خال (فرق أجيال)
+  if (da === 1) return { ar: P("عمّه", "عمّته"), en: "uncle/aunt" };
+  if (db === 1) return { ar: P("ابن أخيه", "بنت أخيه"), en: "nephew/niece" };
+
+  const cousinDeg = Math.min(da, db) - 1;
+  const removed = Math.abs(da - db);
+  const base =
+    cousinDeg === 1
+      ? P("ابن عمّه", "بنت عمّه")
+      : `${P("ابن", "بنت")} عمّه من الدرجة ${ordinalAr(cousinDeg)}`;
+  return {
+    ar: removed === 0 ? base : `${base} (بفارق ${removed} جيل)`,
+    en: `cousin ${cousinDeg}${removed ? ` removed ${removed}` : ""}`,
+  };
+}

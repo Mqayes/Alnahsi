@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { Header } from "@/components/site/Header";
 import { MaintenanceGate } from "@/components/site/MaintenanceGate";
+import { PwaSetup } from "@/components/site/PwaSetup";
 import { Footer } from "@/components/site/Footer";
 
 // صفحتا 404 والخطأ قد تُصيَّران خارج LanguageProvider، لذا نقرأ اللغة مباشرة.
@@ -107,6 +108,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
+      { name: "theme-color", content: "#14243A" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "الناهسي" },
+      { name: "mobile-web-app-capable", content: "yes" },
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "The House of Al Bukhuf Alnahsi — A Family Heritage" },
@@ -134,7 +140,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-      { rel: "apple-touch-icon", href: "/favicon.svg" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "canonical", href: "https://alnahsi.com/" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -193,6 +200,7 @@ function RootComponent() {
           </MaintenanceGate>
         </main>
         <Footer />
+        <PwaSetup />
       </LanguageProvider>
     </QueryClientProvider>
   );
